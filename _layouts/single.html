@@ -24,7 +24,7 @@ layout: default
   {% assign sidebar_file = page.custom_sidebar %}
   {% include sidebar_file %}
 {% else %}
-  {% include 'sidebar-default.html' %}
+  {% include sidebar-default.html %}
 {% endif %}
   <article class="page" itemscope itemtype="https://schema.org/CreativeWork"{% if page.locale %} lang="{{ page.locale }}"{% endif %}>
     {% if page.title %}<meta itemprop="headline" content="{{ page.title | replace: '|', '&#124;' | markdownify | strip_html | strip_newlines | escape_once }}">{% endif %}
