@@ -9,18 +9,14 @@ Informations pour nous contacter et nos réseaux sociaux.
   <div style="min-width:500px">
     <h2>Liens pour la Camarilla Dauphinoise</h2>
 
-   [![Groupe Facebook](https://img.shields.io/badge/Email-Groupe%20Facebook-blue?style=for-the-badge&logo=gmail&logoColor=white)](https://www.facebook.com/camarilla.dauphinoise)
-
-   [![Rejoignez-nous sur Discord](https://img.shields.io/badge/Email-Rejoindre%20le%20discord-blue?style=for-the-badge&logo=gmail&logoColor=white)](https://discord.gg/wTGMEGVcWk)
-
-   [![Rejoignez-nous sur Discord](https://img.shields.io/badge/Discord-Rejoindre-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/wTGMEGVcWk)
+   [![Facebook](https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://facebook.com/camarilla.dauphinoise)
+   [![Rejoignez-nous sur Discord](https://img.shields.io/badge/Discord-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/wTGMEGVcWk)
 
     <h2>Fédération de Camarilla Française</h2>
-    <ul>
-      <li><a href="https://camarilla-fr.com/">Site</a></li>
-      <li><a href="http://www.camarilla-fr.com/forum/index.php">Forum</a></li>
-      <li><a href="https://www.facebook.com/Federation.Camarilla.France/">Groupe Facebook</a></li>
-    </ul>
+  [![Facebook](https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://facebook.com/Federation.Camarilla.France)
+  [![Forum](https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=discourse&logoColor=white)]([https://forum.tonsite.com](http://www.camarilla-fr.com/forum/index.php))
+  [![Site](https://img.shields.io/badge/Wiki-Vampire-red?style=for-the-badge&logo=wikipedia&logoColor=white)]([https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade](https://camarilla-fr.com/))
+
   </div>
     <!-- Colonne Widget Discord -->
   <div style="width:100%">
@@ -28,7 +24,7 @@ Informations pour nous contacter et nos réseaux sociaux.
 <iframe src="https://discord.com/widget?id=626455168116064297&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
   </div>
 </div>
-
+[![Wiki](https://img.shields.io/badge/Wiki-Vampire-red?style=for-the-badge&logo=wikipedia&logoColor=white)](https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade)
   
 ## L'Equipe des Maitres du jeu
 [![Email](https://img.shields.io/badge/Email-conte.grenoble@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white)](mailto:conte.grenoble@gmail.com) <br/>
