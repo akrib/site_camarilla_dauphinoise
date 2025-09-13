@@ -12,7 +12,7 @@ Informations pour nous contacter et nos réseaux sociaux.
     <img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white" style="max-width:220px; min-width:220px; max-height:50px; min-height:50px;text-decoration:unset!important;">
   </a><br/>
   <a href="https://discord.gg/wTGMEGVcWk">
-    <img src="https://img.shields.io/badge/Discord&#8203;-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" style="max-width:220px; min-width:220px; max-height:50px; min-height:50px;text-decoration:unset!important;">
+    <img src="https://img.shields.io/badge/Discord&#8203;&#8203;&#8203;-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" style="max-width:220px; min-width:220px; max-height:50px; min-height:50px;text-decoration:unset!important;">
   </a><br/>
 
  <h2>Fédération de Camarilla Française</h2>
