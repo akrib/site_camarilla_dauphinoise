@@ -7,7 +7,7 @@ header:
   overlay_image: /assets/images/univers/masquerade-banner.jpg
   overlay_filter: 0.5
   caption: "texte a ajouter ici"
-excerpt: "Trente ans d'experience au service du jeu et des joueurs"
+excerpt: "Trente ans d’expérience, dédiés au jeu et à ceux qui le font vivre."
 ---
 
 # La Camarilla Dauphinoise
