@@ -20,7 +20,8 @@ description: >- # this means to ignore newlines until "baseurl:"
   line in _config.yml. It will appear in your document head meta (for
   Google search results) and in your feed.xml site description.
 domain: akrib.github.io
-baseurl: /camarilla_dauphinoise/ # the subpath of your site, e.g. /blog
+baseurl: /site_
+camarilla_dauphinoise/ # the subpath of your site, e.g. /blog
 url: "https://akrib.github.io"
 github_username:  akrib
 minimal_mistakes_skin: default
