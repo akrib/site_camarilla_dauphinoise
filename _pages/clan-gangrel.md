@@ -1,6 +1,7 @@
 ---
 layout: clan
 title: "Clan Gangrel"
+section: clans
 permalink: /clans/gangrel/
 header:
   overlay_image: /assets/images/clans/gangrel-banner.jpg
