@@ -1,7 +1,7 @@
 ---
 layout: clan
 title: "Clan Brujah"
-permalink: {{ site.baseurl }}/clans/brujah/
+permalink: /clans/brujah/
 header:
   overlay_image: /assets/images/clans/brujah-banner.jpg
   overlay_filter: 0.5
