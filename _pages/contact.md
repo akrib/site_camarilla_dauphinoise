@@ -14,7 +14,7 @@ Informations pour nous contacter et nos réseaux sociaux.
  <h2>Fédération de Camarilla Française</h2>
   <a href="https://facebook.com/Federation.Camarilla.France"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
   <a href="http://www.camarilla-fr.com/forum/index.php"><img src="https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=phpbb&logoColor=white"></a>
-  <a href="https://camarilla-fr.com/"><img src="https://img.shields.io/badge/Wiki-Site-red?style=for-the-badge&logo=internetarchive&logoColor=white"></a>
+  <a href="https://camarilla-fr.com/"><img src="https://img.shields.io/badge/Site-Voir-red?style=for-the-badge&logo=internetarchive&logoColor=white"></a>
 
 
 
