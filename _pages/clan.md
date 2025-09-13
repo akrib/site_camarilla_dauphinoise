@@ -1,6 +1,7 @@
 ---
 layout: single
 title: "Clans"
+section: clans
 permalink: /clans/
 ---
 
