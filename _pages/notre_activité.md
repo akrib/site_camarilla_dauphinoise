@@ -1,3 +1,14 @@
+---
+layout: single
+title: "L'association"
+permalink: /notre_activite/
+section: qui_sommes_nous
+header:
+  overlay_image: /assets/images/univers/masquerade-banner.jpg
+  overlay_filter: 0.5
+  caption: "texte a ajouter ici"
+excerpt: "Trente ans d’expérience, dédiés au jeu et à ceux qui le font vivre."
+---
 Notre activité
 En jouant au sein de l’association La Camarilla Dauphinoise, vous allez participer à ce que l’on appelle communément un Jeu de Rôle Grandeur Nature. Dans ce type d’activité, vous endossez, tel un comédien, le rôle d’un personnage fictif qui va évoluer dans un monde imaginaire. A la Camarilla, votre rôle sera celui d’un vampire dont les aventures et les intrigues auront pour cadre le Monde des Ténèbres, un monde assez similaire au notre mais plus sombre et passionné, dans lequel le fantastique se mêle à la réalité.
 
