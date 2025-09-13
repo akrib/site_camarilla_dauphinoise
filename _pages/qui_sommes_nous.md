@@ -1,13 +1,13 @@
 ---
 layout: single
-title: "L'Univers de Vampire : La Mascarade"
+title: "L'association"
 permalink: /qui_sommes_nous/
 section: qui_sommes_nous
 header:
   overlay_image: /assets/images/univers/masquerade-banner.jpg
   overlay_filter: 0.5
-  caption: "Un monde de ténèbres et de secrets"
-excerpt: "Découvrez l'univers du Mind's Eye Theater : un théâtre de l'ombre où vampires, intrigues et puissances occultes se disputent la survie et la domination."
+  caption: "texte a ajouter ici"
+excerpt: "Trente ans d'experience au service du jeu et des joueurs"
 ---
 
 # La Camarilla Dauphinoise
