@@ -12,7 +12,7 @@ toc_label: "Navigation"
 toc_icon: "sitemap"
 ---
 
-# [La Camarilla](/factions/camarilla/)
+# [La Camarilla]({{ site.baseurl }}/factions/camarilla/)
 La **Camarilla** est l’ordre établi, une organisation qui prône la **Mascarade** : la dissimulation des vampires aux yeux des humains.  
 Hiérarchisée autour des Princes et des Primogènes, la Camarilla valorise la stabilité et l’autorité.  
 Ses membres voient l’humanité comme un troupeau à contrôler et protéger… surtout pour mieux s’en nourrir.
@@ -22,7 +22,7 @@ Ses membres voient l’humanité comme un troupeau à contrôler et protéger…
 
 ---
 
-# [Les Anarchs](/factions/anarch/)
+# [Les Anarchs]({{ site.baseurl }}/factions/anarch/)
 Les **Anarchs** rejettent la tyrannie de la Camarilla et les excès du Sabbat.  
 Ils rêvent d’un monde où les vampires vivent libres, sans princes ni traditions oppressantes.  
 Souvent jeunes et idéalistes, ils mènent des révoltes constantes mais peinent à créer une véritable unité.
@@ -32,7 +32,7 @@ Souvent jeunes et idéalistes, ils mènent des révoltes constantes mais peinent
 
 ---
 
-#  [Le Sabbat](/factions/sabbat/)
+#  [Le Sabbat]({{ site.baseurl }}/factions/sabbat/)
 Le **Sabbat** se définit par sa haine de l’humanité et son rejet de la Mascarade.  
 Pour eux, les vampires sont des prédateurs supérieurs et doivent embrasser pleinement leur nature monstrueuse.  
 Ils fonctionnent en meutes, liés par des rituels de sang, et se voient comme les véritables guerriers de la nuit.
