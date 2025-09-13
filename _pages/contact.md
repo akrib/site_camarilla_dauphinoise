@@ -8,7 +8,7 @@ Informations pour nous contacter et nos réseaux sociaux.
 ## Liens pour la Camarilla Dauphinoise
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
   <!-- Colonne Liens utiles -->
-  <div style="width:100%">
+  <div style="min-width:500px">
     <h2>Les liens</h2>
     <ul>
       <li><a href="[/rules/](https://www.facebook.com/camarilla.dauphinoise)">Groupe Facebook</a></li>
