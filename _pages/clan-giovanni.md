@@ -1,7 +1,7 @@
 ---
 layout: clan
 title: "Clan Giovanni"
-section: clans
+custom_sidebar: sidebar-clans.html
 permalink: /clans/giovanni/
 header:
   overlay_image: /assets/images/clans/giovanni-banner.jpg
