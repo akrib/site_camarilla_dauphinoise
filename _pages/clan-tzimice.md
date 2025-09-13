@@ -1,6 +1,7 @@
 ---
 layout: clan
 title: "Clan Tzimisce"
+section: clans
 permalink: /clans/tzimisce/
 header:
   overlay_image: /assets/images/clans/tzimisce-banner.jpg
