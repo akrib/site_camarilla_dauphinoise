@@ -8,10 +8,8 @@ Informations pour nous contacter et nos réseaux sociaux.
   <!-- Colonne Liens utiles -->
   <div style="min-width:500px">
     <h2>Liens pour la Camarilla Dauphinoise</h2>
-    <ul>
-      <li><a href="https://www.facebook.com/camarilla.dauphinoise">Groupe Facebook</a></li>
-      <li><a href="https://discord.gg/wTGMEGVcWk" target="_blank">💬 Rejoindre le Discord</a></li>
-    </ul>
+   [![Rejoignez-nous sur Discord](https://img.shields.io/badge/Discord-Groupe Facebook?style=for-the-badge&logo=discord&logoColor=white)]([https://discord.gg/wTGMEGVcWk](https://www.facebook.com/camarilla.dauphinoise))
+   [![Rejoignez-nous sur Discord](https://img.shields.io/badge/Discord-Rejoindre-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/wTGMEGVcWk)
     <h2>Fédération de Camarilla Française</h2>
     <ul>
       <li><a href="https://camarilla-fr.com/">Site</a></li>
