@@ -21,7 +21,8 @@ layout: default
 <div id="main" role="main">
 <!--   {% include sidebar.html %} -->
 {% if page.custom_sidebar %}
-  {% include {{ page.custom_sidebar }} %}
+  {% assign sidebar_file = page.custom_sidebar %}
+  {% include sidebar_file %}
 {% else %}
   {% include 'sidebar-default.html' %}
 {% endif %}
