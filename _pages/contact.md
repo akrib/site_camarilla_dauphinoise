@@ -4,12 +4,10 @@ title: "Contact & réseaux"
 permalink: /contact/
 ---
 Informations pour nous contacter et nos réseaux sociaux.
-
-## Liens pour la Camarilla Dauphinoise
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
   <!-- Colonne Liens utiles -->
   <div style="min-width:500px">
-    <h2>Les liens</h2>
+    <h2>Liens pour la Camarilla Dauphinoise</h2>
     <ul>
       <li><a href="https://www.facebook.com/camarilla.dauphinoise">Groupe Facebook</a></li>
       <li><a href="https://discord.gg/wTGMEGVcWk" target="_blank">💬 Rejoindre le Discord</a></li>
