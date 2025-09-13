@@ -21,10 +21,10 @@ Informations pour nous contacter et nos réseaux sociaux.
 [![Clans](https://img.shields.io/badge/Clans-Vampiriques-8A2BE2?style=for-the-badge&logo=jekyll&logoColor=white)](/clans/)
 
   <a href="https://forum.tonsite.com">
-    <img src="https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=discourse&logoColor=white" style="width:100%; max-width:220px;">
+    <img src="https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=discourse&logoColor=white" style="width:50%; max-width:220px;">
   </a>
   <a href="/clans/">
-    <img src="https://img.shields.io/badge/Clans-Vampiriques-8A2BE2?style=for-the-badge&logo=jekyll&logoColor=white" style="width:100%; max-width:220px;">
+    <img src="https://img.shields.io/badge/Clans-Vampiriques-8A2BE2?style=for-the-badge&logo=jekyll&logoColor=white" style="width:50%; max-width:220px;">
   </a>
 
   </div>
