@@ -6,7 +6,8 @@ permalink: /contact/
 Informations pour nous contacter et nos réseaux sociaux.
 
 ## Liens pour la Camarilla Dauphinoise
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
   <!-- Colonne Liens utiles -->
   <div>
 <h2>Les liens</h2>
