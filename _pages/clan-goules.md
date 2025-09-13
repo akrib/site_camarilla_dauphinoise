@@ -1,6 +1,7 @@
 ---
 layout: clan
 title: "Les Ghoules"
+section: clans
 permalink: /clans/goule/
 header:
   overlay_image: /assets/images/factions/goule-banner.jpg
