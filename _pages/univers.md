@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: single
 title: "L'Univers de Vampire : La Mascarade"
 permalink: /univers/
 section: univers
