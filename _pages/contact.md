@@ -15,7 +15,7 @@ Informations pour nous contacter et nos réseaux sociaux.
  <h2>Fédération de Camarilla Française</h2>
     
   [![Facebook](https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://facebook.com/Federation.Camarilla.France)<br/>
-  [![Forum](https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=discourse&logoColor=white)]([https://forum.tonsite.com](http://www.camarilla-fr.com/forum/index.php))<br/>
+  [![Forum](https://img.shields.io/badge/phpbb-Communauté-orange?style=for-the-badge&logo=discourse&logoColor=white)]([https://forum.tonsite.com](http://www.camarilla-fr.com/forum/index.php))<br/>
   [![Site](https://img.shields.io/badge/Wiki-Site-red?style=for-the-badge&logo=wikipedia&logoColor=white)]([https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade](https://camarilla-fr.com/))
 
   </div>
