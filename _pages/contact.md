@@ -12,6 +12,9 @@ Informations pour nous contacter et nos réseaux sociaux.
    [![Groupe Facebook](https://img.shields.io/badge/Email-Groupe%20Facebook-blue?style=for-the-badge&logo=gmail&logoColor=white)](https://www.facebook.com/camarilla.dauphinoise)
 
    [![Rejoignez-nous sur Discord](https://img.shields.io/badge/Email-Rejoindre%20le%20discord-blue?style=for-the-badge&logo=gmail&logoColor=white)](https://discord.gg/wTGMEGVcWk)
+
+   [![Rejoignez-nous sur Discord](https://img.shields.io/badge/Discord-Rejoindre-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/wTGMEGVcWk)
+
     <h2>Fédération de Camarilla Française</h2>
     <ul>
       <li><a href="https://camarilla-fr.com/">Site</a></li>
