@@ -9,7 +9,7 @@ Informations pour nous contacter et nos réseaux sociaux.
   <div style="min-width:500px">
   <h2>Liens pour la Camarilla Dauphinoise</h2>
   <a href="https://facebook.com/camarilla.dauphinoise">
-    <img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white" style="width:30%; max-width:220px; min-width:150px;">
+    <img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white" style="width:30%; max-width:220px; min-width:150px; max-height:30px; min-height:30px; ">
   </a>
   <a href="https://discord.gg/wTGMEGVcWk">
     <img src="https://img.shields.io/badge/Discord-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" style="width:30%; max-width:220px; min-width:150px;">
