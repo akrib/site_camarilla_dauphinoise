@@ -8,7 +8,9 @@ Informations pour nous contacter et nos réseaux sociaux.
   <!-- Colonne Liens utiles -->
   <div style="min-width:500px">
     <h2>Liens pour la Camarilla Dauphinoise</h2>
+
    [![Groupe Facebook](https://img.shields.io/badge/Email-Groupe%20Facebook-blue?style=for-the-badge&logo=gmail&logoColor=white)](https://www.facebook.com/camarilla.dauphinoise)
+
    [![Rejoignez-nous sur Discord](https://img.shields.io/badge/Email-Rejoindre%20le%20discord-blue?style=for-the-badge&logo=gmail&logoColor=white)](https://discord.gg/wTGMEGVcWk)
     <h2>Fédération de Camarilla Française</h2>
     <ul>
