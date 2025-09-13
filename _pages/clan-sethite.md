@@ -1,6 +1,7 @@
 ---
 layout: clan
 title: "Clan Sethite"
+section: clans
 permalink: /clans/sethite/
 header:
   overlay_image: /assets/images/clans/sethite-banner.jpg
