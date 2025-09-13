@@ -1,7 +1,7 @@
 ---
 layout: clan
 title: "Clan Brujah"
-custom_sidebar: sidebar-clans.html
+section: clans
 permalink: /clans/brujah/
 header:
   overlay_image: /assets/images/clans/brujah-banner.jpg
