@@ -2,7 +2,7 @@
 layout: single
 title: "L'Univers de Vampire : La Mascarade"
 permalink: /qui_sommes_nous/
-section: univers
+section: qui_sommes_nous
 header:
   overlay_image: /assets/images/univers/masquerade-banner.jpg
   overlay_filter: 0.5
