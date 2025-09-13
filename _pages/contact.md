@@ -18,6 +18,15 @@ Informations pour nous contacter et nos réseaux sociaux.
   [![Forum](https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=phpbb&logoColor=white)]([https://forum.tonsite.com](http://www.camarilla-fr.com/forum/index.php))<br/>
   [![Site](https://img.shields.io/badge/Wiki-Site-red?style=for-the-badge&logo=wikipedia&logoColor=white)]([https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade](https://camarilla-fr.com/))
 
+[![Clans](https://img.shields.io/badge/Clans-Vampiriques-8A2BE2?style=for-the-badge&logo=jekyll&logoColor=white)](/clans/)
+
+  <a href="https://forum.tonsite.com">
+    <img src="https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=discourse&logoColor=white" style="width:100%; max-width:220px;">
+  </a>
+  <a href="/clans/">
+    <img src="https://img.shields.io/badge/Clans-Vampiriques-8A2BE2?style=for-the-badge&logo=jekyll&logoColor=white" style="width:100%; max-width:220px;">
+  </a>
+
   </div>
     <!-- Colonne Widget Discord -->
   <div style="width:100%">
@@ -25,7 +34,10 @@ Informations pour nous contacter et nos réseaux sociaux.
 <iframe src="https://discord.com/widget?id=626455168116064297&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
   </div>
 </div>
+
 [![Wiki](https://img.shields.io/badge/Wiki-Vampire-red?style=for-the-badge&logo=wikipedia&logoColor=white)](https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade)
+
+
   
 ## L'Equipe des Maitres du jeu
 [![Email](https://img.shields.io/badge/Email-conte.grenoble@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white)](mailto:conte.grenoble@gmail.com) <br/>
