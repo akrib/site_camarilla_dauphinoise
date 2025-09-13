@@ -12,7 +12,7 @@ L'Equipe des Maitres du jeu aussi appelé équipe de conte gère toutes les ques
 
 
  </div>
- <div style="width:100%">
+ <div style="min-width:500px;max-width:500px; ">
  <h2> Le Conseil d'Administration</h2>
 Le conseil d'administration est chargé de toutes les questions Hors-Jeu de l’association : gestion des inscriptions, de la salle, de la trésorerie… <br/>
 <a href="mailto:ca.gratianopolis@gmail.com"><img src="https://img.shields.io/badge/Email-ca.gratianopolis@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white"></a>
@@ -40,7 +40,7 @@ Le conseil d'administration est chargé de toutes les questions Hors-Jeu de l’
 
   </div>
     <!-- Colonne Widget Discord -->
-  <div style="width:100%">
+ <div style="min-width:500px;max-width:500px; ">
     <h2>Le discord</h2>
 <iframe src="https://discord.com/widget?id=626455168116064297&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
   </div>
