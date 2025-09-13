@@ -1,7 +1,20 @@
 ---
 layout: default
 ---
-
+{% if page.section == "clans" %}
+<p>SIDEBAR</p>
+  {% include sidebar-clans.html %}
+{% elsif page.section == "factions" %}
+  {% include sidebar-factions.html %}
+{% elsif page.section == "qui_sommes_nous" %}
+  {% include sidebar-qui_sommes_nous.html %}
+{% elsif page.section == "univers" %}
+  {% include sidebar-univers.html %}
+{% elsif page.section == "contacts" %}
+  {% include sidebar-contacts.html %}
+{% else %}
+  {% include sidebar-default.html %}
+{% endif %}
 <article class="clan">
   <header class="clan-header" style="background-image: url('{{ page.header.overlay_image | relative_url }}');">
     <div class="clan-header-overlay" style="background-color: rgba(0,0,0,{{ page.header.overlay_filter | default: 0.5 }});">
