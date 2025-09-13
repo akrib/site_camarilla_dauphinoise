@@ -5,13 +5,13 @@ permalink: /contact/
 ---
 Informations pour nous contacter et nos réseaux sociaux.
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-<div>
+ <div style="min-width:500px;max-width:500px; ">
  <h2> L'Equipe des Maitres du jeu</h2>
   
 [![Email](https://img.shields.io/badge/Email-conte.grenoble@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white)](mailto:conte.grenoble@gmail.com) <br/>
 L'Equipe des Maitres du jeu aussi appelé équipe de conte gère toutes les questions liées au jeu au sein de l’association. L'histoire, le respect des regles de jeu et la création de fiche de personnage 
 </div>
-<div>
+<div style="min-width:500px;max-width:500px; ">
  <h2> Le Conseil d'Administration</h2>
   
 [![Email](https://img.shields.io/badge/Email-ca.gratianopolis@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white)](mailto:ca.gratianopolis@gmail.com) <br/>
