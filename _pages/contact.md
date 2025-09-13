@@ -21,7 +21,7 @@ Le conseil d'administration est chargé de toutes les questions Hors-Jeu de l’
 </div>
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
   <!-- Colonne Liens utiles -->
-  <div style="min-width:500px">
+  <div style="width:100%">
   <h2>Liens pour la Camarilla Dauphinoise</h2>
   <a href="https://facebook.com/camarilla.dauphinoise"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
   <a href="https://discord.gg/wTGMEGVcWk"><img src="https://img.shields.io/badge/Discord%20-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
