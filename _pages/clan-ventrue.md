@@ -1,6 +1,7 @@
 ---
 layout: clan
 title: "Clan Ventrue"
+section: clans
 permalink: /clans/ventrue/
 header:
   overlay_image: /assets/images/clans/ventrue-banner.jpg
