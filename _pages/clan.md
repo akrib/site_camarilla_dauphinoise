@@ -1,7 +1,7 @@
 ---
 layout: single
 title: "Clans"
-section: clans
+custom_sidebar: sidebar-clans.html
 permalink: /clans/
 ---
 
