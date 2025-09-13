@@ -8,33 +8,19 @@ Informations pour nous contacter et nos réseaux sociaux.
   <!-- Colonne Liens utiles -->
   <div style="min-width:500px">
   <h2>Liens pour la Camarilla Dauphinoise</h2>
-  <a href="https://facebook.com/camarilla.dauphinoise">
-    <img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white">
-  </a>&nbsp;
-  <a href="https://discord.gg/wTGMEGVcWk">
-    <img src="https://img.shields.io/badge/Discord%20-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white">
-  </a>
+  <a href="https://facebook.com/camarilla.dauphinoise"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
+  <a href="https://discord.gg/wTGMEGVcWk"><img src="https://img.shields.io/badge/Discord%20-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
 
  <h2>Fédération de Camarilla Française</h2>
-  <a href="https://facebook.com/Federation.Camarilla.France">
-    <img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white">
-  </a>
-  <a href="http://www.camarilla-fr.com/forum/index.php">
-    <img src="https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=phpbb&logoColor=white">
-  </a>
-  <a href="https://camarilla-fr.com/">
-    <img src="https://img.shields.io/badge/Wiki-Site-red?style=for-the-badge&logo=wikipedia&logoColor=white">
-  </a>
+  <a href="https://facebook.com/Federation.Camarilla.France"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
+  <a href="http://www.camarilla-fr.com/forum/index.php"><img src="https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=phpbb&logoColor=white"></a>
+  <a href="https://camarilla-fr.com/"><img src="https://img.shields.io/badge/Wiki-Site-red?style=for-the-badge&logo=wikipedia&logoColor=white"></a>
 
 
 
  <h2>Autres liens</h2>
-  <a href="https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade">
-    <img src="https://img.shields.io/badge/Wiki-Vampire-red?style=for-the-badge&logo=wikipedia&logoColor=white">
-  </a>
-  <a href="/clans/">
-    <img src="https://img.shields.io/badge/Clans-Vampiriques-8A2BE2?style=for-the-badge&logo=jekyll&logoColor=white">
-  </a>
+  <a href="https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade"><img src="https://img.shields.io/badge/Wiki-Vampire-red?style=for-the-badge&logo=wikipedia&logoColor=white"></a>
+  <a href="/clans/"><img src="https://img.shields.io/badge/Clans-Vampiriques-8A2BE2?style=for-the-badge&logo=jekyll&logoColor=white"></a>
 
   </div>
     <!-- Colonne Widget Discord -->
