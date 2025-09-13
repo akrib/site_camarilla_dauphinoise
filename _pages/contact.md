@@ -11,8 +11,14 @@ Informations pour nous contacter et nos réseaux sociaux.
   <div style="min-width:500px">
     <h2>Les liens</h2>
     <ul>
-      <li><a href="[/rules/](https://www.facebook.com/camarilla.dauphinoise)">Groupe Facebook</a></li>
+      <li><a href="https://www.facebook.com/camarilla.dauphinoise">Groupe Facebook</a></li>
       <li><a href="https://discord.gg/wTGMEGVcWk" target="_blank">💬 Rejoindre le Discord</a></li>
+    </ul>
+    <h2>Fédération de Camarilla Française</h2>
+    <ul>
+      <li><a href="https://camarilla-fr.com/">Site</a></li>
+      <li><a href="http://www.camarilla-fr.com/forum/index.php">Forum</a></li>
+      <li><a href="https://www.facebook.com/Federation.Camarilla.France/">Groupe Facebook</a></li>
     </ul>
   </div>
     <!-- Colonne Widget Discord -->
@@ -23,12 +29,3 @@ Informations pour nous contacter et nos réseaux sociaux.
 </div>
 
   
-  
-
-### Fédération de Camarilla Française
-
-- [Site](https://camarilla-fr.com/)
-- [Forum](http://www.camarilla-fr.com/forum/index.php)
-- [Groupe Facebook](https://www.facebook.com/Federation.Camarilla.France/)
-
-
