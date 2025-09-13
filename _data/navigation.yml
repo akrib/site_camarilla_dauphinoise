@@ -2,7 +2,7 @@ main:
   - title: "Qui sommes-nous ?"
     url: /qui_sommes_nous/
   - title: "L'univers"
-    url: /rules/
+    url: /univers/
   - title: "Règles du jeu"
     url: /rules/
   - title: "Contact & réseaux"
