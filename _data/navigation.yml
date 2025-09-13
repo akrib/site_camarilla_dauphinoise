@@ -1,9 +1,47 @@
 main:
-  - title: "Posts"
-    url: /posts/
-  - title: "Categories"
-    url: /categories/
-  - title: "Tags"
-    url: /tags/
-  - title: "About"
+  - title: "Qui sommes-nous ?"
     url: /about/
+  - title: "Contact & réseaux"
+    url: /contact/
+
+  - title: "Règles du jeu"
+    url: /rules/
+  - title: "Clans"
+    url: /clans/
+    children:
+      - title: "Brujah"
+        url: /clans/brujah/
+      - title: "Gangrel"
+        url: /clans/gangrel/
+      - title: "Malkavian"
+        url: /clans/malkavian/
+      - title: "Nosferatu"
+        url: /clans/nosferatu/
+      - title: "Toreador"
+        url: /clans/toreador/
+      - title: "Tremere"
+        url: /clans/tremere/
+      - title: "Ventrue"
+        url: /clans/ventrue/
+      - title: "Lasombra"
+        url: /clans/lasombra/
+      - title: "Tzimisce"
+        url: /clans/tzimisce/
+  - title: "Factions"
+    url: /factions/
+    children:
+      - title: "Ghoules"
+        url: /clans/goule/
+      - title: "Humains"
+        url: /clans/humain/
+      - title: "Inquisition"
+        url: /clans/inquisition/
+      - title: "Loups-garous"
+        url: /clans/loup-garou/
+  - title: "Événements à venir"
+    url: /events/
+  - title: "Galerie & souvenirs"
+    url: /gallery/
+  - title: "Rejoindre"
+    url: /join/
+    target: _blank
