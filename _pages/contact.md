@@ -12,7 +12,7 @@ L'Equipe des Maitres du jeu aussi appelé équipe de conte gère toutes les ques
 
 
  </div>
- <div style="min-width:500px;max-width:500px; ">
+ <div style="width:100%">
  <h2> Le Conseil d'Administration</h2>
 Le conseil d'administration est chargé de toutes les questions Hors-Jeu de l’association : gestion des inscriptions, de la salle, de la trésorerie… <br/>
 <a href="mailto:ca.gratianopolis@gmail.com"><img src="https://img.shields.io/badge/Email-ca.gratianopolis@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white"></a>
@@ -22,7 +22,7 @@ Le conseil d'administration est chargé de toutes les questions Hors-Jeu de l’
 </div>
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
   <!-- Colonne Liens utiles -->
-  <div style="width:100%">
+ <div style="min-width:500px;max-width:500px; ">
   <h2>Liens pour la Camarilla Dauphinoise</h2>
   <a href="https://facebook.com/camarilla.dauphinoise"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
   <a href="https://discord.gg/wTGMEGVcWk"><img src="https://img.shields.io/badge/Discord%20-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
