@@ -20,9 +20,16 @@ layout: default
 
 <div id="main" role="main">
 <!--   {% include sidebar.html %} -->
-{% if page.custom_sidebar %}
-  {% assign sidebar_file = page.custom_sidebar %}
-  {% include sidebar_file %}
+{% if page.section == "clans" %}
+  {% include sidebar-clans.html %}
+{% elsif page.section == "factions" %}
+  {% include sidebar-factions.html %}
+{% elsif page.section == "qui_sommes_nous" %}
+  {% include sidebar-qui_sommes_nous.html %}
+{% elsif page.section == "univers" %}
+  {% include sidebar-univers.html %}
+{% elsif page.section == "contatc" %}
+  {% include sidebar-contatc.html %}
 {% else %}
   {% include sidebar-default.html %}
 {% endif %}
