@@ -1,6 +1,7 @@
 ---
 layout: clan
 title: "Clan Malkavian"
+section: clans
 permalink: /clans/malkavian/
 header:
   overlay_image: /assets/images/clans/malkavian-banner.jpg
