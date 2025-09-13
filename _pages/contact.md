@@ -19,9 +19,7 @@ Informations pour nous contacter et nos réseaux sociaux.
     <h2>Liens pour la Camarilla Dauphinoise</h2>
     <ul>
       <li><a href="[/rules/](https://www.facebook.com/camarilla.dauphinoise)">Groupe Facebook</a></li>
-      <li><a href="/clans/">🩸 Clans Vampiriques</a></li>
-      <li><a href="/univers/">🌑 Univers du Monde des Ténèbres</a></li>
-      <li><a href="https://discord.gg/TON_INVITE" target="_blank">💬 Rejoindre le Discord</a></li>
+      <li><a href="https://discord.gg/wTGMEGVcWk" target="_blank">[💬 Rejoindre le Discord](https://img.shields.io/badge/Discord-Rejoindre-5865F2?style=for-the-badge&logo=discord&logoColor=white)</a></li>
     </ul>
   </div>
 </div>
