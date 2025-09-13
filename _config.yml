@@ -28,7 +28,7 @@ github_username:  akrib
 logo: /assets/images/masthead-logo.png
 
 # Build settings
-theme: minimal-mistakes-jekyll
+remote_theme: minimal-mistakes-jekyll
 plugins:
   - jekyll-feed
 
