@@ -1,6 +1,7 @@
 ---
 layout: clan
 title: "Clan Ravnos"
+section: clans
 permalink: /clans/ravnos/
 header:
   overlay_image: /assets/images/clans/ravnos-banner.jpg
