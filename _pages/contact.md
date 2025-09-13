@@ -7,12 +7,13 @@ Informations pour nous contacter et nos réseaux sociaux.
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
   <!-- Colonne Liens utiles -->
   <div style="min-width:500px">
-    <h2>Liens pour la Camarilla Dauphinoise</h2>
+  <h2>Liens pour la Camarilla Dauphinoise</h2>
 
    [![Facebook](https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://facebook.com/camarilla.dauphinoise)<br/>
    [![Rejoignez-nous sur Discord](https://img.shields.io/badge/Discord-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/wTGMEGVcWk)<br/>
 
-    <h2>Fédération de Camarilla Française</h2>
+ <h2>Fédération de Camarilla Française</h2>
+    
   [![Facebook](https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://facebook.com/Federation.Camarilla.France)<br/>
   [![Forum](https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=discourse&logoColor=white)]([https://forum.tonsite.com](http://www.camarilla-fr.com/forum/index.php))<br/>
   [![Site](https://img.shields.io/badge/Wiki-Site-red?style=for-the-badge&logo=wikipedia&logoColor=white)]([https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade](https://camarilla-fr.com/))
