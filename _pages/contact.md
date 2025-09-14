@@ -35,10 +35,9 @@ Le conseil d'administration est chargé de toutes les questions Hors-Jeu de l’
   <a href="https://discord.gg/wTGMEGVcWk"><img src="https://img.shields.io/badge/Discord%20-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
 
  <h2>Fédération de Camarilla Française</h2>
-  <a href="https://facebook.com/Federation.Camarilla.France"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
-  <a href="http://www.camarilla-fr.com/forum/index.php"><img src="https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=phpbb&logoColor=white"></a>
   <a href="https://camarilla-fr.com/"><img src="https://img.shields.io/badge/Site-Voir-red?style=for-the-badge&logo=internetarchive&logoColor=white"></a>
-
+  <a href="http://www.camarilla-fr.com/forum/index.php"><img src="https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=phpbb&logoColor=white"></a>
+  <a href="https://facebook.com/Federation.Camarilla.France"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
 
 
  <h2>Autres liens</h2>
@@ -52,7 +51,3 @@ Le conseil d'administration est chargé de toutes les questions Hors-Jeu de l’
 <iframe src="https://discord.com/widget?id=626455168116064297&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
   </div>
 </div>
-
-
-
-
