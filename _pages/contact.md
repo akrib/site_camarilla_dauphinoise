@@ -7,14 +7,14 @@ Informations pour nous contacter et nos réseaux sociaux.
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
  <div style="min-width:500px;max-width:500px; ">
  <h2> L'Equipe des Maitres du jeu</h2>
-L'Equipe des Maitres du jeu aussi appelé équipe de conte gère toutes les questions liées au jeu au sein de l’association. L'histoire, le respect des regles de jeu et la création de fiche de personnage <br/>
+L'Equipe des Maitres du jeu aussi appelé équipe de conte gère toutes les questions liées au jeu au sein de l’association. L'histoire, le respect des regles de jeu et la création de fiche de personnage, etc. <br/>
 <a href="mailto:conte.grenoble@gmail.com"><img src="https://img.shields.io/badge/Email-conte.grenoble@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white"></a>
 
 
  </div>
  <div style="min-width:500px;max-width:500px; ">
  <h2> Le Conseil d'Administration</h2>
-Le conseil d'administration est chargé de toutes les questions Hors-Jeu de l’association : gestion des inscriptions, de la salle, de la trésorerie… <br/>
+Le conseil d'administration est chargé de toutes les questions Hors-Jeu de l’association : gestion des inscriptions, de la salle, de la trésorerie, de la gestion du materiel, etc. <br/>
 <a href="mailto:ca.gratianopolis@gmail.com"><img src="https://img.shields.io/badge/Email-ca.gratianopolis@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white"></a>
 
 
