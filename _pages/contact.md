@@ -14,7 +14,7 @@ L’équipe des Maîtres du Jeu, aussi appelée équipe de conte, gère toutes l
  </div>
  <div style="min-width:500px;max-width:500px; ">
  <h2> Le Conseil d'Administration</h2>
-Le conseil d'administration est chargé de toutes les questions Hors-Jeu de l’association : gestion des inscriptions, de la salle, de la trésorerie, de la gestion du materiel, etc. <br/>
+Le conseil d'administration est chargé de toutes les questions hors-jeu de l’association : gestion des inscriptions, de la salle, de la trésorerie, du matériel, etc.<br/>
 <a href="mailto:ca.gratianopolis@gmail.com"><img src="https://img.shields.io/badge/Email-ca.gratianopolis@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white"></a>
 
 
