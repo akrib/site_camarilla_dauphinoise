@@ -20,10 +20,10 @@ Le conseil d'administration est chargé de toutes les questions Hors-Jeu de l’
 
 </div>
 </div>
-<div style="display: grid; grid-template-columns: 1fr 2em 1fr;">
+<div style="display: grid; grid-template-columns: fr 1fr+2em 0.5fr;">
 <div style="min-width:500px;max-width:500px; "></div>
 <div style="text-align: center;">
-  <img src="{{ site.baseurl }}/assets/separator.svg"  style="min-height:150px;max-height:150px;margin-left:-100px; margin-right:-100px;" >
+  <img src="{{ site.baseurl }}/assets/separator.svg"  style="min-height:150px;max-height:150px;" >
 </div>
 <div style="min-width:500px;max-width:500px; "></div>
 </div>
