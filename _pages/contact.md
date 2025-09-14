@@ -20,7 +20,7 @@ Le conseil d'administration est chargé de toutes les questions Hors-Jeu de l’
 
 </div>
 </div>
-<img src="/assets/separator.png">
+<img src="/assets/separator.png"  style="min-width:500px;max-width:500px;min-height:50px;max-height:50px; " >
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
   <!-- Colonne Liens utiles -->
  <div style="min-width:500px;max-width:500px; ">
