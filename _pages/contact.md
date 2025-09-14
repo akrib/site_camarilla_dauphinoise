@@ -7,7 +7,7 @@ Informations pour nous contacter et nos réseaux sociaux.
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
  <div style="min-width:500px;max-width:500px; ">
  <h2> L'Equipe des Maitres du jeu</h2>
-L'Equipe des Maitres du jeu aussi appelé équipe de conte gère toutes les questions liées au jeu au sein de l’association. L'histoire, le respect des regles de jeu et la création de fiche de personnage, etc. <br/>
+L’équipe des Maîtres du Jeu, aussi appelée équipe de conte, gère toutes les questions liées au jeu au sein de l’association : l’histoire, le respect des règles de jeu, la création de fiches de personnage, etc.<br/>
 <a href="mailto:conte.grenoble@gmail.com"><img src="https://img.shields.io/badge/Email-conte.grenoble@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white"></a>
 
 
