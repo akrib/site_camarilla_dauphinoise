@@ -1,0 +1,142 @@
+/* === Monokai Pro Theme for Minimal Mistakes (Jekyll) === */
+/* Place this file in assets/css/monokai-pro.css */
+
+/* Fonts */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;600&display=swap");
+
+:root {
+  --bg-dark: #2D2A2E;
+  --bg-mid: #221F22;
+  --bg-deep: #19181A;
+  --fg: #FCFCFA;
+  --muted: #727072;
+
+  --accent1: #FF6188; /* pink/red */
+  --accent2: #FFD866; /* yellow */
+  --accent3: #A9DC76; /* green */
+  --accent4: #78DCE8; /* cyan */
+  --accent5: #AB9DF2; /* purple */
+
+  --nav-bg: rgba(45, 42, 46, 0.9);
+}
+
+/* Base */
+body {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-mid) 40%, var(--bg-deep) 100%);
+  color: var(--fg);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 600;
+  color: var(--accent5);
+}
+
+p, li {
+  color: var(--muted);
+}
+
+/* Links */
+a {
+  color: var(--accent1);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--accent4);
+  text-shadow: 0 0 4px rgba(120, 220, 232, 0.4);
+}
+
+/* Buttons */
+.btn,
+button,
+input[type="submit"] {
+  background: linear-gradient(90deg, var(--accent1), var(--accent2));
+  color: var(--bg-deep);
+  border: none;
+  border-radius: 6px;
+  padding: 0.5em 1em;
+  font-weight: 600;
+  font-family: "JetBrains Mono", monospace;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.btn:hover,
+button:hover,
+input[type="submit"]:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(255, 216, 102, 0.4);
+}
+
+/* Header / Navigation */
+.site-title,
+.site-title a {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  color: var(--accent1) !important;
+}
+
+.masthead {
+  background: var(--nav-bg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Navigation */
+#site-nav.greedy-nav {
+  background: var(--nav-bg);
+  border-radius: 8px;
+  padding: 10px 16px;
+}
+
+#site-nav .site-title {
+  font-size: 1rem;
+  color: var(--accent2);
+}
+
+#site-nav ul.visible-links a {
+  color: var(--muted);
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+#site-nav ul.visible-links a:hover,
+#site-nav ul.visible-links a:focus {
+  color: var(--bg-deep);
+  background: var(--accent4);
+}
+
+/* Active link */
+#site-nav ul.visible-links a[aria-current="page"],
+#site-nav ul.visible-links a.active {
+  background: var(--accent1);
+  color: var(--bg-deep);
+}
+
+/* Cards / Boxes */
+.card, .archive__item, .page__content blockquote {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 1em;
+}
+
+/* Footer */
+.page__footer {
+  background: var(--bg-mid);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+}
+.page__footer a {
+  color: var(--accent3);
+}
+
+/* Decorative line */
+.monokai-line {
+  height: 3px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3), var(--accent4), var(--accent5));
+  width: 140px;
+  margin: 8px 0 20px;
+}
