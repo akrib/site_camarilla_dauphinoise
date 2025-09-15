@@ -2,6 +2,7 @@
 layout: single
 title: "color_test_1"
 permalink: /color_test_1/
+custom_css: "neon"
 ---
 
 
