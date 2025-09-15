@@ -2,6 +2,9 @@
 layout: default
 ---
 
+{% if page.custom_css ="neon" %}
+<link rel="stylesheet" href="{{ '/assets/css/neon-theme.css' | relative_url }}">
+{% endif %}
 {% if page.header.overlay_color or page.header.overlay_image or page.header.image %}
   {% include page__hero.html %}
 {% elsif page.header.video.id and page.header.video.provider %}
