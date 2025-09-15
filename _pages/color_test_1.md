@@ -4,7 +4,7 @@ title: "color_test_1"
 permalink: /color_test_1/
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/neon-theme.css' | relative_url }}">
+
 
 
 # titre 1 
