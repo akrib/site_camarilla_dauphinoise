@@ -11,6 +11,10 @@
   --bg-mid: #081426;
   --bg-deep: #0b0d18;
   --muted: #9fb4d6;
+  --accent1: #ff2d95;
+  --accent2: #00e6ff;
+  --muted: #9fb4d6;
+  --nav-bg: rgba(5,6,10,0.55);
 }
 
 /* Base */
@@ -130,3 +134,173 @@ input[type="submit"]:hover {
     font-size: 90%;
   }
 }
+
+
+/* === Neon styling for site nav (Camarilla Dauphinoise) === */
+/* Ajoute ceci à assets/css/neon-theme.css ou dans un <style> global */
+
+/* Ensure variables exist (fallbacks) */
+
+/* Nav container */
+#site-nav.greedy-nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 18px rgba(0,230,255,0.03);
+}
+
+/* Logo */
+#site-nav .site-logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+#site-nav .site-logo img {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 12px rgba(255,45,149,0.06);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+/* Title */
+#site-nav .site-title {
+  font-family: "Orbitron", monospace;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--accent1);
+  text-decoration: none;
+  letter-spacing: 0.4px;
+  display: inline-block;
+  padding-right: 8px;
+}
+
+/* Links list */
+#site-nav ul.visible-links {
+  list-style: none;
+  display: flex;
+  gap: 8px;
+  margin-left: 8px;
+  align-items: center;
+}
+#site-nav ul.visible-links li {
+  margin: 0;
+}
+#site-nav ul.visible-links a {
+  color: var(--muted);
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-block;
+  transition: all .18s ease;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+#site-nav ul.visible-links a:hover,
+#site-nav ul.visible-links a:focus {
+  color: #051322;
+  background: linear-gradient(90deg, var(--accent2), var(--accent1));
+  text-shadow: 0 0 8px rgba(255,45,149,0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.45), 0 0 14px rgba(0,230,255,0.08);
+}
+
+/* Search toggle */
+#site-nav .search__toggle {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.04);
+  color: var(--muted);
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+#site-nav .search__toggle:hover {
+  color: var(--accent2);
+  box-shadow: 0 0 10px rgba(0,230,255,0.06);
+}
+
+/* Hamburger / greedy toggle */
+#site-nav .greedy-nav__toggle {
+  width: 46px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06));
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: 10px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+#site-nav .navicon {
+  position: relative;
+  width: 22px;
+  height: 2px;
+  background: var(--muted);
+  border-radius: 2px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.02);
+}
+#site-nav .navicon::before,
+#site-nav .navicon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--muted);
+  border-radius: 2px;
+}
+#site-nav .navicon::before { top: -7px; }
+#site-nav .navicon::after  { top: 7px; }
+
+/* Hidden links (mobile) */
+#site-nav ul.hidden-links {
+  display: none; /* shown/hidden via JS as in greedy-nav script */
+  list-style: none;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 8px;
+}
+#site-nav ul.hidden-links a {
+  display: block;
+  padding: 8px;
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+/* Small neon badge for active/current */
+#site-nav ul.visible-links a[aria-current="page"],
+#site-nav ul.visible-links a.active {
+  background: linear-gradient(90deg, rgba(0,230,255,0.12), rgba(255,45,149,0.08));
+  color: var(--accent2);
+  box-shadow: 0 4px 18px rgba(0,230,255,0.06);
+}
+
+/* Accessibility focus */
+#site-nav a:focus {
+  outline: 2px solid rgba(0,230,255,0.12);
+  outline-offset: 3px;
+}
+
+/* Responsive behavior */
+@media (max-width: 880px) {
+  /* hide visible links, show toggles */
+  #site-nav ul.visible-links { display: none; }
+  #site-nav .greedy-nav__toggle.hidden { display: inline-flex; }
+  #site-nav .search__toggle { margin-left: 8px; }
+  /* show hidden-links when not hidden (let JS handle the .hidden class toggle) */
+  #site-nav ul.hidden-links.hidden { display: none; }
+  #site-nav ul.hidden-links { display: flex; flex-direction: column; background: transparent; width: 100%; }
+  #site-nav { flex-direction: column; align-items: stretch; gap: 6px; padding-bottom: 10px; }
+}
+
+/* Optional: stronger specificity if Minimal Mistakes overrides your rules */
+body #site-nav.greedy-nav { /* keeps it stronger */ }
