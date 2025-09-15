@@ -4,6 +4,10 @@ layout: default
 
 {% if page.custom_css == "neon" %}
 <link rel="stylesheet" href="{{ '/assets/css/neon_theme.css' | relative_url }}">
+{% elsif page.custom_css == "monokai" %}
+<link rel="stylesheet" href="{{ '/assets/css/monokai.css' | relative_url }}">
+{% elsif page.custom_css == "splatoon" %}
+<link rel="stylesheet" href="{{ '/assets/css/splatoon.css' | relative_url }}">
 {% endif %}
 {% if page.header.overlay_color or page.header.overlay_image or page.header.image %}
   {% include page__hero.html %}
