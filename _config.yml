@@ -26,6 +26,10 @@ logo: /assets/images/masthead-logo.png
 # Build settings
 markdown: kramdown
 remote_theme: mmistakes/minimal-mistakes
+minimal_mistakes_skin: default
+sass:
+  style: compressed
+
 # Outputting
 permalink: /:categories/:title/
 paginate: 5 # amount of posts to show
