@@ -1,0 +1,170 @@
+/* === Splatoon Theme for Minimal Mistakes (Jekyll) === */
+/* Place this file in assets/css/splatoon-theme.css */
+
+/* Import fonts */
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap");
+
+:root {
+  --accent1: #FF4EC8; /* pink */
+  --accent2: #2AFBFF; /* cyan */
+  --accent3: #FFB82A; /* yellow-orange */
+  --accent4: #4EFF5A; /* green */
+  --accent5: #FF6A2A; /* orange-red */
+  --bg-dark: #1B1B1B;
+  --bg-mid: #262626;
+  --bg-deep: #121212;
+  --muted: #D0D0D0;
+  --nav-bg: rgba(27, 27, 27, 0.9);
+}
+
+/* Base */
+body {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-mid) 50%, var(--bg-deep) 100%);
+  color: var(--muted);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Orbitron, monospace;
+  color: var(--accent2);
+  text-shadow: 0 0 12px rgba(42, 251, 255, 0.3);
+}
+
+p, li {
+  color: var(--muted);
+}
+
+/* Links */
+a {
+  color: var(--accent1);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--accent3);
+  text-shadow: 0 0 6px rgba(255, 184, 42, 0.6);
+}
+
+/* Buttons */
+.btn,
+button,
+input[type="submit"] {
+  background: linear-gradient(90deg, var(--accent1), var(--accent4));
+  color: #121212;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5em 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover,
+button:hover,
+input[type="submit"]:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px var(--accent1), 0 0 12px var(--accent4);
+}
+
+/* Header / Navigation */
+.site-title,
+.site-title a {
+  font-family: Orbitron, monospace;
+  font-weight: 700;
+  color: var(--accent5) !important;
+}
+
+.masthead {
+  background: var(--nav-bg);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Navigation */
+#site-nav.greedy-nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 16px;
+  background: var(--nav-bg);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+}
+
+#site-nav .site-logo img {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px var(--accent1);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+#site-nav ul.visible-links a {
+  color: var(--muted);
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+#site-nav ul.visible-links a:hover,
+#site-nav ul.visible-links a:focus {
+  color: var(--bg-dark);
+  background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3));
+  box-shadow: 0 0 8px var(--accent1), 0 0 12px var(--accent3);
+}
+
+/* Active link */
+#site-nav ul.visible-links a.active,
+#site-nav ul.visible-links a[aria-current="page"] {
+  background: linear-gradient(90deg, var(--accent4), var(--accent5));
+  color: #121212;
+  box-shadow: 0 0 12px var(--accent4), 0 0 12px var(--accent5);
+}
+
+/* Cards / Boxes */
+.card, .archive__item, .page__content blockquote {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 1em;
+}
+
+/* Footer */
+.page__footer {
+  background: var(--bg-mid);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  color: var(--muted);
+}
+.page__footer a {
+  color: var(--accent4);
+}
+
+/* Decorative Splatoon line */
+.splatoon-line {
+  height: 4px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3), var(--accent4), var(--accent5));
+  width: 140px;
+  margin: 12px 0 20px;
+}
+
+/* Thumbnails / Gallery */
+.thumb {
+  background: linear-gradient(135deg, var(--bg-mid), var(--bg-dark));
+  border: 1px solid rgba(255,255,255,0.02);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--muted);
+  height: 120px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body { font-size: 90%; }
+  #site-nav ul.visible-links { display: none; }
+  #site-nav ul.hidden-links { display: flex; flex-direction: column; gap: 6px; }
+}
