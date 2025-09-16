@@ -11,13 +11,13 @@ Les clans vampiriques représentent les différentes lignées de vampires, chacu
 
 <div class="carousel">
   <div class="carousel__container">
-    <img src="{{ site.baseurl }}/assets/svg/clan/brujah.svg" alt="">
-    <img src="{{ site.baseurl }}/assets/svg/clan/gangrel.svg" alt="">
-    <img src="{{ site.baseurl }}/assets/svg/clan/malkav.svg" alt="">
-    <img src="{{ site.baseurl }}/assets/svg/clan/nosferatu.svg" alt="">
-    <img src="{{ site.baseurl }}/assets/svg/clan/toreador.svg" alt="">
-    <img src="{{ site.baseurl }}/assets/svg/clan/tremere.svg" alt="">
-    <img src="{{ site.baseurl }}/assets/svg/clan/ventrue.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/brujah.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/gangrel.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/malkav.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/nosferatu.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/toreador.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/tremere.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/ventrue.svg" alt="">
   </div>
 </div>
 
