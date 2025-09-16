@@ -1,0 +1,51 @@
+/* === Post Centered Layout === */
+.post-centered {
+  max-width: 750px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  background: rgba(255,255,255,0.85); /* clair et lisible */
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+}
+
+.post-centered .post-title {
+  text-align: center;
+  font-size: 2.2rem;
+  margin-bottom: 0.3em;
+}
+
+.post-centered .post-subtitle {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 1em;
+}
+
+.post-centered .post-meta {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #999;
+  margin-bottom: 2em;
+}
+
+.post-centered .post-content {
+  line-height: 1.7;
+  font-size: 1.05rem;
+  color: #222;
+}
+
+.post-centered .post-footer {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.post-centered .post-tags .tag {
+  display: inline-block;
+  margin: 0 5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #eee;
+  font-size: 0.8rem;
+}
