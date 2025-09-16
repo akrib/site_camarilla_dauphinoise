@@ -8,6 +8,7 @@ tags:
   - update
 author: "Camarilla Dauphinoise"
 excerpt: "Un petit post technique pour permettre de tester les couleurs potentielles du futur site."
+link: https://github.com
 ---
 Ceci est un article de **test visuel** ✨.  
 Il n’a pas vocation à rester, mais il permet aux visiteurs et aux membres de l’association de **découvrir et comparer différentes palettes de couleurs** qui pourraient habiller le prochain site.
