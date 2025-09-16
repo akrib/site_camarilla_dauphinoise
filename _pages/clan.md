@@ -6,6 +6,62 @@ permalink: /clans/
 ---
 
 Les clans vampiriques représentent les différentes lignées de vampires, chacune possédant des caractéristiques, des philosophies et des disciplines propres. Chaque clan façonne la manière dont ses membres interagissent avec le monde des vivants et des morts-vivants, et détermine leur rôle dans la société vampirique.
+<style>
+.carousel {
+  perspective: 1000px; /* donne la profondeur */
+  width: 400px; 
+  height: 500px;
+  margin: 50px auto;
+  position: relative;
+  overflow: visible;
+}
+
+.carousel__container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform-style: preserve-3d;
+  animation: rotate 20s infinite linear;
+}
+
+.carousel__container img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  width: 180px; /* largeur des images */
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Positionnement en cercle aplati */
+.carousel__container img:nth-child(1) { transform: rotateY(0deg) translateZ(300px) scaleY(0.9); }
+.carousel__container img:nth-child(2) { transform: rotateY(51.4deg) translateZ(300px) scaleY(0.9); }
+.carousel__container img:nth-child(3) { transform: rotateY(102.8deg) translateZ(300px) scaleY(0.9); }
+.carousel__container img:nth-child(4) { transform: rotateY(154.2deg) translateZ(300px) scaleY(0.9); }
+.carousel__container img:nth-child(5) { transform: rotateY(205.6deg) translateZ(300px) scaleY(0.9); }
+.carousel__container img:nth-child(6) { transform: rotateY(257deg) translateZ(300px) scaleY(0.9); }
+.carousel__container img:nth-child(7) { transform: rotateY(308.4deg) translateZ(300px) scaleY(0.9); }
+
+@keyframes rotate {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(-360deg); }
+}
+</style>
+
+<div class="carousel">
+  <div class="carousel__container">
+    <img src="brujah.svg" alt="">
+    <img src="gangrel.svg" alt="">
+    <img src="malkav.svg" alt="">
+    <img src="nosferatu.svg" alt="">
+    <img src="toreador.svg" alt="">
+    <img src="tremere.svg" alt="">
+    <img src="ventrue.svg" alt="">
+  </div>
+</div>
 
 Voici un aperçu des principaux clans :
 - **[Brujah]({{ site.baseurl }}/clans/brujah/)** : Des révolutionnaires passionnés, connus pour leur fougue et leur force physique.
