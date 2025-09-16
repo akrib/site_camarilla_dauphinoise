@@ -1,13 +1,14 @@
 ---
-layout: post-centered
 title: "Test des couleurs du futur site"
 date: 2025-09-16 12:00:00 +0200
-tags: jekyll update
-categories: blog
+categories:
+  - blog
+tags:
+  - Jekyll
+  - update
 author: "Camarilla Dauphinoise"
 excerpt: "Un petit post technique pour permettre de tester les couleurs potentielles du futur site."
 ---
-
 Ceci est un article de **test visuel** ✨.  
 Il n’a pas vocation à rester, mais il permet aux visiteurs et aux membres de l’association de **découvrir et comparer différentes palettes de couleurs** qui pourraient habiller le prochain site.
 
