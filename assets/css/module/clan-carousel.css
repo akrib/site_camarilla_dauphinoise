@@ -1,7 +1,7 @@
 .carousel {
   perspective: 1000px; /* donne la profondeur */
   width: 400px; 
-  height: 500px;
+  height: 250px;
   margin: 50px auto;
   position: relative;
   overflow: visible;
@@ -24,7 +24,7 @@
   width: 180px; /* largeur des images */
   height: auto;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+/*   box-shadow: 0 4px 12px rgba(0,0,0,0.3); */
 }
 
 /* Positionnement en cercle aplati */
