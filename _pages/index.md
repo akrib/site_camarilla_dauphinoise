@@ -27,3 +27,5 @@ feature_row:
  Plongez dans un monde parallèle où chaque ruelle dissimule un secret, chaque regard cache une vérité. Notre association vous convie à une expérience immersive et intense : un jeu semi-grandeur nature (GN théâtral, huis clos) au cœur de Grenoble, dans un cadre contemporain. Entre énigmes troublantes, alliances incertaines et révélations inattendues, vous incarnerez votre personnage dans une ville qui ne dort jamais vraiment… Quand la nuit tombe, Grenoble parle. Saurez-vous écouter ce qu’elle a à vous révéler ?
 
 [color_test_1]({{ site.baseurl }}/color_test_1/) 
+[color_test_2]({{ site.baseurl }}/color_test_2/) 
+[color_test_3]({{ site.baseurl }}/color_test_3/) 
