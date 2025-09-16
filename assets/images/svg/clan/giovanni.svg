@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    version="1.1"
-   width="111"
-   height="165"
+   width="127.06548"
+   height="196.72742"
    id="svg1507"
    sodipodi:docname="giovanni.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
@@ -22,7 +22,7 @@
        fx="23.843945"
        fy="169.74619"
        r="55.635872"
-       gradientTransform="matrix(0.6929926,0,0,0.19756579,11.489272,131.86343)"
+       gradientTransform="matrix(0.6929926,0,0,0.19756579,27.554746,132.36343)"
        gradientUnits="userSpaceOnUse" />
     <linearGradient
        id="linearGradient880"
@@ -47,8 +47,8 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="3.5869599"
-     inkscape:cx="4.5999957"
-     inkscape:cy="99.108999"
+     inkscape:cx="20.769678"
+     inkscape:cy="99.666574"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="1912"
@@ -56,13 +56,14 @@
      inkscape:window-maximized="1"
      inkscape:current-layer="svg1507" />
   <g
-     id="g1507">
+     id="g1507"
+     transform="translate(16.065474,0.5)">
     <rect
        x="57"
        y="96"
        width="3"
        height="3"
-       fill="#537B41"
+       fill="#537b41"
        id="rect842"
        style="opacity:0.5" />
     <rect
@@ -6244,5151 +6245,5151 @@
   </g>
   <path
      id="rect1-1"
-     d="m 18,0 v 3 h -3 v 3 h -3 v 3 3 3 3 3 3 3 h 3 v 3 3 h 3 v 3 3 h -3 v 3 H 12 9 v 3 H 6 v 3 H 3 v 3 3 3 3 3 3 3 3 H 0 v 3 3 3 3 3 3 3 3 3 3 3 3 h 3 v 3 3 3 h 3 v 3 h 3 v 3 3 3 3 h 3 v 3 3 3 3 3 3 3 3 H 9 v 3 H 6 v 3 3 h 3 3 3 3 3 3 v -3 -3 -3 -3 -3 -3 -3 -3 -3 -3 -3 h 3 v 3 3 3 3 3 3 3 3 3 3 3 h 3 3 3 3 3 3 3 3 3 v -3 -3 h -3 v -3 h -3 -3 v -3 h -3 v -3 -3 -3 -3 -3 -3 -3 h 3 v -3 -3 -3 -3 -3 -3 -3 -3 -3 -3 -3 -3 -3 h 3 v 3 h 3 3 3 3 v -3 -3 h 3 v -3 h 3 v -3 -3 -3 h -3 -3 v -3 -3 h -3 -3 v 3 h -3 v -3 -3 -3 -3 -3 -3 -3 -3 h -3 v -3 -3 h -3 v -3 h -3 -3 v -3 h 3 v -3 -3 h 3 V 30 27 24 21 18 15 12 9 6 H 42 V 3 H 39 V 0 h -3 -3 -3 -3 -3 -3 z"
+     d="m 34.065474,0.5 v 3 h -3 v 3 h -3 v 3 3 3 3 3 3 3 h 3 v 3 3 h 3 v 3 3 h -3 v 3 h -3 -3 v 3 h -3 v 3 h -3 v 3 3 3 3 3 3 3 3 h -3 v 3 3 3 3 3 3 3 3 3 3 3 3 h 3 v 3 3 3 h 3 v 3 h 3 v 3 3 3 3 h 3 v 3 3 3 3 3 3 3 3 h -3 v 3 h -3 v 3 3 h 3 3 3 3 3 3 v -3 -3 -3 -3 -3 -3 -3 -3 -3 -3 -3 h 3 v 3 3 3 3 3 3 3 3 3 3 3 h 3 3 3 3 3 3 3 3 3 v -3 -3 h -3 v -3 h -3 -3 v -3 h -3 v -3 -3 -3 -3 -3 -3 -3 h 3 v -3 -3 -3 -3 -3 -3 -3 -3 -3 -3 -3 -3 -3 h 3 v 3 h 3 3 3 3 v -3 -3 h 3 v -3 h 3 v -3 -3 -3 h -3 -3 v -3 -3 h -3 -3 v 3 h -3 v -3 -3 -3 -3 -3 -3 -3 -3 h -3 v -3 -3 h -3 v -3 h -3 -3 v -3 h 3 v -3 -3 h 3 v -3 -3 -3 -3 -3 -3 -3 -3 -3 h -3 v -3 h -3 v -3 h -3 -3 -3 -3 -3 -3 z"
      style="stroke:#000000" />
   <rect
-     x="18"
-     y="0"
+     x="34.065475"
+     y="0.5"
      width="3"
      height="3"
-     fill="#140E0A"
+     fill="#140e0a"
      id="rect1" />
   <rect
-     x="21"
-     y="0"
+     x="37.065475"
+     y="0.5"
      width="3"
      height="3"
      fill="#161309"
      id="rect2" />
   <rect
-     x="24"
-     y="0"
+     x="40.065475"
+     y="0.5"
      width="3"
      height="3"
-     fill="#1F1911"
+     fill="#1f1911"
      id="rect3" />
   <rect
-     x="27"
-     y="0"
+     x="43.065475"
+     y="0.5"
      width="3"
      height="3"
      fill="#161009"
      id="rect4" />
   <rect
-     x="30"
-     y="0"
+     x="46.065475"
+     y="0.5"
      width="3"
      height="3"
      fill="#201912"
      id="rect5" />
   <rect
-     x="33"
-     y="0"
+     x="49.065475"
+     y="0.5"
      width="3"
      height="3"
-     fill="#160F09"
+     fill="#160f09"
      id="rect6" />
   <rect
-     x="36"
-     y="0"
+     x="52.065475"
+     y="0.5"
      width="3"
      height="3"
-     fill="#0B0803"
+     fill="#0b0803"
      id="rect7" />
   <rect
-     x="15"
-     y="3"
+     x="31.065474"
+     y="3.5"
      width="3"
      height="3"
-     fill="#19140D"
+     fill="#19140d"
      id="rect8" />
   <rect
-     x="18"
-     y="3"
+     x="34.065475"
+     y="3.5"
      width="3"
      height="3"
-     fill="#1B170E"
+     fill="#1b170e"
      id="rect9" />
   <rect
-     x="21"
-     y="3"
+     x="37.065475"
+     y="3.5"
      width="3"
      height="3"
-     fill="#32281D"
+     fill="#32281d"
      id="rect10" />
   <rect
-     x="24"
-     y="3"
+     x="40.065475"
+     y="3.5"
      width="3"
      height="3"
-     fill="#30291C"
+     fill="#30291c"
      id="rect11" />
   <rect
-     x="27"
-     y="3"
+     x="43.065475"
+     y="3.5"
      width="3"
      height="3"
-     fill="#2E251B"
+     fill="#2e251b"
      id="rect12" />
   <rect
-     x="30"
-     y="3"
+     x="46.065475"
+     y="3.5"
      width="3"
      height="3"
-     fill="#28231B"
+     fill="#28231b"
      id="rect13" />
   <rect
-     x="33"
-     y="3"
+     x="49.065475"
+     y="3.5"
      width="3"
      height="3"
-     fill="#2A2117"
+     fill="#2a2117"
      id="rect14" />
   <rect
-     x="36"
-     y="3"
+     x="52.065475"
+     y="3.5"
      width="3"
      height="3"
-     fill="#1F1910"
+     fill="#1f1910"
      id="rect15" />
   <rect
-     x="39"
-     y="3"
+     x="55.065475"
+     y="3.5"
      width="3"
      height="3"
      fill="#000001"
      id="rect16" />
   <rect
-     x="12"
-     y="6"
+     x="28.065474"
+     y="6.5"
      width="3"
      height="3"
-     fill="#0F0C07"
+     fill="#0f0c07"
      id="rect17" />
   <rect
-     x="15"
-     y="6"
+     x="31.065474"
+     y="6.5"
      width="3"
      height="3"
      fill="#131009"
      id="rect18" />
   <rect
-     x="18"
-     y="6"
+     x="34.065475"
+     y="6.5"
      width="3"
      height="3"
-     fill="#1D1912"
+     fill="#1d1912"
      id="rect19" />
   <rect
-     x="21"
-     y="6"
+     x="37.065475"
+     y="6.5"
      width="3"
      height="3"
-     fill="#251C10"
+     fill="#251c10"
      id="rect20" />
   <rect
-     x="24"
-     y="6"
+     x="40.065475"
+     y="6.5"
      width="3"
      height="3"
-     fill="#F7BB7B"
+     fill="#f7bb7b"
      id="rect21" />
   <rect
-     x="27"
-     y="6"
+     x="43.065475"
+     y="6.5"
      width="3"
      height="3"
-     fill="#F9BE79"
+     fill="#f9be79"
      id="rect22" />
   <rect
-     x="30"
-     y="6"
+     x="46.065475"
+     y="6.5"
      width="3"
      height="3"
-     fill="#F1B772"
+     fill="#f1b772"
      id="rect23" />
   <rect
-     x="33"
-     y="6"
+     x="49.065475"
+     y="6.5"
      width="3"
      height="3"
-     fill="#F8BE7A"
+     fill="#f8be7a"
      id="rect24" />
   <rect
-     x="36"
-     y="6"
+     x="52.065475"
+     y="6.5"
      width="3"
      height="3"
-     fill="#FFD588"
+     fill="#ffd588"
      id="rect25" />
   <rect
-     x="39"
-     y="6"
+     x="55.065475"
+     y="6.5"
      width="3"
      height="3"
-     fill="#593A22"
+     fill="#593a22"
      id="rect26" />
   <rect
-     x="12"
-     y="9"
+     x="28.065474"
+     y="9.5"
      width="3"
      height="3"
-     fill="#120F0A"
+     fill="#120f0a"
      id="rect28" />
   <rect
-     x="15"
-     y="9"
+     x="31.065474"
+     y="9.5"
      width="3"
      height="3"
-     fill="#211E16"
+     fill="#211e16"
      id="rect29" />
   <rect
-     x="18"
-     y="9"
+     x="34.065475"
+     y="9.5"
      width="3"
      height="3"
-     fill="#15110A"
+     fill="#15110a"
      id="rect30" />
   <rect
-     x="21"
-     y="9"
+     x="37.065475"
+     y="9.5"
      width="3"
      height="3"
-     fill="#D49356"
+     fill="#d49356"
      id="rect31" />
   <rect
-     x="24"
-     y="9"
+     x="40.065475"
+     y="9.5"
      width="3"
      height="3"
-     fill="#F6BC78"
+     fill="#f6bc78"
      id="rect32" />
   <rect
-     x="27"
-     y="9"
+     x="43.065475"
+     y="9.5"
      width="3"
      height="3"
-     fill="#ECB26E"
+     fill="#ecb26e"
      id="rect33" />
   <rect
-     x="30"
-     y="9"
+     x="46.065475"
+     y="9.5"
      width="3"
      height="3"
-     fill="#F5B973"
+     fill="#f5b973"
      id="rect34" />
   <rect
-     x="33"
-     y="9"
+     x="49.065475"
+     y="9.5"
      width="3"
      height="3"
-     fill="#F2B974"
+     fill="#f2b974"
      id="rect35" />
   <rect
-     x="36"
-     y="9"
+     x="52.065475"
+     y="9.5"
      width="3"
      height="3"
-     fill="#F5B974"
+     fill="#f5b974"
      id="rect36" />
   <rect
-     x="39"
-     y="9"
+     x="55.065475"
+     y="9.5"
      width="3"
      height="3"
-     fill="#F0B377"
+     fill="#f0b377"
      id="rect37" />
   <rect
-     x="12"
-     y="12"
+     x="28.065474"
+     y="12.5"
      width="3"
      height="3"
-     fill="#17140D"
+     fill="#17140d"
      id="rect39" />
   <rect
-     x="15"
-     y="12"
+     x="31.065474"
+     y="12.5"
      width="3"
      height="3"
-     fill="#2A251E"
+     fill="#2a251e"
      id="rect40" />
   <rect
-     x="18"
-     y="12"
+     x="34.065475"
+     y="12.5"
      width="3"
      height="3"
-     fill="#1A1310"
+     fill="#1a1310"
      id="rect41" />
   <rect
-     x="21"
-     y="12"
+     x="37.065475"
+     y="12.5"
      width="3"
      height="3"
-     fill="#B2703E"
+     fill="#b2703e"
      id="rect42" />
   <rect
-     x="24"
-     y="12"
+     x="40.065475"
+     y="12.5"
      width="3"
      height="3"
-     fill="#F2B570"
+     fill="#f2b570"
      id="rect43" />
   <rect
-     x="27"
-     y="12"
+     x="43.065475"
+     y="12.5"
      width="3"
      height="3"
-     fill="#F4B975"
+     fill="#f4b975"
      id="rect44" />
   <rect
-     x="30"
-     y="12"
+     x="46.065475"
+     y="12.5"
      width="3"
      height="3"
-     fill="#F0B571"
+     fill="#f0b571"
      id="rect45" />
   <rect
-     x="33"
-     y="12"
+     x="49.065475"
+     y="12.5"
      width="3"
      height="3"
-     fill="#F7BB78"
+     fill="#f7bb78"
      id="rect46" />
   <rect
-     x="36"
-     y="12"
+     x="52.065475"
+     y="12.5"
      width="3"
      height="3"
-     fill="#FDC282"
+     fill="#fdc282"
      id="rect47" />
   <rect
-     x="39"
-     y="12"
+     x="55.065475"
+     y="12.5"
      width="3"
      height="3"
-     fill="#ECA561"
+     fill="#eca561"
      id="rect48" />
   <rect
-     x="12"
-     y="15"
+     x="28.065474"
+     y="15.5"
      width="3"
      height="3"
-     fill="#100D08"
+     fill="#100d08"
      id="rect50" />
   <rect
-     x="15"
-     y="15"
+     x="31.065474"
+     y="15.5"
      width="3"
      height="3"
-     fill="#1A170A"
+     fill="#1a170a"
      id="rect51" />
   <rect
-     x="18"
-     y="15"
+     x="34.065475"
+     y="15.5"
      width="3"
      height="3"
-     fill="#1B1710"
+     fill="#1b1710"
      id="rect52" />
   <rect
-     x="21"
-     y="15"
+     x="37.065475"
+     y="15.5"
      width="3"
      height="3"
-     fill="#CE894C"
+     fill="#ce894c"
      id="rect53" />
   <rect
-     x="24"
-     y="15"
+     x="40.065475"
+     y="15.5"
      width="3"
      height="3"
-     fill="#F9BB77"
+     fill="#f9bb77"
      id="rect54" />
   <rect
-     x="27"
-     y="15"
+     x="43.065475"
+     y="15.5"
      width="3"
      height="3"
-     fill="#F6BC76"
+     fill="#f6bc76"
      id="rect55" />
   <rect
-     x="30"
-     y="15"
+     x="46.065475"
+     y="15.5"
      width="3"
      height="3"
-     fill="#F9BC78"
+     fill="#f9bc78"
      id="rect56" />
   <rect
-     x="33"
-     y="15"
+     x="49.065475"
+     y="15.5"
      width="3"
      height="3"
-     fill="#F2B36D"
+     fill="#f2b36d"
      id="rect57" />
   <rect
-     x="36"
-     y="15"
+     x="52.065475"
+     y="15.5"
      width="3"
      height="3"
-     fill="#F1B16F"
+     fill="#f1b16f"
      id="rect58" />
   <rect
-     x="39"
-     y="15"
+     x="55.065475"
+     y="15.5"
      width="3"
      height="3"
-     fill="#F0B775"
+     fill="#f0b775"
      id="rect59" />
   <rect
-     x="12"
-     y="18"
+     x="28.065474"
+     y="18.5"
      width="3"
      height="3"
-     fill="#110F08"
+     fill="#110f08"
      id="rect69" />
   <rect
-     x="15"
-     y="18"
+     x="31.065474"
+     y="18.5"
      width="3"
      height="3"
-     fill="#0F0B06"
+     fill="#0f0b06"
      id="rect70" />
   <rect
-     x="18"
-     y="18"
+     x="34.065475"
+     y="18.5"
      width="3"
      height="3"
-     fill="#110D08"
+     fill="#110d08"
      id="rect71" />
   <rect
-     x="21"
-     y="18"
+     x="37.065475"
+     y="18.5"
      width="3"
      height="3"
-     fill="#BD7B49"
+     fill="#bd7b49"
      id="rect72" />
   <rect
-     x="24"
-     y="18"
+     x="40.065475"
+     y="18.5"
      width="3"
      height="3"
-     fill="#3C2612"
+     fill="#3c2612"
      id="rect73" />
   <rect
-     x="27"
-     y="18"
+     x="43.065475"
+     y="18.5"
      width="3"
      height="3"
-     fill="#3F2312"
+     fill="#3f2312"
      id="rect74" />
   <rect
-     x="30"
-     y="18"
+     x="46.065475"
+     y="18.5"
      width="3"
      height="3"
-     fill="#F0B269"
+     fill="#f0b269"
      id="rect75" />
   <rect
-     x="33"
-     y="18"
+     x="49.065475"
+     y="18.5"
      width="3"
      height="3"
-     fill="#C57D4A"
+     fill="#c57d4a"
      id="rect76" />
   <rect
-     x="36"
-     y="18"
+     x="52.065475"
+     y="18.5"
      width="3"
      height="3"
-     fill="#30180B"
+     fill="#30180b"
      id="rect77" />
   <rect
-     x="39"
-     y="18"
+     x="55.065475"
+     y="18.5"
      width="3"
      height="3"
-     fill="#1C1006"
+     fill="#1c1006"
      id="rect78" />
   <rect
-     x="12"
-     y="21"
+     x="28.065474"
+     y="21.5"
      width="3"
      height="3"
-     fill="#0F0B05"
+     fill="#0f0b05"
      id="rect89" />
   <rect
-     x="15"
-     y="21"
+     x="31.065474"
+     y="21.5"
      width="3"
      height="3"
-     fill="#AB703A"
+     fill="#ab703a"
      id="rect90" />
   <rect
-     x="18"
-     y="21"
+     x="34.065475"
+     y="21.5"
      width="3"
      height="3"
-     fill="#130E08"
+     fill="#130e08"
      id="rect91" />
   <rect
-     x="21"
-     y="21"
+     x="37.065475"
+     y="21.5"
      width="3"
      height="3"
-     fill="#BA7641"
+     fill="#ba7641"
      id="rect92" />
   <rect
-     x="24"
-     y="21"
+     x="40.065475"
+     y="21.5"
      width="3"
      height="3"
-     fill="#CF874D"
+     fill="#cf874d"
      id="rect93" />
   <rect
-     x="27"
-     y="21"
+     x="43.065475"
+     y="21.5"
      width="3"
      height="3"
      fill="#371307"
      id="rect94" />
   <rect
-     x="30"
-     y="21"
+     x="46.065475"
+     y="21.5"
      width="3"
      height="3"
-     fill="#EDA058"
+     fill="#eda058"
      id="rect95" />
   <rect
-     x="33"
-     y="21"
+     x="49.065475"
+     y="21.5"
      width="3"
      height="3"
-     fill="#C57D4A"
+     fill="#c57d4a"
      id="rect96" />
   <rect
-     x="36"
-     y="21"
+     x="52.065475"
+     y="21.5"
      width="3"
      height="3"
-     fill="#0A0507"
+     fill="#0a0507"
      id="rect97" />
   <rect
-     x="39"
-     y="21"
+     x="55.065475"
+     y="21.5"
      width="3"
      height="3"
-     fill="#BF7640"
+     fill="#bf7640"
      id="rect98" />
   <rect
-     x="12"
-     y="24"
+     x="28.065474"
+     y="24.5"
      width="3"
      height="3"
-     fill="#110D07"
+     fill="#110d07"
      id="rect111" />
   <rect
-     x="15"
-     y="24"
+     x="31.065474"
+     y="24.5"
      width="3"
      height="3"
-     fill="#AF7341"
+     fill="#af7341"
      id="rect112" />
   <rect
-     x="18"
-     y="24"
+     x="34.065475"
+     y="24.5"
      width="3"
      height="3"
-     fill="#9E6432"
+     fill="#9e6432"
      id="rect113" />
   <rect
-     x="21"
-     y="24"
+     x="37.065475"
+     y="24.5"
      width="3"
      height="3"
-     fill="#D69457"
+     fill="#d69457"
      id="rect114" />
   <rect
-     x="24"
-     y="24"
+     x="40.065475"
+     y="24.5"
      width="3"
      height="3"
-     fill="#E59E5F"
+     fill="#e59e5f"
      id="rect115" />
   <rect
-     x="27"
-     y="24"
+     x="43.065475"
+     y="24.5"
      width="3"
      height="3"
-     fill="#E7A566"
+     fill="#e7a566"
      id="rect116" />
   <rect
-     x="30"
-     y="24"
+     x="46.065475"
+     y="24.5"
      width="3"
      height="3"
-     fill="#F3B16C"
+     fill="#f3b16c"
      id="rect117" />
   <rect
-     x="33"
-     y="24"
+     x="49.065475"
+     y="24.5"
      width="3"
      height="3"
-     fill="#C57D44"
+     fill="#c57d44"
      id="rect118" />
   <rect
-     x="36"
-     y="24"
+     x="52.065475"
+     y="24.5"
      width="3"
      height="3"
-     fill="#CB884B"
+     fill="#cb884b"
      id="rect119" />
   <rect
-     x="39"
-     y="24"
+     x="55.065475"
+     y="24.5"
      width="3"
      height="3"
-     fill="#D28D4A"
+     fill="#d28d4a"
      id="rect120" />
   <rect
-     x="15"
-     y="27"
+     x="31.065474"
+     y="27.5"
      width="3"
      height="3"
-     fill="#130E06"
+     fill="#130e06"
      id="rect134" />
   <rect
-     x="18"
-     y="27"
+     x="34.065475"
+     y="27.5"
      width="3"
      height="3"
-     fill="#7E4D2D"
+     fill="#7e4d2d"
      id="rect135" />
   <rect
-     x="21"
-     y="27"
+     x="37.065475"
+     y="27.5"
      width="3"
      height="3"
-     fill="#67301C"
+     fill="#67301c"
      id="rect136" />
   <rect
-     x="24"
-     y="27"
+     x="40.065475"
+     y="27.5"
      width="3"
      height="3"
-     fill="#DD9B5B"
+     fill="#dd9b5b"
      id="rect137" />
   <rect
-     x="27"
-     y="27"
+     x="43.065475"
+     y="27.5"
      width="3"
      height="3"
-     fill="#E4A460"
+     fill="#e4a460"
      id="rect138" />
   <rect
-     x="30"
-     y="27"
+     x="46.065475"
+     y="27.5"
      width="3"
      height="3"
-     fill="#E7A660"
+     fill="#e7a660"
      id="rect139" />
   <rect
-     x="33"
-     y="27"
+     x="49.065475"
+     y="27.5"
      width="3"
      height="3"
      fill="#481400"
      id="rect140" />
   <rect
-     x="36"
-     y="27"
+     x="52.065475"
+     y="27.5"
      width="3"
      height="3"
-     fill="#491A09"
+     fill="#491a09"
      id="rect141" />
   <rect
-     x="39"
-     y="27"
+     x="55.065475"
+     y="27.5"
      width="3"
      height="3"
-     fill="#C57D4A"
+     fill="#c57d4a"
      id="rect142" />
   <rect
-     x="15"
-     y="30"
+     x="31.065474"
+     y="30.5"
      width="3"
      height="3"
-     fill="#0B0F04"
+     fill="#0b0f04"
      id="rect156" />
   <rect
-     x="18"
-     y="30"
+     x="34.065475"
+     y="30.5"
      width="3"
      height="3"
      fill="#000305"
      id="rect157" />
   <rect
-     x="21"
-     y="30"
+     x="37.065475"
+     y="30.5"
      width="3"
      height="3"
-     fill="#8D572D"
+     fill="#8d572d"
      id="rect158" />
   <rect
-     x="24"
-     y="30"
+     x="40.065475"
+     y="30.5"
      width="3"
      height="3"
-     fill="#D99A57"
+     fill="#d99a57"
      id="rect159" />
   <rect
-     x="27"
-     y="30"
+     x="43.065475"
+     y="30.5"
      width="3"
      height="3"
-     fill="#E4A160"
+     fill="#e4a160"
      id="rect160" />
   <rect
-     x="30"
-     y="30"
+     x="46.065475"
+     y="30.5"
      width="3"
      height="3"
-     fill="#F5B774"
+     fill="#f5b774"
      id="rect161" />
   <rect
-     x="33"
-     y="30"
+     x="49.065475"
+     y="30.5"
      width="3"
      height="3"
-     fill="#EDA366"
+     fill="#eda366"
      id="rect162" />
   <rect
-     x="36"
-     y="30"
+     x="52.065475"
+     y="30.5"
      width="3"
      height="3"
-     fill="#EDA366"
+     fill="#eda366"
      id="rect163" />
   <rect
-     x="39"
-     y="30"
+     x="55.065475"
+     y="30.5"
      width="3"
      height="3"
-     fill="#C57D4A"
+     fill="#c57d4a"
      id="rect164" />
   <rect
-     x="18"
-     y="33"
+     x="34.065475"
+     y="33.5"
      width="3"
      height="3"
-     fill="#100D06"
+     fill="#100d06"
      id="rect178" />
   <rect
-     x="21"
-     y="33"
+     x="37.065475"
+     y="33.5"
      width="3"
      height="3"
-     fill="#803F18"
+     fill="#803f18"
      id="rect179" />
   <rect
-     x="24"
-     y="33"
+     x="40.065475"
+     y="33.5"
      width="3"
      height="3"
-     fill="#E2A25F"
+     fill="#e2a25f"
      id="rect180" />
   <rect
-     x="27"
-     y="33"
+     x="43.065475"
+     y="33.5"
      width="3"
      height="3"
-     fill="#E5A25F"
+     fill="#e5a25f"
      id="rect181" />
   <rect
-     x="30"
-     y="33"
+     x="46.065475"
+     y="33.5"
      width="3"
      height="3"
      fill="#532611"
      id="rect182" />
   <rect
-     x="33"
-     y="33"
+     x="49.065475"
+     y="33.5"
      width="3"
      height="3"
      fill="#130501"
      id="rect183" />
   <rect
-     x="36"
-     y="33"
+     x="52.065475"
+     y="33.5"
      width="3"
      height="3"
-     fill="#A96B35"
+     fill="#a96b35"
      id="rect184" />
   <rect
-     x="39"
-     y="33"
+     x="55.065475"
+     y="33.5"
      width="3"
      height="3"
-     fill="#3D2714"
+     fill="#3d2714"
      id="rect185" />
   <rect
-     x="18"
-     y="36"
+     x="34.065475"
+     y="36.5"
      width="3"
      height="3"
-     fill="#0F0A05"
+     fill="#0f0a05"
      id="rect198" />
   <rect
-     x="21"
-     y="36"
+     x="37.065475"
+     y="36.5"
      width="3"
      height="3"
      fill="#301915"
      id="rect199" />
   <rect
-     x="24"
-     y="36"
+     x="40.065475"
+     y="36.5"
      width="3"
      height="3"
-     fill="#C7864D"
+     fill="#c7864d"
      id="rect200" />
   <rect
-     x="27"
-     y="36"
+     x="43.065475"
+     y="36.5"
      width="3"
      height="3"
-     fill="#BA733E"
+     fill="#ba733e"
      id="rect201" />
   <rect
-     x="30"
-     y="36"
+     x="46.065475"
+     y="36.5"
      width="3"
      height="3"
-     fill="#ECAC69"
+     fill="#ecac69"
      id="rect202" />
   <rect
-     x="33"
-     y="36"
+     x="49.065475"
+     y="36.5"
      width="3"
      height="3"
-     fill="#9B572B"
+     fill="#9b572b"
      id="rect203" />
   <rect
-     x="36"
-     y="36"
+     x="52.065475"
+     y="36.5"
      width="3"
      height="3"
-     fill="#D28949"
+     fill="#d28949"
      id="rect204" />
   <rect
-     x="39"
-     y="36"
+     x="55.065475"
+     y="36.5"
      width="3"
      height="3"
-     fill="#3C2315"
+     fill="#3c2315"
      id="rect205" />
   <rect
-     x="15"
-     y="39"
+     x="31.065474"
+     y="39.5"
      width="3"
      height="3"
-     fill="#100C03"
+     fill="#100c03"
      id="rect218" />
   <rect
-     x="18"
-     y="39"
+     x="34.065475"
+     y="39.5"
      width="3"
      height="3"
-     fill="#17130C"
+     fill="#17130c"
      id="rect219" />
   <rect
-     x="21"
-     y="39"
+     x="37.065475"
+     y="39.5"
      width="3"
      height="3"
-     fill="#935B33"
+     fill="#935b33"
      id="rect220" />
   <rect
-     x="24"
-     y="39"
+     x="40.065475"
+     y="39.5"
      width="3"
      height="3"
-     fill="#170B05"
+     fill="#170b05"
      id="rect221" />
   <rect
-     x="27"
-     y="39"
+     x="43.065475"
+     y="39.5"
      width="3"
      height="3"
-     fill="#A36230"
+     fill="#a36230"
      id="rect222" />
   <rect
-     x="30"
-     y="39"
+     x="46.065475"
+     y="39.5"
      width="3"
      height="3"
-     fill="#C6814D"
+     fill="#c6814d"
      id="rect223" />
   <rect
-     x="33"
-     y="39"
+     x="49.065475"
+     y="39.5"
      width="3"
      height="3"
      fill="#000200"
      id="rect224" />
   <rect
-     x="36"
-     y="39"
+     x="52.065475"
+     y="39.5"
      width="3"
      height="3"
-     fill="#0A0806"
+     fill="#0a0806"
      id="rect225" />
   <rect
-     x="9"
-     y="42"
+     x="25.065474"
+     y="42.5"
      width="3"
      height="3"
-     fill="#0B0905"
+     fill="#0b0905"
      id="rect238" />
   <rect
-     x="12"
-     y="42"
+     x="28.065474"
+     y="42.5"
      width="3"
      height="3"
      fill="#080702"
      id="rect239" />
   <rect
-     x="15"
-     y="42"
+     x="31.065474"
+     y="42.5"
      width="3"
      height="3"
-     fill="#120A06"
+     fill="#120a06"
      id="rect240" />
   <rect
-     x="18"
-     y="42"
+     x="34.065475"
+     y="42.5"
      width="3"
      height="3"
-     fill="#15130A"
+     fill="#15130a"
      id="rect241" />
   <rect
-     x="21"
-     y="42"
+     x="37.065475"
+     y="42.5"
      width="3"
      height="3"
-     fill="#985D2F"
+     fill="#985d2f"
      id="rect242" />
   <rect
-     x="24"
-     y="42"
+     x="40.065475"
+     y="42.5"
      width="3"
      height="3"
-     fill="#AF673C"
+     fill="#af673c"
      id="rect243" />
   <rect
-     x="27"
-     y="42"
+     x="43.065475"
+     y="42.5"
      width="3"
      height="3"
-     fill="#14110B"
+     fill="#14110b"
      id="rect244" />
   <rect
-     x="30"
-     y="42"
+     x="46.065475"
+     y="42.5"
      width="3"
      height="3"
-     fill="#130F09"
+     fill="#130f09"
      id="rect245" />
   <rect
-     x="33"
-     y="42"
+     x="49.065475"
+     y="42.5"
      width="3"
      height="3"
-     fill="#110C06"
+     fill="#110c06"
      id="rect246" />
   <rect
-     x="36"
-     y="42"
+     x="52.065475"
+     y="42.5"
      width="3"
      height="3"
-     fill="#1E140D"
+     fill="#1e140d"
      id="rect247" />
   <rect
-     x="39"
-     y="42"
+     x="55.065475"
+     y="42.5"
      width="3"
      height="3"
-     fill="#170E09"
+     fill="#170e09"
      id="rect248" />
   <rect
-     x="42"
-     y="42"
+     x="58.065475"
+     y="42.5"
      width="3"
      height="3"
-     fill="#0F0903"
+     fill="#0f0903"
      id="rect249" />
   <rect
-     x="6"
-     y="45"
+     x="22.065474"
+     y="45.5"
      width="3"
      height="3"
      fill="#131208"
      id="rect263" />
   <rect
-     x="9"
-     y="45"
+     x="25.065474"
+     y="45.5"
      width="3"
      height="3"
      fill="#101006"
      id="rect264" />
   <rect
-     x="12"
-     y="45"
+     x="28.065474"
+     y="45.5"
      width="3"
      height="3"
-     fill="#110D06"
+     fill="#110d06"
      id="rect265" />
   <rect
-     x="15"
-     y="45"
+     x="31.065474"
+     y="45.5"
      width="3"
      height="3"
-     fill="#1F190D"
+     fill="#1f190d"
      id="rect266" />
   <rect
-     x="18"
-     y="45"
+     x="34.065475"
+     y="45.5"
      width="3"
      height="3"
      fill="#161208"
      id="rect267" />
   <rect
-     x="21"
-     y="45"
+     x="37.065475"
+     y="45.5"
      width="3"
      height="3"
      fill="#090400"
      id="rect268" />
   <rect
-     x="24"
-     y="45"
+     x="40.065475"
+     y="45.5"
      width="3"
      height="3"
      fill="#562717"
      id="rect269" />
   <rect
-     x="27"
-     y="45"
+     x="43.065475"
+     y="45.5"
      width="3"
      height="3"
      fill="#804722"
      id="rect270" />
   <rect
-     x="30"
-     y="45"
+     x="46.065475"
+     y="45.5"
      width="3"
      height="3"
-     fill="#6E3922"
+     fill="#6e3922"
      id="rect271" />
   <rect
-     x="33"
-     y="45"
+     x="49.065475"
+     y="45.5"
      width="3"
      height="3"
-     fill="#26170F"
+     fill="#26170f"
      id="rect272" />
   <rect
-     x="36"
-     y="45"
+     x="52.065475"
+     y="45.5"
      width="3"
      height="3"
-     fill="#1F1811"
+     fill="#1f1811"
      id="rect273" />
   <rect
-     x="39"
-     y="45"
+     x="55.065475"
+     y="45.5"
      width="3"
      height="3"
      fill="#282116"
      id="rect274" />
   <rect
-     x="42"
-     y="45"
+     x="58.065475"
+     y="45.5"
      width="3"
      height="3"
-     fill="#1B130C"
+     fill="#1b130c"
      id="rect275" />
   <rect
-     x="45"
-     y="45"
+     x="61.065475"
+     y="45.5"
      width="3"
      height="3"
      fill="#010200"
      id="rect276" />
   <rect
-     x="3"
-     y="48"
+     x="19.065474"
+     y="48.5"
      width="3"
      height="3"
-     fill="#44371C"
+     fill="#44371c"
      id="rect291" />
   <rect
-     x="6"
-     y="48"
+     x="22.065474"
+     y="48.5"
      width="3"
      height="3"
-     fill="#100C06"
+     fill="#100c06"
      id="rect292" />
   <rect
-     x="9"
-     y="48"
+     x="25.065474"
+     y="48.5"
      width="3"
      height="3"
      fill="#131008"
      id="rect293" />
   <rect
-     x="12"
-     y="48"
+     x="28.065474"
+     y="48.5"
      width="3"
      height="3"
-     fill="#13110A"
+     fill="#13110a"
      id="rect294" />
   <rect
-     x="15"
-     y="48"
+     x="31.065474"
+     y="48.5"
      width="3"
      height="3"
      fill="#231910"
      id="rect295" />
   <rect
-     x="18"
-     y="48"
+     x="34.065475"
+     y="48.5"
      width="3"
      height="3"
-     fill="#1C180D"
+     fill="#1c180d"
      id="rect296" />
   <rect
-     x="21"
-     y="48"
+     x="37.065475"
+     y="48.5"
      width="3"
      height="3"
-     fill="#130E0A"
+     fill="#130e0a"
      id="rect297" />
   <rect
-     x="24"
-     y="48"
+     x="40.065475"
+     y="48.5"
      width="3"
      height="3"
-     fill="#6F3D1E"
+     fill="#6f3d1e"
      id="rect298" />
   <rect
-     x="27"
-     y="48"
+     x="43.065475"
+     y="48.5"
      width="3"
      height="3"
-     fill="#95552F"
+     fill="#95552f"
      id="rect299" />
   <rect
-     x="30"
-     y="48"
+     x="46.065475"
+     y="48.5"
      width="3"
      height="3"
-     fill="#AC6B3B"
+     fill="#ac6b3b"
      id="rect300" />
   <rect
-     x="33"
-     y="48"
+     x="49.065475"
+     y="48.5"
      width="3"
      height="3"
      fill="#000206"
      id="rect301" />
   <rect
-     x="36"
-     y="48"
+     x="52.065475"
+     y="48.5"
      width="3"
      height="3"
-     fill="#1C140C"
+     fill="#1c140c"
      id="rect302" />
   <rect
-     x="39"
-     y="48"
+     x="55.065475"
+     y="48.5"
      width="3"
      height="3"
-     fill="#342C21"
+     fill="#342c21"
      id="rect303" />
   <rect
-     x="42"
-     y="48"
+     x="58.065475"
+     y="48.5"
      width="3"
      height="3"
-     fill="#100E07"
+     fill="#100e07"
      id="rect304" />
   <rect
-     x="45"
-     y="48"
+     x="61.065475"
+     y="48.5"
      width="3"
      height="3"
      fill="#090400"
      id="rect305" />
   <rect
-     x="3"
-     y="51"
+     x="19.065474"
+     y="51.5"
      width="3"
      height="3"
-     fill="#110E07"
+     fill="#110e07"
      id="rect320" />
   <rect
-     x="6"
-     y="51"
+     x="22.065474"
+     y="51.5"
      width="3"
      height="3"
-     fill="#0F0C09"
+     fill="#0f0c09"
      id="rect321" />
   <rect
-     x="9"
-     y="51"
+     x="25.065474"
+     y="51.5"
      width="3"
      height="3"
-     fill="#211D12"
+     fill="#211d12"
      id="rect322" />
   <rect
-     x="12"
-     y="51"
+     x="28.065474"
+     y="51.5"
      width="3"
      height="3"
-     fill="#251F19"
+     fill="#251f19"
      id="rect323" />
   <rect
-     x="15"
-     y="51"
+     x="31.065474"
+     y="51.5"
      width="3"
      height="3"
-     fill="#120F08"
+     fill="#120f08"
      id="rect324" />
   <rect
-     x="18"
-     y="51"
+     x="34.065475"
+     y="51.5"
      width="3"
      height="3"
-     fill="#251F14"
+     fill="#251f14"
      id="rect325" />
   <rect
-     x="21"
-     y="51"
+     x="37.065475"
+     y="51.5"
      width="3"
      height="3"
-     fill="#0D0904"
+     fill="#0d0904"
      id="rect326" />
   <rect
-     x="24"
-     y="51"
+     x="40.065475"
+     y="51.5"
      width="3"
      height="3"
-     fill="#AC6B3B"
+     fill="#ac6b3b"
      id="rect327" />
   <rect
-     x="27"
-     y="51"
+     x="43.065475"
+     y="51.5"
      width="3"
      height="3"
-     fill="#6E3A1B"
+     fill="#6e3a1b"
      id="rect328" />
   <rect
-     x="30"
-     y="51"
+     x="46.065475"
+     y="51.5"
      width="3"
      height="3"
      fill="#643010"
      id="rect329" />
   <rect
-     x="33"
-     y="51"
+     x="49.065475"
+     y="51.5"
      width="3"
      height="3"
-     fill="#B26E41"
+     fill="#b26e41"
      id="rect330" />
   <rect
-     x="36"
-     y="51"
+     x="52.065475"
+     y="51.5"
      width="3"
      height="3"
      fill="#000001"
      id="rect331" />
   <rect
-     x="39"
-     y="51"
+     x="55.065475"
+     y="51.5"
      width="3"
      height="3"
-     fill="#201A13"
+     fill="#201a13"
      id="rect332" />
   <rect
-     x="42"
-     y="51"
+     x="58.065475"
+     y="51.5"
      width="3"
      height="3"
-     fill="#221C12"
+     fill="#221c12"
      id="rect333" />
   <rect
-     x="45"
-     y="51"
+     x="61.065475"
+     y="51.5"
      width="3"
      height="3"
-     fill="#201D15"
+     fill="#201d15"
      id="rect334" />
   <rect
-     x="48"
-     y="51"
+     x="64.065475"
+     y="51.5"
      width="3"
      height="3"
-     fill="#0D0904"
+     fill="#0d0904"
      id="rect335" />
   <rect
-     x="3"
-     y="54"
+     x="19.065474"
+     y="54.5"
      width="3"
      height="3"
      fill="#080605"
      id="rect350" />
   <rect
-     x="6"
-     y="54"
+     x="22.065474"
+     y="54.5"
      width="3"
      height="3"
-     fill="#2D261D"
+     fill="#2d261d"
      id="rect351" />
   <rect
-     x="9"
-     y="54"
+     x="25.065474"
+     y="54.5"
      width="3"
      height="3"
-     fill="#201C14"
+     fill="#201c14"
      id="rect352" />
   <rect
-     x="12"
-     y="54"
+     x="28.065474"
+     y="54.5"
      width="3"
      height="3"
-     fill="#241F16"
+     fill="#241f16"
      id="rect353" />
   <rect
-     x="15"
-     y="54"
+     x="31.065474"
+     y="54.5"
      width="3"
      height="3"
-     fill="#120F0A"
+     fill="#120f0a"
      id="rect354" />
   <rect
-     x="18"
-     y="54"
+     x="34.065475"
+     y="54.5"
      width="3"
      height="3"
-     fill="#1F180F"
+     fill="#1f180f"
      id="rect355" />
   <rect
-     x="21"
-     y="54"
+     x="37.065475"
+     y="54.5"
      width="3"
      height="3"
-     fill="#17130C"
+     fill="#17130c"
      id="rect356" />
   <rect
-     x="24"
-     y="54"
+     x="40.065475"
+     y="54.5"
      width="3"
      height="3"
-     fill="#C17C48"
+     fill="#c17c48"
      id="rect357" />
   <rect
-     x="27"
-     y="54"
+     x="43.065475"
+     y="54.5"
      width="3"
      height="3"
      fill="#743520"
      id="rect358" />
   <rect
-     x="30"
-     y="54"
+     x="46.065475"
+     y="54.5"
      width="3"
      height="3"
      fill="#582917"
      id="rect359" />
   <rect
-     x="33"
-     y="54"
+     x="49.065475"
+     y="54.5"
      width="3"
      height="3"
-     fill="#D18346"
+     fill="#d18346"
      id="rect360" />
   <rect
-     x="36"
-     y="54"
+     x="52.065475"
+     y="54.5"
      width="3"
      height="3"
      fill="#000302"
      id="rect361" />
   <rect
-     x="39"
-     y="54"
+     x="55.065475"
+     y="54.5"
      width="3"
      height="3"
-     fill="#1B170F"
+     fill="#1b170f"
      id="rect362" />
   <rect
-     x="42"
-     y="54"
+     x="58.065475"
+     y="54.5"
      width="3"
      height="3"
      fill="#262319"
      id="rect363" />
   <rect
-     x="45"
-     y="54"
+     x="61.065475"
+     y="54.5"
      width="3"
      height="3"
-     fill="#16110C"
+     fill="#16110c"
      id="rect364" />
   <rect
-     x="48"
-     y="54"
+     x="64.065475"
+     y="54.5"
      width="3"
      height="3"
-     fill="#0E0A05"
+     fill="#0e0a05"
      id="rect365" />
   <rect
-     x="3"
-     y="57"
+     x="19.065474"
+     y="57.5"
      width="3"
      height="3"
-     fill="#110D07"
+     fill="#110d07"
      id="rect380" />
   <rect
-     x="6"
-     y="57"
+     x="22.065474"
+     y="57.5"
      width="3"
      height="3"
-     fill="#2F2A1F"
+     fill="#2f2a1f"
      id="rect381" />
   <rect
-     x="9"
-     y="57"
+     x="25.065474"
+     y="57.5"
      width="3"
      height="3"
-     fill="#261E17"
+     fill="#261e17"
      id="rect382" />
   <rect
-     x="12"
-     y="57"
+     x="28.065474"
+     y="57.5"
      width="3"
      height="3"
      fill="#272119"
      id="rect383" />
   <rect
-     x="15"
-     y="57"
+     x="31.065474"
+     y="57.5"
      width="3"
      height="3"
-     fill="#13120C"
+     fill="#13120c"
      id="rect384" />
   <rect
-     x="18"
-     y="57"
+     x="34.065475"
+     y="57.5"
      width="3"
      height="3"
-     fill="#1C1711"
+     fill="#1c1711"
      id="rect385" />
   <rect
-     x="21"
-     y="57"
+     x="37.065475"
+     y="57.5"
      width="3"
      height="3"
-     fill="#29211A"
+     fill="#29211a"
      id="rect386" />
   <rect
-     x="24"
-     y="57"
+     x="40.065475"
+     y="57.5"
      width="3"
      height="3"
-     fill="#1D120B"
+     fill="#1d120b"
      id="rect387" />
   <rect
-     x="27"
-     y="57"
+     x="43.065475"
+     y="57.5"
      width="3"
      height="3"
-     fill="#9C5931"
+     fill="#9c5931"
      id="rect388" />
   <rect
-     x="30"
-     y="57"
+     x="46.065475"
+     y="57.5"
      width="3"
      height="3"
      fill="#361207"
      id="rect389" />
   <rect
-     x="33"
-     y="57"
+     x="49.065475"
+     y="57.5"
      width="3"
      height="3"
-     fill="#D38243"
+     fill="#d38243"
      id="rect390" />
   <rect
-     x="36"
-     y="57"
+     x="52.065475"
+     y="57.5"
      width="3"
      height="3"
      fill="#000004"
      id="rect391" />
   <rect
-     x="39"
-     y="57"
+     x="55.065475"
+     y="57.5"
      width="3"
      height="3"
-     fill="#18130C"
+     fill="#18130c"
      id="rect392" />
   <rect
-     x="42"
-     y="57"
+     x="58.065475"
+     y="57.5"
      width="3"
      height="3"
-     fill="#201A12"
+     fill="#201a12"
      id="rect393" />
   <rect
-     x="45"
-     y="57"
+     x="61.065475"
+     y="57.5"
      width="3"
      height="3"
-     fill="#1D1610"
+     fill="#1d1610"
      id="rect394" />
   <rect
-     x="48"
-     y="57"
+     x="64.065475"
+     y="57.5"
      width="3"
      height="3"
-     fill="#0B0905"
+     fill="#0b0905"
      id="rect395" />
   <rect
-     x="3"
-     y="60"
+     x="19.065474"
+     y="60.5"
      width="3"
      height="3"
      fill="#060502"
      id="rect410" />
   <rect
-     x="6"
-     y="60"
+     x="22.065474"
+     y="60.5"
      width="3"
      height="3"
-     fill="#25211A"
+     fill="#25211a"
      id="rect411" />
   <rect
-     x="9"
-     y="60"
+     x="25.065474"
+     y="60.5"
      width="3"
      height="3"
      fill="#262119"
      id="rect412" />
   <rect
-     x="12"
-     y="60"
+     x="28.065474"
+     y="60.5"
      width="3"
      height="3"
-     fill="#0F0904"
+     fill="#0f0904"
      id="rect413" />
   <rect
-     x="15"
-     y="60"
+     x="31.065474"
+     y="60.5"
      width="3"
      height="3"
      fill="#252018"
      id="rect414" />
   <rect
-     x="18"
-     y="60"
+     x="34.065475"
+     y="60.5"
      width="3"
      height="3"
-     fill="#130F09"
+     fill="#130f09"
      id="rect415" />
   <rect
-     x="21"
-     y="60"
+     x="37.065475"
+     y="60.5"
      width="3"
      height="3"
      fill="#282017"
      id="rect416" />
   <rect
-     x="24"
-     y="60"
+     x="40.065475"
+     y="60.5"
      width="3"
      height="3"
      fill="#171009"
      id="rect417" />
   <rect
-     x="27"
-     y="60"
+     x="43.065475"
+     y="60.5"
      width="3"
      height="3"
      fill="#783920"
      id="rect418" />
   <rect
-     x="30"
-     y="60"
+     x="46.065475"
+     y="60.5"
      width="3"
      height="3"
      fill="#502010"
      id="rect419" />
   <rect
-     x="33"
-     y="60"
+     x="49.065475"
+     y="60.5"
      width="3"
      height="3"
-     fill="#BD713F"
+     fill="#bd713f"
      id="rect420" />
   <rect
-     x="36"
-     y="60"
+     x="52.065475"
+     y="60.5"
      width="3"
      height="3"
      fill="#000400"
      id="rect421" />
   <rect
-     x="39"
-     y="60"
+     x="55.065475"
+     y="60.5"
      width="3"
      height="3"
-     fill="#1C140B"
+     fill="#1c140b"
      id="rect422" />
   <rect
-     x="42"
-     y="60"
+     x="58.065475"
+     y="60.5"
      width="3"
      height="3"
-     fill="#1B130C"
+     fill="#1b130c"
      id="rect423" />
   <rect
-     x="45"
-     y="60"
+     x="61.065475"
+     y="60.5"
      width="3"
      height="3"
-     fill="#14100B"
+     fill="#14100b"
      id="rect424" />
   <rect
-     x="48"
-     y="60"
+     x="64.065475"
+     y="60.5"
      width="3"
      height="3"
-     fill="#0E0A06"
+     fill="#0e0a06"
      id="rect425" />
   <rect
-     x="3"
-     y="63"
+     x="19.065474"
+     y="63.5"
      width="3"
      height="3"
-     fill="#0A0804"
+     fill="#0a0804"
      id="rect441" />
   <rect
-     x="6"
-     y="63"
+     x="22.065474"
+     y="63.5"
      width="3"
      height="3"
      fill="#201910"
      id="rect442" />
   <rect
-     x="9"
-     y="63"
+     x="25.065474"
+     y="63.5"
      width="3"
      height="3"
-     fill="#2B231D"
+     fill="#2b231d"
      id="rect443" />
   <rect
-     x="12"
-     y="63"
+     x="28.065474"
+     y="63.5"
      width="3"
      height="3"
      fill="#181410"
      id="rect444" />
   <rect
-     x="15"
-     y="63"
+     x="31.065474"
+     y="63.5"
      width="3"
      height="3"
-     fill="#221C15"
+     fill="#221c15"
      id="rect445" />
   <rect
-     x="18"
-     y="63"
+     x="34.065475"
+     y="63.5"
      width="3"
      height="3"
-     fill="#120D07"
+     fill="#120d07"
      id="rect446" />
   <rect
-     x="21"
-     y="63"
+     x="37.065475"
+     y="63.5"
      width="3"
      height="3"
      fill="#272118"
      id="rect447" />
   <rect
-     x="24"
-     y="63"
+     x="40.065475"
+     y="63.5"
      width="3"
      height="3"
-     fill="#180E08"
+     fill="#180e08"
      id="rect448" />
   <rect
-     x="27"
-     y="63"
+     x="43.065475"
+     y="63.5"
      width="3"
      height="3"
-     fill="#934C28"
+     fill="#934c28"
      id="rect449" />
   <rect
-     x="30"
-     y="63"
+     x="46.065475"
+     y="63.5"
      width="3"
      height="3"
-     fill="#44200F"
+     fill="#44200f"
      id="rect450" />
   <rect
-     x="33"
-     y="63"
+     x="49.065475"
+     y="63.5"
      width="3"
      height="3"
-     fill="#E28E55"
+     fill="#e28e55"
      id="rect451" />
   <rect
-     x="36"
-     y="63"
+     x="52.065475"
+     y="63.5"
      width="3"
      height="3"
      fill="#020107"
      id="rect452" />
   <rect
-     x="39"
-     y="63"
+     x="55.065475"
+     y="63.5"
      width="3"
      height="3"
-     fill="#261C13"
+     fill="#261c13"
      id="rect453" />
   <rect
-     x="42"
-     y="63"
+     x="58.065475"
+     y="63.5"
      width="3"
      height="3"
-     fill="#251E15"
+     fill="#251e15"
      id="rect454" />
   <rect
-     x="45"
-     y="63"
+     x="61.065475"
+     y="63.5"
      width="3"
      height="3"
-     fill="#0F0B08"
+     fill="#0f0b08"
      id="rect455" />
   <rect
-     x="48"
-     y="63"
+     x="64.065475"
+     y="63.5"
      width="3"
      height="3"
-     fill="#120B08"
+     fill="#120b08"
      id="rect456" />
   <rect
-     x="3"
-     y="66"
+     x="19.065474"
+     y="66.5"
      width="3"
      height="3"
-     fill="#0B0804"
+     fill="#0b0804"
      id="rect473" />
   <rect
-     x="6"
-     y="66"
+     x="22.065474"
+     y="66.5"
      width="3"
      height="3"
-     fill="#2C291D"
+     fill="#2c291d"
      id="rect474" />
   <rect
-     x="9"
-     y="66"
+     x="25.065474"
+     y="66.5"
      width="3"
      height="3"
-     fill="#1B160D"
+     fill="#1b160d"
      id="rect475" />
   <rect
-     x="12"
-     y="66"
+     x="28.065474"
+     y="66.5"
      width="3"
      height="3"
-     fill="#110C08"
+     fill="#110c08"
      id="rect476" />
   <rect
-     x="15"
-     y="66"
+     x="31.065474"
+     y="66.5"
      width="3"
      height="3"
-     fill="#211B13"
+     fill="#211b13"
      id="rect477" />
   <rect
-     x="18"
-     y="66"
+     x="34.065475"
+     y="66.5"
      width="3"
      height="3"
-     fill="#221C16"
+     fill="#221c16"
      id="rect478" />
   <rect
-     x="21"
-     y="66"
+     x="37.065475"
+     y="66.5"
      width="3"
      height="3"
-     fill="#0F0D07"
+     fill="#0f0d07"
      id="rect479" />
   <rect
-     x="24"
-     y="66"
+     x="40.065475"
+     y="66.5"
      width="3"
      height="3"
-     fill="#1F170F"
+     fill="#1f170f"
      id="rect480" />
   <rect
-     x="27"
-     y="66"
+     x="43.065475"
+     y="66.5"
      width="3"
      height="3"
      fill="#301912"
      id="rect481" />
   <rect
-     x="30"
-     y="66"
+     x="46.065475"
+     y="66.5"
      width="3"
      height="3"
-     fill="#AE6635"
+     fill="#ae6635"
      id="rect482" />
   <rect
-     x="33"
-     y="66"
+     x="49.065475"
+     y="66.5"
      width="3"
      height="3"
-     fill="#45170C"
+     fill="#45170c"
      id="rect483" />
   <rect
-     x="36"
-     y="66"
+     x="52.065475"
+     y="66.5"
      width="3"
      height="3"
-     fill="#100E0C"
+     fill="#100e0c"
      id="rect484" />
   <rect
-     x="39"
-     y="66"
+     x="55.065475"
+     y="66.5"
      width="3"
      height="3"
-     fill="#1B120D"
+     fill="#1b120d"
      id="rect485" />
   <rect
-     x="42"
-     y="66"
+     x="58.065475"
+     y="66.5"
      width="3"
      height="3"
-     fill="#291C12"
+     fill="#291c12"
      id="rect486" />
   <rect
-     x="45"
-     y="66"
+     x="61.065475"
+     y="66.5"
      width="3"
      height="3"
-     fill="#110C07"
+     fill="#110c07"
      id="rect487" />
   <rect
-     x="48"
-     y="66"
+     x="64.065475"
+     y="66.5"
      width="3"
      height="3"
-     fill="#15130D"
+     fill="#15130d"
      id="rect488" />
   <rect
-     x="3"
-     y="69"
+     x="19.065474"
+     y="69.5"
      width="3"
      height="3"
-     fill="#0E0B03"
+     fill="#0e0b03"
      id="rect505" />
   <rect
-     x="6"
-     y="69"
+     x="22.065474"
+     y="69.5"
      width="3"
      height="3"
-     fill="#1D1711"
+     fill="#1d1711"
      id="rect506" />
   <rect
-     x="9"
-     y="69"
+     x="25.065474"
+     y="69.5"
      width="3"
      height="3"
-     fill="#1D1610"
+     fill="#1d1610"
      id="rect507" />
   <rect
-     x="12"
-     y="69"
+     x="28.065474"
+     y="69.5"
      width="3"
      height="3"
      fill="#131109"
      id="rect508" />
   <rect
-     x="15"
-     y="69"
+     x="31.065474"
+     y="69.5"
      width="3"
      height="3"
-     fill="#1E170F"
+     fill="#1e170f"
      id="rect509" />
   <rect
-     x="18"
-     y="69"
+     x="34.065475"
+     y="69.5"
      width="3"
      height="3"
-     fill="#18120B"
+     fill="#18120b"
      id="rect510" />
   <rect
-     x="21"
-     y="69"
+     x="37.065475"
+     y="69.5"
      width="3"
      height="3"
-     fill="#0A0500"
+     fill="#0a0500"
      id="rect511" />
   <rect
-     x="24"
-     y="69"
+     x="40.065475"
+     y="69.5"
      width="3"
      height="3"
-     fill="#1A130E"
+     fill="#1a130e"
      id="rect512" />
   <rect
-     x="27"
-     y="69"
+     x="43.065475"
+     y="69.5"
      width="3"
      height="3"
-     fill="#331B13"
+     fill="#331b13"
      id="rect513" />
   <rect
-     x="30"
-     y="69"
+     x="46.065475"
+     y="69.5"
      width="3"
      height="3"
-     fill="#421C12"
+     fill="#421c12"
      id="rect514" />
   <rect
-     x="33"
-     y="69"
+     x="49.065475"
+     y="69.5"
      width="3"
      height="3"
      fill="#522613"
      id="rect515" />
   <rect
-     x="36"
-     y="69"
+     x="52.065475"
+     y="69.5"
      width="3"
      height="3"
-     fill="#0D0A08"
+     fill="#0d0a08"
      id="rect516" />
   <rect
-     x="39"
-     y="69"
+     x="55.065475"
+     y="69.5"
      width="3"
      height="3"
-     fill="#1E150F"
+     fill="#1e150f"
      id="rect517" />
   <rect
-     x="42"
-     y="69"
+     x="58.065475"
+     y="69.5"
      width="3"
      height="3"
-     fill="#1D140D"
+     fill="#1d140d"
      id="rect518" />
   <rect
-     x="45"
-     y="69"
+     x="61.065475"
+     y="69.5"
      width="3"
      height="3"
-     fill="#17140D"
+     fill="#17140d"
      id="rect519" />
   <rect
-     x="48"
-     y="69"
+     x="64.065475"
+     y="69.5"
      width="3"
      height="3"
-     fill="#120E08"
+     fill="#120e08"
      id="rect520" />
   <rect
-     x="0"
-     y="72"
+     x="16.065474"
+     y="72.5"
      width="3"
      height="3"
-     fill="#100E0A"
+     fill="#100e0a"
      id="rect537" />
   <rect
-     x="3"
-     y="72"
+     x="19.065474"
+     y="72.5"
      width="3"
      height="3"
      fill="#201914"
      id="rect538" />
   <rect
-     x="6"
-     y="72"
+     x="22.065474"
+     y="72.5"
      width="3"
      height="3"
-     fill="#2C251B"
+     fill="#2c251b"
      id="rect539" />
   <rect
-     x="9"
-     y="72"
+     x="25.065474"
+     y="72.5"
      width="3"
      height="3"
-     fill="#160F0A"
+     fill="#160f0a"
      id="rect540" />
   <rect
-     x="12"
-     y="72"
+     x="28.065474"
+     y="72.5"
      width="3"
      height="3"
-     fill="#110E08"
+     fill="#110e08"
      id="rect541" />
   <rect
-     x="15"
-     y="72"
+     x="31.065474"
+     y="72.5"
      width="3"
      height="3"
-     fill="#1D1711"
+     fill="#1d1711"
      id="rect542" />
   <rect
-     x="18"
-     y="72"
+     x="34.065475"
+     y="72.5"
      width="3"
      height="3"
-     fill="#241F16"
+     fill="#241f16"
      id="rect543" />
   <rect
-     x="21"
-     y="72"
+     x="37.065475"
+     y="72.5"
      width="3"
      height="3"
-     fill="#1E1910"
+     fill="#1e1910"
      id="rect544" />
   <rect
-     x="24"
-     y="72"
+     x="40.065475"
+     y="72.5"
      width="3"
      height="3"
-     fill="#1B1610"
+     fill="#1b1610"
      id="rect545" />
   <rect
-     x="27"
-     y="72"
+     x="43.065475"
+     y="72.5"
      width="3"
      height="3"
      fill="#291208"
      id="rect546" />
   <rect
-     x="30"
-     y="72"
+     x="46.065475"
+     y="72.5"
      width="3"
      height="3"
-     fill="#5F2C19"
+     fill="#5f2c19"
      id="rect547" />
   <rect
-     x="33"
-     y="72"
+     x="49.065475"
+     y="72.5"
      width="3"
      height="3"
      fill="#502415"
      id="rect548" />
   <rect
-     x="36"
-     y="72"
+     x="52.065475"
+     y="72.5"
      width="3"
      height="3"
-     fill="#140C07"
+     fill="#140c07"
      id="rect549" />
   <rect
-     x="39"
-     y="72"
+     x="55.065475"
+     y="72.5"
      width="3"
      height="3"
-     fill="#16120D"
+     fill="#16120d"
      id="rect550" />
   <rect
-     x="42"
-     y="72"
+     x="58.065475"
+     y="72.5"
      width="3"
      height="3"
-     fill="#1A1610"
+     fill="#1a1610"
      id="rect551" />
   <rect
-     x="45"
-     y="72"
+     x="61.065475"
+     y="72.5"
      width="3"
      height="3"
-     fill="#110D09"
+     fill="#110d09"
      id="rect552" />
   <rect
-     x="48"
-     y="72"
+     x="64.065475"
+     y="72.5"
      width="3"
      height="3"
-     fill="#110E08"
+     fill="#110e08"
      id="rect553" />
   <rect
-     x="54"
-     y="72"
+     x="70.065475"
+     y="72.5"
      width="3"
      height="3"
-     fill="#441A0A"
+     fill="#441a0a"
      id="rect555" />
   <rect
-     x="57"
-     y="72"
+     x="73.065475"
+     y="72.5"
      width="3"
      height="3"
-     fill="#441A0A"
+     fill="#441a0a"
      id="rect556" />
   <rect
-     x="0"
-     y="75"
+     x="16.065474"
+     y="75.5"
      width="3"
      height="3"
-     fill="#120D0A"
+     fill="#120d0a"
      id="rect571" />
   <rect
-     x="3"
-     y="75"
+     x="19.065474"
+     y="75.5"
      width="3"
      height="3"
-     fill="#19140C"
+     fill="#19140c"
      id="rect572" />
   <rect
-     x="6"
-     y="75"
+     x="22.065474"
+     y="75.5"
      width="3"
      height="3"
-     fill="#2A231B"
+     fill="#2a231b"
      id="rect573" />
   <rect
-     x="9"
-     y="75"
+     x="25.065474"
+     y="75.5"
      width="3"
      height="3"
-     fill="#0C0903"
+     fill="#0c0903"
      id="rect574" />
   <rect
-     x="12"
-     y="75"
+     x="28.065474"
+     y="75.5"
      width="3"
      height="3"
-     fill="#100D06"
+     fill="#100d06"
      id="rect575" />
   <rect
-     x="15"
-     y="75"
+     x="31.065474"
+     y="75.5"
      width="3"
      height="3"
-     fill="#16110B"
+     fill="#16110b"
      id="rect576" />
   <rect
-     x="18"
-     y="75"
+     x="34.065475"
+     y="75.5"
      width="3"
      height="3"
-     fill="#221D16"
+     fill="#221d16"
      id="rect577" />
   <rect
-     x="21"
-     y="75"
+     x="37.065475"
+     y="75.5"
      width="3"
      height="3"
      fill="#232018"
      id="rect578" />
   <rect
-     x="24"
-     y="75"
+     x="40.065475"
+     y="75.5"
      width="3"
      height="3"
-     fill="#0F0C05"
+     fill="#0f0c05"
      id="rect579" />
   <rect
-     x="27"
-     y="75"
+     x="43.065475"
+     y="75.5"
      width="3"
      height="3"
-     fill="#32130C"
+     fill="#32130c"
      id="rect580" />
   <rect
-     x="30"
-     y="75"
+     x="46.065475"
+     y="75.5"
      width="3"
      height="3"
-     fill="#4A1F10"
+     fill="#4a1f10"
      id="rect581" />
   <rect
-     x="33"
-     y="75"
+     x="49.065475"
+     y="75.5"
      width="3"
      height="3"
      fill="#411910"
      id="rect582" />
   <rect
-     x="36"
-     y="75"
+     x="52.065475"
+     y="75.5"
      width="3"
      height="3"
-     fill="#0A0E0B"
+     fill="#0a0e0b"
      id="rect583" />
   <rect
-     x="39"
-     y="75"
+     x="55.065475"
+     y="75.5"
      width="3"
      height="3"
-     fill="#0D0C08"
+     fill="#0d0c08"
      id="rect584" />
   <rect
-     x="42"
-     y="75"
+     x="58.065475"
+     y="75.5"
      width="3"
      height="3"
-     fill="#0F0C09"
+     fill="#0f0c09"
      id="rect585" />
   <rect
-     x="45"
-     y="75"
+     x="61.065475"
+     y="75.5"
      width="3"
      height="3"
-     fill="#110D09"
+     fill="#110d09"
      id="rect586" />
   <rect
-     x="48"
-     y="75"
+     x="64.065475"
+     y="75.5"
      width="3"
      height="3"
-     fill="#0F0A07"
+     fill="#0f0a07"
      id="rect587" />
   <rect
-     x="51"
-     y="75"
+     x="67.065475"
+     y="75.5"
      width="3"
      height="3"
      fill="#110902"
      id="rect588" />
   <rect
-     x="54"
-     y="75"
+     x="70.065475"
+     y="75.5"
      width="3"
      height="3"
-     fill="#C57946"
+     fill="#c57946"
      id="rect589" />
   <rect
-     x="57"
-     y="75"
+     x="73.065475"
+     y="75.5"
      width="3"
      height="3"
-     fill="#61260F"
+     fill="#61260f"
      id="rect590" />
   <rect
-     x="0"
-     y="78"
+     x="16.065474"
+     y="78.5"
      width="3"
      height="3"
-     fill="#0F0806"
+     fill="#0f0806"
      id="rect606" />
   <rect
-     x="3"
-     y="78"
+     x="19.065474"
+     y="78.5"
      width="3"
      height="3"
-     fill="#251F17"
+     fill="#251f17"
      id="rect607" />
   <rect
-     x="6"
-     y="78"
+     x="22.065474"
+     y="78.5"
      width="3"
      height="3"
-     fill="#261F15"
+     fill="#261f15"
      id="rect608" />
   <rect
-     x="9"
-     y="78"
+     x="25.065474"
+     y="78.5"
      width="3"
      height="3"
-     fill="#140F0C"
+     fill="#140f0c"
      id="rect609" />
   <rect
-     x="12"
-     y="78"
+     x="28.065474"
+     y="78.5"
      width="3"
      height="3"
-     fill="#100F08"
+     fill="#100f08"
      id="rect610" />
   <rect
-     x="15"
-     y="78"
+     x="31.065474"
+     y="78.5"
      width="3"
      height="3"
-     fill="#16120C"
+     fill="#16120c"
      id="rect611" />
   <rect
-     x="18"
-     y="78"
+     x="34.065475"
+     y="78.5"
      width="3"
      height="3"
-     fill="#1C1811"
+     fill="#1c1811"
      id="rect612" />
   <rect
-     x="21"
-     y="78"
+     x="37.065475"
+     y="78.5"
      width="3"
      height="3"
-     fill="#201C13"
+     fill="#201c13"
      id="rect613" />
   <rect
-     x="24"
-     y="78"
+     x="40.065475"
+     y="78.5"
      width="3"
      height="3"
      fill="#131008"
      id="rect614" />
   <rect
-     x="27"
-     y="78"
+     x="43.065475"
+     y="78.5"
      width="3"
      height="3"
-     fill="#3E1E0F"
+     fill="#3e1e0f"
      id="rect615" />
   <rect
-     x="30"
-     y="78"
+     x="46.065475"
+     y="78.5"
      width="3"
      height="3"
-     fill="#4B201A"
+     fill="#4b201a"
      id="rect616" />
   <rect
-     x="33"
-     y="78"
+     x="49.065475"
+     y="78.5"
      width="3"
      height="3"
      fill="#452012"
      id="rect617" />
   <rect
-     x="36"
-     y="78"
+     x="52.065475"
+     y="78.5"
      width="3"
      height="3"
-     fill="#160E06"
+     fill="#160e06"
      id="rect618" />
   <rect
-     x="39"
-     y="78"
+     x="55.065475"
+     y="78.5"
      width="3"
      height="3"
-     fill="#110C07"
+     fill="#110c07"
      id="rect619" />
   <rect
-     x="42"
-     y="78"
+     x="58.065475"
+     y="78.5"
      width="3"
      height="3"
-     fill="#110E08"
+     fill="#110e08"
      id="rect620" />
   <rect
-     x="45"
-     y="78"
+     x="61.065475"
+     y="78.5"
      width="3"
      height="3"
-     fill="#130D08"
+     fill="#130d08"
      id="rect621" />
   <rect
-     x="48"
-     y="78"
+     x="64.065475"
+     y="78.5"
      width="3"
      height="3"
-     fill="#0F0B06"
+     fill="#0f0b06"
      id="rect622" />
   <rect
-     x="51"
-     y="78"
+     x="67.065475"
+     y="78.5"
      width="3"
      height="3"
-     fill="#0E0C07"
+     fill="#0e0c07"
      id="rect623" />
   <rect
-     x="54"
-     y="78"
+     x="70.065475"
+     y="78.5"
      width="3"
      height="3"
-     fill="#CD8442"
+     fill="#cd8442"
      id="rect624" />
   <rect
-     x="57"
-     y="78"
+     x="73.065475"
+     y="78.5"
      width="3"
      height="3"
      fill="#380804"
      id="rect625" />
   <rect
-     x="60"
-     y="78"
+     x="76.065475"
+     y="78.5"
      width="3"
      height="3"
      fill="#130501"
      id="rect626" />
   <rect
-     x="63"
-     y="78"
+     x="79.065475"
+     y="78.5"
      width="3"
      height="3"
      fill="#130501"
      id="rect627" />
   <rect
-     x="0"
-     y="81"
+     x="16.065474"
+     y="81.5"
      width="3"
      height="3"
-     fill="#13110D"
+     fill="#13110d"
      id="rect641" />
   <rect
-     x="3"
-     y="81"
+     x="19.065474"
+     y="81.5"
      width="3"
      height="3"
      fill="#252119"
      id="rect642" />
   <rect
-     x="6"
-     y="81"
+     x="22.065474"
+     y="81.5"
      width="3"
      height="3"
      fill="#282319"
      id="rect643" />
   <rect
-     x="9"
-     y="81"
+     x="25.065474"
+     y="81.5"
      width="3"
      height="3"
-     fill="#0D0904"
+     fill="#0d0904"
      id="rect644" />
   <rect
-     x="12"
-     y="81"
+     x="28.065474"
+     y="81.5"
      width="3"
      height="3"
      fill="#161510"
      id="rect645" />
   <rect
-     x="15"
-     y="81"
+     x="31.065474"
+     y="81.5"
      width="3"
      height="3"
-     fill="#18160E"
+     fill="#18160e"
      id="rect646" />
   <rect
-     x="18"
-     y="81"
+     x="34.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#241F18"
+     fill="#241f18"
      id="rect647" />
   <rect
-     x="21"
-     y="81"
+     x="37.065475"
+     y="81.5"
      width="3"
      height="3"
      fill="#201912"
      id="rect648" />
   <rect
-     x="24"
-     y="81"
+     x="40.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#0C0B05"
+     fill="#0c0b05"
      id="rect649" />
   <rect
-     x="27"
-     y="81"
+     x="43.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#2F1109"
+     fill="#2f1109"
      id="rect650" />
   <rect
-     x="30"
-     y="81"
+     x="46.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#32140C"
+     fill="#32140c"
      id="rect651" />
   <rect
-     x="33"
-     y="81"
+     x="49.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#481B13"
+     fill="#481b13"
      id="rect652" />
   <rect
-     x="36"
-     y="81"
+     x="52.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#1B0F0A"
+     fill="#1b0f0a"
      id="rect653" />
   <rect
-     x="39"
-     y="81"
+     x="55.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#130D09"
+     fill="#130d09"
      id="rect654" />
   <rect
-     x="42"
-     y="81"
+     x="58.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#110C08"
+     fill="#110c08"
      id="rect655" />
   <rect
-     x="45"
-     y="81"
+     x="61.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#0F0A06"
+     fill="#0f0a06"
      id="rect656" />
   <rect
-     x="48"
-     y="81"
+     x="64.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#2E271C"
+     fill="#2e271c"
      id="rect657" />
   <rect
-     x="51"
-     y="81"
+     x="67.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#110E0C"
+     fill="#110e0c"
      id="rect658" />
   <rect
-     x="54"
-     y="81"
+     x="70.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#D99651"
+     fill="#d99651"
      id="rect659" />
   <rect
-     x="57"
-     y="81"
+     x="73.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#C27740"
+     fill="#c27740"
      id="rect660" />
   <rect
-     x="60"
-     y="81"
+     x="76.065475"
+     y="81.5"
      width="3"
      height="3"
-     fill="#521D07"
+     fill="#521d07"
      id="rect661" />
   <rect
-     x="63"
-     y="81"
+     x="79.065475"
+     y="81.5"
      width="3"
      height="3"
      fill="#451309"
      id="rect662" />
   <rect
-     x="0"
-     y="84"
+     x="16.065474"
+     y="84.5"
      width="3"
      height="3"
-     fill="#18150F"
+     fill="#18150f"
      id="rect676" />
   <rect
-     x="3"
-     y="84"
+     x="19.065474"
+     y="84.5"
      width="3"
      height="3"
-     fill="#18130C"
+     fill="#18130c"
      id="rect677" />
   <rect
-     x="6"
-     y="84"
+     x="22.065474"
+     y="84.5"
      width="3"
      height="3"
-     fill="#2F281F"
+     fill="#2f281f"
      id="rect678" />
   <rect
-     x="9"
-     y="84"
+     x="25.065474"
+     y="84.5"
      width="3"
      height="3"
      fill="#181510"
      id="rect679" />
   <rect
-     x="12"
-     y="84"
+     x="28.065474"
+     y="84.5"
      width="3"
      height="3"
-     fill="#100C08"
+     fill="#100c08"
      id="rect680" />
   <rect
-     x="15"
-     y="84"
+     x="31.065474"
+     y="84.5"
      width="3"
      height="3"
-     fill="#15100A"
+     fill="#15100a"
      id="rect681" />
   <rect
-     x="18"
-     y="84"
+     x="34.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#1D1810"
+     fill="#1d1810"
      id="rect682" />
   <rect
-     x="21"
-     y="84"
+     x="37.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#201A13"
+     fill="#201a13"
      id="rect683" />
   <rect
-     x="24"
-     y="84"
+     x="40.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#120E0A"
+     fill="#120e0a"
      id="rect684" />
   <rect
-     x="27"
-     y="84"
+     x="43.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#37190E"
+     fill="#37190e"
      id="rect685" />
   <rect
-     x="30"
-     y="84"
+     x="46.065475"
+     y="84.5"
      width="3"
      height="3"
      fill="#592311"
      id="rect686" />
   <rect
-     x="33"
-     y="84"
+     x="49.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#39160D"
+     fill="#39160d"
      id="rect687" />
   <rect
-     x="36"
-     y="84"
+     x="52.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#0D0C0B"
+     fill="#0d0c0b"
      id="rect688" />
   <rect
-     x="39"
-     y="84"
+     x="55.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#1C1711"
+     fill="#1c1711"
      id="rect689" />
   <rect
-     x="42"
-     y="84"
+     x="58.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#19150E"
+     fill="#19150e"
      id="rect690" />
   <rect
-     x="45"
-     y="84"
+     x="61.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#110E07"
+     fill="#110e07"
      id="rect691" />
   <rect
-     x="48"
-     y="84"
+     x="64.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#2A271B"
+     fill="#2a271b"
      id="rect692" />
   <rect
-     x="51"
-     y="84"
+     x="67.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#0B0B01"
+     fill="#0b0b01"
      id="rect693" />
   <rect
-     x="54"
-     y="84"
+     x="70.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#CB844A"
+     fill="#cb844a"
      id="rect694" />
   <rect
-     x="57"
-     y="84"
+     x="73.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#CE8748"
+     fill="#ce8748"
      id="rect695" />
   <rect
-     x="60"
-     y="84"
+     x="76.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#B36A37"
+     fill="#b36a37"
      id="rect696" />
   <rect
-     x="63"
-     y="84"
+     x="79.065475"
+     y="84.5"
      width="3"
      height="3"
-     fill="#55220D"
+     fill="#55220d"
      id="rect697" />
   <rect
-     x="0"
-     y="87"
+     x="16.065474"
+     y="87.5"
      width="3"
      height="3"
-     fill="#15110C"
+     fill="#15110c"
      id="rect712" />
   <rect
-     x="3"
-     y="87"
+     x="19.065474"
+     y="87.5"
      width="3"
      height="3"
-     fill="#1C1A0F"
+     fill="#1c1a0f"
      id="rect713" />
   <rect
-     x="6"
-     y="87"
+     x="22.065474"
+     y="87.5"
      width="3"
      height="3"
-     fill="#1C1910"
+     fill="#1c1910"
      id="rect714" />
   <rect
-     x="9"
-     y="87"
+     x="25.065474"
+     y="87.5"
      width="3"
      height="3"
      fill="#191610"
      id="rect715" />
   <rect
-     x="12"
-     y="87"
+     x="28.065474"
+     y="87.5"
      width="3"
      height="3"
-     fill="#0F0C07"
+     fill="#0f0c07"
      id="rect716" />
   <rect
-     x="15"
-     y="87"
+     x="31.065474"
+     y="87.5"
      width="3"
      height="3"
-     fill="#18140E"
+     fill="#18140e"
      id="rect717" />
   <rect
-     x="18"
-     y="87"
+     x="34.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#19150E"
+     fill="#19150e"
      id="rect718" />
   <rect
-     x="21"
-     y="87"
+     x="37.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#1B170F"
+     fill="#1b170f"
      id="rect719" />
   <rect
-     x="24"
-     y="87"
+     x="40.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#130E0B"
+     fill="#130e0b"
      id="rect720" />
   <rect
-     x="27"
-     y="87"
+     x="43.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#3A170A"
+     fill="#3a170a"
      id="rect721" />
   <rect
-     x="30"
-     y="87"
+     x="46.065475"
+     y="87.5"
      width="3"
      height="3"
      fill="#241106"
      id="rect722" />
   <rect
-     x="33"
-     y="87"
+     x="49.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#441D14"
+     fill="#441d14"
      id="rect723" />
   <rect
-     x="36"
-     y="87"
+     x="52.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#0E0F06"
+     fill="#0e0f06"
      id="rect724" />
   <rect
-     x="39"
-     y="87"
+     x="55.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#130E0A"
+     fill="#130e0a"
      id="rect725" />
   <rect
-     x="42"
-     y="87"
+     x="58.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#120E0A"
+     fill="#120e0a"
      id="rect726" />
   <rect
-     x="45"
-     y="87"
+     x="61.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#100C0A"
+     fill="#100c0a"
      id="rect727" />
   <rect
-     x="48"
-     y="87"
+     x="64.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#1E1910"
+     fill="#1e1910"
      id="rect728" />
   <rect
-     x="51"
-     y="87"
+     x="67.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#130A07"
+     fill="#130a07"
      id="rect729" />
   <rect
-     x="54"
-     y="87"
+     x="70.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#BB6E3D"
+     fill="#bb6e3d"
      id="rect730" />
   <rect
-     x="57"
-     y="87"
+     x="73.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#B56B39"
+     fill="#b56b39"
      id="rect731" />
   <rect
-     x="60"
-     y="87"
+     x="76.065475"
+     y="87.5"
      width="3"
      height="3"
-     fill="#5A2216"
+     fill="#5a2216"
      id="rect732" />
   <rect
-     x="0"
-     y="90"
+     x="16.065474"
+     y="90.5"
      width="3"
      height="3"
-     fill="#16150B"
+     fill="#16150b"
      id="rect749" />
   <rect
-     x="3"
-     y="90"
+     x="19.065474"
+     y="90.5"
      width="3"
      height="3"
      fill="#151009"
      id="rect750" />
   <rect
-     x="6"
-     y="90"
+     x="22.065474"
+     y="90.5"
      width="3"
      height="3"
-     fill="#241F19"
+     fill="#241f19"
      id="rect751" />
   <rect
-     x="9"
-     y="90"
+     x="25.065474"
+     y="90.5"
      width="3"
      height="3"
-     fill="#13120D"
+     fill="#13120d"
      id="rect752" />
   <rect
-     x="12"
-     y="90"
+     x="28.065474"
+     y="90.5"
      width="3"
      height="3"
-     fill="#14100B"
+     fill="#14100b"
      id="rect753" />
   <rect
-     x="15"
-     y="90"
+     x="31.065474"
+     y="90.5"
      width="3"
      height="3"
-     fill="#19140E"
+     fill="#19140e"
      id="rect754" />
   <rect
-     x="18"
-     y="90"
+     x="34.065475"
+     y="90.5"
      width="3"
      height="3"
      fill="#161109"
      id="rect755" />
   <rect
-     x="21"
-     y="90"
+     x="37.065475"
+     y="90.5"
      width="3"
      height="3"
-     fill="#1F1812"
+     fill="#1f1812"
      id="rect756" />
   <rect
-     x="24"
-     y="90"
+     x="40.065475"
+     y="90.5"
      width="3"
      height="3"
-     fill="#100D09"
+     fill="#100d09"
      id="rect757" />
   <rect
-     x="27"
-     y="90"
+     x="43.065475"
+     y="90.5"
      width="3"
      height="3"
-     fill="#3A1C13"
+     fill="#3a1c13"
      id="rect758" />
   <rect
-     x="30"
-     y="90"
+     x="46.065475"
+     y="90.5"
      width="3"
      height="3"
      fill="#592516"
      id="rect759" />
   <rect
-     x="33"
-     y="90"
+     x="49.065475"
+     y="90.5"
      width="3"
      height="3"
      fill="#221405"
      id="rect760" />
   <rect
-     x="36"
-     y="90"
+     x="52.065475"
+     y="90.5"
      width="3"
      height="3"
-     fill="#0B0B05"
+     fill="#0b0b05"
      id="rect761" />
   <rect
-     x="39"
-     y="90"
+     x="55.065475"
+     y="90.5"
      width="3"
      height="3"
-     fill="#15110C"
+     fill="#15110c"
      id="rect762" />
   <rect
-     x="42"
-     y="90"
+     x="58.065475"
+     y="90.5"
      width="3"
      height="3"
-     fill="#0D0905"
+     fill="#0d0905"
      id="rect763" />
   <rect
-     x="45"
-     y="90"
+     x="61.065475"
+     y="90.5"
      width="3"
      height="3"
      fill="#130501"
      id="rect764" />
   <rect
-     x="48"
-     y="90"
+     x="64.065475"
+     y="90.5"
      width="3"
      height="3"
-     fill="#0E0A04"
+     fill="#0e0a04"
      id="rect765" />
   <rect
-     x="51"
-     y="90"
+     x="67.065475"
+     y="90.5"
      width="3"
      height="3"
-     fill="#16110E"
+     fill="#16110e"
      id="rect766" />
   <rect
-     x="54"
-     y="90"
+     x="70.065475"
+     y="90.5"
      width="3"
      height="3"
-     fill="#1B0E05"
+     fill="#1b0e05"
      id="rect767" />
   <rect
-     x="57"
-     y="90"
+     x="73.065475"
+     y="90.5"
      width="3"
      height="3"
-     fill="#61321E"
+     fill="#61321e"
      id="rect768" />
   <rect
-     x="0"
-     y="93"
+     x="16.065474"
+     y="93.5"
      width="3"
      height="3"
-     fill="#1A1612"
+     fill="#1a1612"
      id="rect786" />
   <rect
-     x="3"
-     y="93"
+     x="19.065474"
+     y="93.5"
      width="3"
      height="3"
      fill="#272118"
      id="rect787" />
   <rect
-     x="6"
-     y="93"
+     x="22.065474"
+     y="93.5"
      width="3"
      height="3"
-     fill="#231B13"
+     fill="#231b13"
      id="rect788" />
   <rect
-     x="9"
-     y="93"
+     x="25.065474"
+     y="93.5"
      width="3"
      height="3"
-     fill="#140E07"
+     fill="#140e07"
      id="rect789" />
   <rect
-     x="12"
-     y="93"
+     x="28.065474"
+     y="93.5"
      width="3"
      height="3"
-     fill="#0E0B07"
+     fill="#0e0b07"
      id="rect790" />
   <rect
-     x="15"
-     y="93"
+     x="31.065474"
+     y="93.5"
      width="3"
      height="3"
-     fill="#1A150F"
+     fill="#1a150f"
      id="rect791" />
   <rect
-     x="18"
-     y="93"
+     x="34.065475"
+     y="93.5"
      width="3"
      height="3"
-     fill="#1B150F"
+     fill="#1b150f"
      id="rect792" />
   <rect
-     x="21"
-     y="93"
+     x="37.065475"
+     y="93.5"
      width="3"
      height="3"
-     fill="#1A130D"
+     fill="#1a130d"
      id="rect793" />
   <rect
-     x="24"
-     y="93"
+     x="40.065475"
+     y="93.5"
      width="3"
      height="3"
-     fill="#0D0904"
+     fill="#0d0904"
      id="rect794" />
   <rect
-     x="27"
-     y="93"
+     x="43.065475"
+     y="93.5"
      width="3"
      height="3"
-     fill="#1D0702"
+     fill="#1d0702"
      id="rect795" />
   <rect
-     x="30"
-     y="93"
+     x="46.065475"
+     y="93.5"
      width="3"
      height="3"
-     fill="#220D02"
+     fill="#220d02"
      id="rect796" />
   <rect
-     x="33"
-     y="93"
+     x="49.065475"
+     y="93.5"
      width="3"
      height="3"
-     fill="#2D160E"
+     fill="#2d160e"
      id="rect797" />
   <rect
-     x="36"
-     y="93"
+     x="52.065475"
+     y="93.5"
      width="3"
      height="3"
-     fill="#18130E"
+     fill="#18130e"
      id="rect798" />
   <rect
-     x="39"
-     y="93"
+     x="55.065475"
+     y="93.5"
      width="3"
      height="3"
-     fill="#13100A"
+     fill="#13100a"
      id="rect799" />
   <rect
-     x="42"
-     y="93"
+     x="58.065475"
+     y="93.5"
      width="3"
      height="3"
-     fill="#0B0A05"
+     fill="#0b0a05"
      id="rect800" />
   <rect
-     x="48"
-     y="93"
+     x="64.065475"
+     y="93.5"
      width="3"
      height="3"
      fill="#020000"
      id="rect802" />
   <rect
-     x="51"
-     y="93"
+     x="67.065475"
+     y="93.5"
      width="3"
      height="3"
      fill="#000000"
      id="rect803" />
   <rect
-     x="54"
-     y="93"
+     x="70.065475"
+     y="93.5"
      width="3"
      height="3"
      fill="#000000"
      id="rect804" />
   <rect
-     x="57"
-     y="93"
+     x="73.065475"
+     y="93.5"
      width="3"
      height="3"
      fill="#170402"
      id="rect805" />
   <rect
-     x="0"
-     y="96"
+     x="16.065474"
+     y="96.5"
      width="3"
      height="3"
-     fill="#0E0704"
+     fill="#0e0704"
      id="rect823" />
   <rect
-     x="3"
-     y="96"
+     x="19.065474"
+     y="96.5"
      width="3"
      height="3"
      fill="#181612"
      id="rect824" />
   <rect
-     x="6"
-     y="96"
+     x="22.065474"
+     y="96.5"
      width="3"
      height="3"
      fill="#191009"
      id="rect825" />
   <rect
-     x="9"
-     y="96"
+     x="25.065474"
+     y="96.5"
      width="3"
      height="3"
-     fill="#15110B"
+     fill="#15110b"
      id="rect826" />
   <rect
-     x="12"
-     y="96"
+     x="28.065474"
+     y="96.5"
      width="3"
      height="3"
-     fill="#100E0A"
+     fill="#100e0a"
      id="rect827" />
   <rect
-     x="15"
-     y="96"
+     x="31.065474"
+     y="96.5"
      width="3"
      height="3"
      fill="#141007"
      id="rect828" />
   <rect
-     x="18"
-     y="96"
+     x="34.065475"
+     y="96.5"
      width="3"
      height="3"
      fill="#222015"
      id="rect829" />
   <rect
-     x="21"
-     y="96"
+     x="37.065475"
+     y="96.5"
      width="3"
      height="3"
-     fill="#231E15"
+     fill="#231e15"
      id="rect830" />
   <rect
-     x="24"
-     y="96"
+     x="40.065475"
+     y="96.5"
      width="3"
      height="3"
-     fill="#120D08"
+     fill="#120d08"
      id="rect831" />
   <rect
-     x="27"
-     y="96"
+     x="43.065475"
+     y="96.5"
      width="3"
      height="3"
      fill="#351711"
      id="rect832" />
   <rect
-     x="30"
-     y="96"
+     x="46.065475"
+     y="96.5"
      width="3"
      height="3"
-     fill="#2D170F"
+     fill="#2d170f"
      id="rect833" />
   <rect
-     x="33"
-     y="96"
+     x="49.065475"
+     y="96.5"
      width="3"
      height="3"
-     fill="#361C16"
+     fill="#361c16"
      id="rect834" />
   <rect
-     x="36"
-     y="96"
+     x="52.065475"
+     y="96.5"
      width="3"
      height="3"
-     fill="#1B1513"
+     fill="#1b1513"
      id="rect835" />
   <rect
-     x="39"
-     y="96"
+     x="55.065475"
+     y="96.5"
      width="3"
      height="3"
-     fill="#100D07"
+     fill="#100d07"
      id="rect836" />
   <rect
-     x="42"
-     y="96"
+     x="58.065475"
+     y="96.5"
      width="3"
      height="3"
-     fill="#110F0B"
+     fill="#110f0b"
      id="rect837" />
   <rect
-     x="0"
-     y="99"
+     x="16.065474"
+     y="99.5"
      width="3"
      height="3"
-     fill="#1F160B"
+     fill="#1f160b"
      id="rect860" />
   <rect
-     x="3"
-     y="99"
+     x="19.065474"
+     y="99.5"
      width="3"
      height="3"
-     fill="#CA874B"
+     fill="#ca874b"
      id="rect861" />
   <rect
-     x="6"
-     y="99"
+     x="22.065474"
+     y="99.5"
      width="3"
      height="3"
-     fill="#D08B50"
+     fill="#d08b50"
      id="rect862" />
   <rect
-     x="9"
-     y="99"
+     x="25.065474"
+     y="99.5"
      width="3"
      height="3"
-     fill="#C17541"
+     fill="#c17541"
      id="rect863" />
   <rect
-     x="12"
-     y="99"
+     x="28.065474"
+     y="99.5"
      width="3"
      height="3"
-     fill="#0E0C06"
+     fill="#0e0c06"
      id="rect864" />
   <rect
-     x="15"
-     y="99"
+     x="31.065474"
+     y="99.5"
      width="3"
      height="3"
-     fill="#1B1611"
+     fill="#1b1611"
      id="rect865" />
   <rect
-     x="18"
-     y="99"
+     x="34.065475"
+     y="99.5"
      width="3"
      height="3"
-     fill="#201A12"
+     fill="#201a12"
      id="rect866" />
   <rect
-     x="21"
-     y="99"
+     x="37.065475"
+     y="99.5"
      width="3"
      height="3"
-     fill="#211D12"
+     fill="#211d12"
      id="rect867" />
   <rect
-     x="24"
-     y="99"
+     x="40.065475"
+     y="99.5"
      width="3"
      height="3"
-     fill="#14110A"
+     fill="#14110a"
      id="rect868" />
   <rect
-     x="27"
-     y="99"
+     x="43.065475"
+     y="99.5"
      width="3"
      height="3"
      fill="#261510"
      id="rect869" />
   <rect
-     x="30"
-     y="99"
+     x="46.065475"
+     y="99.5"
      width="3"
      height="3"
-     fill="#160E08"
+     fill="#160e08"
      id="rect870" />
   <rect
-     x="33"
-     y="99"
+     x="49.065475"
+     y="99.5"
      width="3"
      height="3"
-     fill="#130B07"
+     fill="#130b07"
      id="rect871" />
   <rect
-     x="36"
-     y="99"
+     x="52.065475"
+     y="99.5"
      width="3"
      height="3"
-     fill="#0C0902"
+     fill="#0c0902"
      id="rect872" />
   <rect
-     x="39"
-     y="99"
+     x="55.065475"
+     y="99.5"
      width="3"
      height="3"
-     fill="#1E170F"
+     fill="#1e170f"
      id="rect873" />
   <rect
-     x="42"
-     y="99"
+     x="58.065475"
+     y="99.5"
      width="3"
      height="3"
-     fill="#16100C"
+     fill="#16100c"
      id="rect874" />
   <rect
-     x="0"
-     y="102"
+     x="16.065474"
+     y="102.5"
      width="3"
      height="3"
-     fill="#150C06"
+     fill="#150c06"
      id="rect897" />
   <rect
-     x="3"
-     y="102"
+     x="19.065474"
+     y="102.5"
      width="3"
      height="3"
-     fill="#4B1F0D"
+     fill="#4b1f0d"
      id="rect898" />
   <rect
-     x="6"
-     y="102"
+     x="22.065474"
+     y="102.5"
      width="3"
      height="3"
-     fill="#4E2111"
+     fill="#4e2111"
      id="rect899" />
   <rect
-     x="9"
-     y="102"
+     x="25.065474"
+     y="102.5"
      width="3"
      height="3"
      fill="#331911"
      id="rect900" />
   <rect
-     x="12"
-     y="102"
+     x="28.065474"
+     y="102.5"
      width="3"
      height="3"
-     fill="#120F06"
+     fill="#120f06"
      id="rect901" />
   <rect
-     x="15"
-     y="102"
+     x="31.065474"
+     y="102.5"
      width="3"
      height="3"
-     fill="#1C1911"
+     fill="#1c1911"
      id="rect902" />
   <rect
-     x="18"
-     y="102"
+     x="34.065475"
+     y="102.5"
      width="3"
      height="3"
-     fill="#18120B"
+     fill="#18120b"
      id="rect903" />
   <rect
-     x="21"
-     y="102"
+     x="37.065475"
+     y="102.5"
      width="3"
      height="3"
-     fill="#231E18"
+     fill="#231e18"
      id="rect904" />
   <rect
-     x="24"
-     y="102"
+     x="40.065475"
+     y="102.5"
      width="3"
      height="3"
-     fill="#120F09"
+     fill="#120f09"
      id="rect905" />
   <rect
-     x="27"
-     y="102"
+     x="43.065475"
+     y="102.5"
      width="3"
      height="3"
-     fill="#1C1612"
+     fill="#1c1612"
      id="rect906" />
   <rect
-     x="30"
-     y="102"
+     x="46.065475"
+     y="102.5"
      width="3"
      height="3"
-     fill="#0F0E07"
+     fill="#0f0e07"
      id="rect907" />
   <rect
-     x="33"
-     y="102"
+     x="49.065475"
+     y="102.5"
      width="3"
      height="3"
-     fill="#120E09"
+     fill="#120e09"
      id="rect908" />
   <rect
-     x="36"
-     y="102"
+     x="52.065475"
+     y="102.5"
      width="3"
      height="3"
-     fill="#0D0B04"
+     fill="#0d0b04"
      id="rect909" />
   <rect
-     x="39"
-     y="102"
+     x="55.065475"
+     y="102.5"
      width="3"
      height="3"
-     fill="#17140B"
+     fill="#17140b"
      id="rect910" />
   <rect
-     x="42"
-     y="102"
+     x="58.065475"
+     y="102.5"
      width="3"
      height="3"
-     fill="#130F06"
+     fill="#130f06"
      id="rect911" />
   <rect
-     x="0"
-     y="105"
+     x="16.065474"
+     y="105.5"
      width="3"
      height="3"
-     fill="#2C1307"
+     fill="#2c1307"
      id="rect934" />
   <rect
-     x="3"
-     y="105"
+     x="19.065474"
+     y="105.5"
      width="3"
      height="3"
-     fill="#8E4A26"
+     fill="#8e4a26"
      id="rect935" />
   <rect
-     x="6"
-     y="105"
+     x="22.065474"
+     y="105.5"
      width="3"
      height="3"
-     fill="#9A5329"
+     fill="#9a5329"
      id="rect936" />
   <rect
-     x="9"
-     y="105"
+     x="25.065474"
+     y="105.5"
      width="3"
      height="3"
-     fill="#2B160A"
+     fill="#2b160a"
      id="rect937" />
   <rect
-     x="12"
-     y="105"
+     x="28.065474"
+     y="105.5"
      width="3"
      height="3"
-     fill="#120D08"
+     fill="#120d08"
      id="rect938" />
   <rect
-     x="15"
-     y="105"
+     x="31.065474"
+     y="105.5"
      width="3"
      height="3"
-     fill="#120D06"
+     fill="#120d06"
      id="rect939" />
   <rect
-     x="18"
-     y="105"
+     x="34.065475"
+     y="105.5"
      width="3"
      height="3"
-     fill="#27241C"
+     fill="#27241c"
      id="rect940" />
   <rect
-     x="21"
-     y="105"
+     x="37.065475"
+     y="105.5"
      width="3"
      height="3"
-     fill="#271E18"
+     fill="#271e18"
      id="rect941" />
   <rect
-     x="24"
-     y="105"
+     x="40.065475"
+     y="105.5"
      width="3"
      height="3"
-     fill="#100A07"
+     fill="#100a07"
      id="rect942" />
   <rect
-     x="27"
-     y="105"
+     x="43.065475"
+     y="105.5"
      width="3"
      height="3"
-     fill="#110E08"
+     fill="#110e08"
      id="rect943" />
   <rect
-     x="30"
-     y="105"
+     x="46.065475"
+     y="105.5"
      width="3"
      height="3"
-     fill="#0F0C06"
+     fill="#0f0c06"
      id="rect944" />
   <rect
-     x="33"
-     y="105"
+     x="49.065475"
+     y="105.5"
      width="3"
      height="3"
-     fill="#0B0804"
+     fill="#0b0804"
      id="rect945" />
   <rect
-     x="36"
-     y="105"
+     x="52.065475"
+     y="105.5"
      width="3"
      height="3"
-     fill="#0E0905"
+     fill="#0e0905"
      id="rect946" />
   <rect
-     x="39"
-     y="105"
+     x="55.065475"
+     y="105.5"
      width="3"
      height="3"
-     fill="#1C1910"
+     fill="#1c1910"
      id="rect947" />
   <rect
-     x="42"
-     y="105"
+     x="58.065475"
+     y="105.5"
      width="3"
      height="3"
-     fill="#17110B"
+     fill="#17110b"
      id="rect948" />
   <rect
-     x="3"
-     y="108"
+     x="19.065474"
+     y="108.5"
      width="3"
      height="3"
-     fill="#3A1509"
+     fill="#3a1509"
      id="rect971" />
   <rect
-     x="6"
-     y="108"
+     x="22.065474"
+     y="108.5"
      width="3"
      height="3"
-     fill="#8E411E"
+     fill="#8e411e"
      id="rect972" />
   <rect
-     x="9"
-     y="108"
+     x="25.065474"
+     y="108.5"
      width="3"
      height="3"
-     fill="#622E17"
+     fill="#622e17"
      id="rect973" />
   <rect
-     x="12"
-     y="108"
+     x="28.065474"
+     y="108.5"
      width="3"
      height="3"
-     fill="#0B0905"
+     fill="#0b0905"
      id="rect974" />
   <rect
-     x="15"
-     y="108"
+     x="31.065474"
+     y="108.5"
      width="3"
      height="3"
-     fill="#1E1913"
+     fill="#1e1913"
      id="rect975" />
   <rect
-     x="18"
-     y="108"
+     x="34.065475"
+     y="108.5"
      width="3"
      height="3"
-     fill="#1D1710"
+     fill="#1d1710"
      id="rect976" />
   <rect
-     x="21"
-     y="108"
+     x="37.065475"
+     y="108.5"
      width="3"
      height="3"
-     fill="#2B271E"
+     fill="#2b271e"
      id="rect977" />
   <rect
-     x="24"
-     y="108"
+     x="40.065475"
+     y="108.5"
      width="3"
      height="3"
-     fill="#0D0706"
+     fill="#0d0706"
      id="rect978" />
   <rect
-     x="27"
-     y="108"
+     x="43.065475"
+     y="108.5"
      width="3"
      height="3"
-     fill="#0D0905"
+     fill="#0d0905"
      id="rect979" />
   <rect
-     x="30"
-     y="108"
+     x="46.065475"
+     y="108.5"
      width="3"
      height="3"
-     fill="#130E0B"
+     fill="#130e0b"
      id="rect980" />
   <rect
-     x="33"
-     y="108"
+     x="49.065475"
+     y="108.5"
      width="3"
      height="3"
-     fill="#17130E"
+     fill="#17130e"
      id="rect981" />
   <rect
-     x="36"
-     y="108"
+     x="52.065475"
+     y="108.5"
      width="3"
      height="3"
-     fill="#100C08"
+     fill="#100c08"
      id="rect982" />
   <rect
-     x="39"
-     y="108"
+     x="55.065475"
+     y="108.5"
      width="3"
      height="3"
-     fill="#1D1912"
+     fill="#1d1912"
      id="rect983" />
   <rect
-     x="42"
-     y="108"
+     x="58.065475"
+     y="108.5"
      width="3"
      height="3"
-     fill="#120D05"
+     fill="#120d05"
      id="rect984" />
   <rect
-     x="3"
-     y="111"
+     x="19.065474"
+     y="111.5"
      width="3"
      height="3"
-     fill="#2D0C0B"
+     fill="#2d0c0b"
      id="rect1007" />
   <rect
-     x="6"
-     y="111"
+     x="22.065474"
+     y="111.5"
      width="3"
      height="3"
-     fill="#90451F"
+     fill="#90451f"
      id="rect1008" />
   <rect
-     x="9"
-     y="111"
+     x="25.065474"
+     y="111.5"
      width="3"
      height="3"
-     fill="#59271B"
+     fill="#59271b"
      id="rect1009" />
   <rect
-     x="12"
-     y="111"
+     x="28.065474"
+     y="111.5"
      width="3"
      height="3"
-     fill="#0F0C04"
+     fill="#0f0c04"
      id="rect1010" />
   <rect
-     x="15"
-     y="111"
+     x="31.065474"
+     y="111.5"
      width="3"
      height="3"
-     fill="#1B180F"
+     fill="#1b180f"
      id="rect1011" />
   <rect
-     x="18"
-     y="111"
+     x="34.065475"
+     y="111.5"
      width="3"
      height="3"
-     fill="#17110A"
+     fill="#17110a"
      id="rect1012" />
   <rect
-     x="21"
-     y="111"
+     x="37.065475"
+     y="111.5"
      width="3"
      height="3"
      fill="#262118"
      id="rect1013" />
   <rect
-     x="24"
-     y="111"
+     x="40.065475"
+     y="111.5"
      width="3"
      height="3"
-     fill="#0D0C08"
+     fill="#0d0c08"
      id="rect1014" />
   <rect
-     x="27"
-     y="111"
+     x="43.065475"
+     y="111.5"
      width="3"
      height="3"
-     fill="#17140E"
+     fill="#17140e"
      id="rect1015" />
   <rect
-     x="30"
-     y="111"
+     x="46.065475"
+     y="111.5"
      width="3"
      height="3"
-     fill="#0A0903"
+     fill="#0a0903"
      id="rect1016" />
   <rect
-     x="33"
-     y="111"
+     x="49.065475"
+     y="111.5"
      width="3"
      height="3"
-     fill="#0F0A06"
+     fill="#0f0a06"
      id="rect1017" />
   <rect
-     x="36"
-     y="111"
+     x="52.065475"
+     y="111.5"
      width="3"
      height="3"
-     fill="#12100D"
+     fill="#12100d"
      id="rect1018" />
   <rect
-     x="39"
-     y="111"
+     x="55.065475"
+     y="111.5"
      width="3"
      height="3"
-     fill="#1E1A11"
+     fill="#1e1a11"
      id="rect1019" />
   <rect
-     x="42"
-     y="111"
+     x="58.065475"
+     y="111.5"
      width="3"
      height="3"
-     fill="#110A06"
+     fill="#110a06"
      id="rect1020" />
   <rect
-     x="3"
-     y="114"
+     x="19.065474"
+     y="114.5"
      width="3"
      height="3"
      fill="#221003"
      id="rect1043" />
   <rect
-     x="6"
-     y="114"
+     x="22.065474"
+     y="114.5"
      width="3"
      height="3"
-     fill="#A35526"
+     fill="#a35526"
      id="rect1044" />
   <rect
-     x="9"
-     y="114"
+     x="25.065474"
+     y="114.5"
      width="3"
      height="3"
-     fill="#9D532A"
+     fill="#9d532a"
      id="rect1045" />
   <rect
-     x="12"
-     y="114"
+     x="28.065474"
+     y="114.5"
      width="3"
      height="3"
-     fill="#0B0803"
+     fill="#0b0803"
      id="rect1046" />
   <rect
-     x="15"
-     y="114"
+     x="31.065474"
+     y="114.5"
      width="3"
      height="3"
-     fill="#1D1813"
+     fill="#1d1813"
      id="rect1047" />
   <rect
-     x="18"
-     y="114"
+     x="34.065475"
+     y="114.5"
      width="3"
      height="3"
-     fill="#1E1811"
+     fill="#1e1811"
      id="rect1048" />
   <rect
-     x="21"
-     y="114"
+     x="37.065475"
+     y="114.5"
      width="3"
      height="3"
      fill="#282119"
      id="rect1049" />
   <rect
-     x="24"
-     y="114"
+     x="40.065475"
+     y="114.5"
      width="3"
      height="3"
-     fill="#110E06"
+     fill="#110e06"
      id="rect1050" />
   <rect
-     x="27"
-     y="114"
+     x="43.065475"
+     y="114.5"
      width="3"
      height="3"
-     fill="#120F0B"
+     fill="#120f0b"
      id="rect1051" />
   <rect
-     x="30"
-     y="114"
+     x="46.065475"
+     y="114.5"
      width="3"
      height="3"
-     fill="#110C09"
+     fill="#110c09"
      id="rect1052" />
   <rect
-     x="33"
-     y="114"
+     x="49.065475"
+     y="114.5"
      width="3"
      height="3"
-     fill="#130E08"
+     fill="#130e08"
      id="rect1053" />
   <rect
-     x="36"
-     y="114"
+     x="52.065475"
+     y="114.5"
      width="3"
      height="3"
-     fill="#16130E"
+     fill="#16130e"
      id="rect1054" />
   <rect
-     x="39"
-     y="114"
+     x="55.065475"
+     y="114.5"
      width="3"
      height="3"
-     fill="#16110A"
+     fill="#16110a"
      id="rect1055" />
   <rect
-     x="42"
-     y="114"
+     x="58.065475"
+     y="114.5"
      width="3"
      height="3"
-     fill="#100B07"
+     fill="#100b07"
      id="rect1056" />
   <rect
-     x="6"
-     y="117"
+     x="22.065474"
+     y="117.5"
      width="3"
      height="3"
-     fill="#1C110D"
+     fill="#1c110d"
      id="rect1079" />
   <rect
-     x="9"
-     y="117"
+     x="25.065474"
+     y="117.5"
      width="3"
      height="3"
-     fill="#16120C"
+     fill="#16120c"
      id="rect1080" />
   <rect
-     x="12"
-     y="117"
+     x="28.065474"
+     y="117.5"
      width="3"
      height="3"
-     fill="#13100C"
+     fill="#13100c"
      id="rect1081" />
   <rect
-     x="15"
-     y="117"
+     x="31.065474"
+     y="117.5"
      width="3"
      height="3"
-     fill="#211B15"
+     fill="#211b15"
      id="rect1082" />
   <rect
-     x="18"
-     y="117"
+     x="34.065475"
+     y="117.5"
      width="3"
      height="3"
-     fill="#221C14"
+     fill="#221c14"
      id="rect1083" />
   <rect
-     x="21"
-     y="117"
+     x="37.065475"
+     y="117.5"
      width="3"
      height="3"
-     fill="#221D16"
+     fill="#221d16"
      id="rect1084" />
   <rect
-     x="24"
-     y="117"
+     x="40.065475"
+     y="117.5"
      width="3"
      height="3"
-     fill="#16120C"
+     fill="#16120c"
      id="rect1085" />
   <rect
-     x="27"
-     y="117"
+     x="43.065475"
+     y="117.5"
      width="3"
      height="3"
-     fill="#14110C"
+     fill="#14110c"
      id="rect1086" />
   <rect
-     x="30"
-     y="117"
+     x="46.065475"
+     y="117.5"
      width="3"
      height="3"
-     fill="#0E0A06"
+     fill="#0e0a06"
      id="rect1087" />
   <rect
-     x="33"
-     y="117"
+     x="49.065475"
+     y="117.5"
      width="3"
      height="3"
-     fill="#130F0A"
+     fill="#130f0a"
      id="rect1088" />
   <rect
-     x="36"
-     y="117"
+     x="52.065475"
+     y="117.5"
      width="3"
      height="3"
-     fill="#18130E"
+     fill="#18130e"
      id="rect1089" />
   <rect
-     x="39"
-     y="117"
+     x="55.065475"
+     y="117.5"
      width="3"
      height="3"
-     fill="#17130C"
+     fill="#17130c"
      id="rect1090" />
   <rect
-     x="42"
-     y="117"
+     x="58.065475"
+     y="117.5"
      width="3"
      height="3"
-     fill="#0F0A07"
+     fill="#0f0a07"
      id="rect1091" />
   <rect
-     x="9"
-     y="120"
+     x="25.065474"
+     y="120.5"
      width="3"
      height="3"
-     fill="#110B05"
+     fill="#110b05"
      id="rect1114" />
   <rect
-     x="12"
-     y="120"
+     x="28.065474"
+     y="120.5"
      width="3"
      height="3"
-     fill="#100C08"
+     fill="#100c08"
      id="rect1115" />
   <rect
-     x="15"
-     y="120"
+     x="31.065474"
+     y="120.5"
      width="3"
      height="3"
-     fill="#221C15"
+     fill="#221c15"
      id="rect1116" />
   <rect
-     x="18"
-     y="120"
+     x="34.065475"
+     y="120.5"
      width="3"
      height="3"
-     fill="#1E1A13"
+     fill="#1e1a13"
      id="rect1117" />
   <rect
-     x="21"
-     y="120"
+     x="37.065475"
+     y="120.5"
      width="3"
      height="3"
-     fill="#201B12"
+     fill="#201b12"
      id="rect1118" />
   <rect
-     x="24"
-     y="120"
+     x="40.065475"
+     y="120.5"
      width="3"
      height="3"
-     fill="#110D09"
+     fill="#110d09"
      id="rect1119" />
   <rect
-     x="27"
-     y="120"
+     x="43.065475"
+     y="120.5"
      width="3"
      height="3"
-     fill="#0D0B06"
+     fill="#0d0b06"
      id="rect1120" />
   <rect
-     x="30"
-     y="120"
+     x="46.065475"
+     y="120.5"
      width="3"
      height="3"
-     fill="#100C07"
+     fill="#100c07"
      id="rect1121" />
   <rect
-     x="33"
-     y="120"
+     x="49.065475"
+     y="120.5"
      width="3"
      height="3"
-     fill="#0E0C06"
+     fill="#0e0c06"
      id="rect1122" />
   <rect
-     x="36"
-     y="120"
+     x="52.065475"
+     y="120.5"
      width="3"
      height="3"
-     fill="#0F0B07"
+     fill="#0f0b07"
      id="rect1123" />
   <rect
-     x="39"
-     y="120"
+     x="55.065475"
+     y="120.5"
      width="3"
      height="3"
-     fill="#15100A"
+     fill="#15100a"
      id="rect1124" />
   <rect
-     x="42"
-     y="120"
+     x="58.065475"
+     y="120.5"
      width="3"
      height="3"
-     fill="#0F0D07"
+     fill="#0f0d07"
      id="rect1125" />
   <rect
-     x="9"
-     y="123"
+     x="25.065474"
+     y="123.5"
      width="3"
      height="3"
-     fill="#0B0905"
+     fill="#0b0905"
      id="rect1148" />
   <rect
-     x="12"
-     y="123"
+     x="28.065474"
+     y="123.5"
      width="3"
      height="3"
-     fill="#110F07"
+     fill="#110f07"
      id="rect1149" />
   <rect
-     x="15"
-     y="123"
+     x="31.065474"
+     y="123.5"
      width="3"
      height="3"
-     fill="#1B1711"
+     fill="#1b1711"
      id="rect1150" />
   <rect
-     x="18"
-     y="123"
+     x="34.065475"
+     y="123.5"
      width="3"
      height="3"
-     fill="#231E16"
+     fill="#231e16"
      id="rect1151" />
   <rect
-     x="21"
-     y="123"
+     x="37.065475"
+     y="123.5"
      width="3"
      height="3"
-     fill="#241F18"
+     fill="#241f18"
      id="rect1152" />
   <rect
-     x="24"
-     y="123"
+     x="40.065475"
+     y="123.5"
      width="3"
      height="3"
-     fill="#140F0B"
+     fill="#140f0b"
      id="rect1153" />
   <rect
-     x="27"
-     y="123"
+     x="43.065475"
+     y="123.5"
      width="3"
      height="3"
-     fill="#110F09"
+     fill="#110f09"
      id="rect1154" />
   <rect
-     x="30"
-     y="123"
+     x="46.065475"
+     y="123.5"
      width="3"
      height="3"
-     fill="#0F0B05"
+     fill="#0f0b05"
      id="rect1155" />
   <rect
-     x="33"
-     y="123"
+     x="49.065475"
+     y="123.5"
      width="3"
      height="3"
-     fill="#12100A"
+     fill="#12100a"
      id="rect1156" />
   <rect
-     x="36"
-     y="123"
+     x="52.065475"
+     y="123.5"
      width="3"
      height="3"
-     fill="#16130D"
+     fill="#16130d"
      id="rect1157" />
   <rect
-     x="39"
-     y="123"
+     x="55.065475"
+     y="123.5"
      width="3"
      height="3"
-     fill="#1C1811"
+     fill="#1c1811"
      id="rect1158" />
   <rect
-     x="42"
-     y="123"
+     x="58.065475"
+     y="123.5"
      width="3"
      height="3"
-     fill="#1E1613"
+     fill="#1e1613"
      id="rect1159" />
   <rect
-     x="9"
-     y="126"
+     x="25.065474"
+     y="126.5"
      width="3"
      height="3"
      fill="#121009"
      id="rect1182" />
   <rect
-     x="12"
-     y="126"
+     x="28.065474"
+     y="126.5"
      width="3"
      height="3"
-     fill="#100E08"
+     fill="#100e08"
      id="rect1183" />
   <rect
-     x="15"
-     y="126"
+     x="31.065474"
+     y="126.5"
      width="3"
      height="3"
-     fill="#15120B"
+     fill="#15120b"
      id="rect1184" />
   <rect
-     x="18"
-     y="126"
+     x="34.065475"
+     y="126.5"
      width="3"
      height="3"
-     fill="#231E16"
+     fill="#231e16"
      id="rect1185" />
   <rect
-     x="21"
-     y="126"
+     x="37.065475"
+     y="126.5"
      width="3"
      height="3"
-     fill="#2B261D"
+     fill="#2b261d"
      id="rect1186" />
   <rect
-     x="24"
-     y="126"
+     x="40.065475"
+     y="126.5"
      width="3"
      height="3"
-     fill="#0D0D06"
+     fill="#0d0d06"
      id="rect1187" />
   <rect
-     x="27"
-     y="126"
+     x="43.065475"
+     y="126.5"
      width="3"
      height="3"
-     fill="#0F0C09"
+     fill="#0f0c09"
      id="rect1188" />
   <rect
-     x="30"
-     y="126"
+     x="46.065475"
+     y="126.5"
      width="3"
      height="3"
-     fill="#120F0B"
+     fill="#120f0b"
      id="rect1189" />
   <rect
-     x="33"
-     y="126"
+     x="49.065475"
+     y="126.5"
      width="3"
      height="3"
-     fill="#0D0A04"
+     fill="#0d0a04"
      id="rect1190" />
   <rect
-     x="36"
-     y="126"
+     x="52.065475"
+     y="126.5"
      width="3"
      height="3"
-     fill="#15120C"
+     fill="#15120c"
      id="rect1191" />
   <rect
-     x="39"
-     y="126"
+     x="55.065475"
+     y="126.5"
      width="3"
      height="3"
      fill="#141009"
      id="rect1192" />
   <rect
-     x="42"
-     y="126"
+     x="58.065475"
+     y="126.5"
      width="3"
      height="3"
      fill="#161009"
      id="rect1193" />
   <rect
-     x="9"
-     y="129"
+     x="25.065474"
+     y="129.5"
      width="3"
      height="3"
-     fill="#110D07"
+     fill="#110d07"
      id="rect1216" />
   <rect
-     x="12"
-     y="129"
+     x="28.065474"
+     y="129.5"
      width="3"
      height="3"
      fill="#050401"
      id="rect1217" />
   <rect
-     x="15"
-     y="129"
+     x="31.065474"
+     y="129.5"
      width="3"
      height="3"
-     fill="#0C0600"
+     fill="#0c0600"
      id="rect1218" />
   <rect
-     x="18"
-     y="129"
+     x="34.065475"
+     y="129.5"
      width="3"
      height="3"
-     fill="#13100A"
+     fill="#13100a"
      id="rect1219" />
   <rect
-     x="21"
-     y="129"
+     x="37.065475"
+     y="129.5"
      width="3"
      height="3"
-     fill="#13100A"
+     fill="#13100a"
      id="rect1220" />
   <rect
-     x="24"
-     y="129"
+     x="40.065475"
+     y="129.5"
      width="3"
      height="3"
-     fill="#0E0A05"
+     fill="#0e0a05"
      id="rect1221" />
   <rect
-     x="27"
-     y="129"
+     x="43.065475"
+     y="129.5"
      width="3"
      height="3"
      fill="#121009"
      id="rect1222" />
   <rect
-     x="30"
-     y="129"
+     x="46.065475"
+     y="129.5"
      width="3"
      height="3"
-     fill="#0F0B07"
+     fill="#0f0b07"
      id="rect1223" />
   <rect
-     x="33"
-     y="129"
+     x="49.065475"
+     y="129.5"
      width="3"
      height="3"
-     fill="#130F0B"
+     fill="#130f0b"
      id="rect1224" />
   <rect
-     x="36"
-     y="129"
+     x="52.065475"
+     y="129.5"
      width="3"
      height="3"
-     fill="#0D0B06"
+     fill="#0d0b06"
      id="rect1225" />
   <rect
-     x="39"
-     y="129"
+     x="55.065475"
+     y="129.5"
      width="3"
      height="3"
-     fill="#0D0603"
+     fill="#0d0603"
      id="rect1226" />
   <rect
-     x="42"
-     y="129"
+     x="58.065475"
+     y="129.5"
      width="3"
      height="3"
      fill="#141109"
      id="rect1227" />
   <rect
-     x="12"
-     y="132"
+     x="28.065474"
+     y="132.5"
      width="3"
      height="3"
-     fill="#14110D"
+     fill="#14110d"
      id="rect1250" />
   <rect
-     x="15"
-     y="132"
+     x="31.065474"
+     y="132.5"
      width="3"
      height="3"
-     fill="#1C1912"
+     fill="#1c1912"
      id="rect1251" />
   <rect
-     x="18"
-     y="132"
+     x="34.065475"
+     y="132.5"
      width="3"
      height="3"
-     fill="#0F0A02"
+     fill="#0f0a02"
      id="rect1252" />
   <rect
-     x="21"
-     y="132"
+     x="37.065475"
+     y="132.5"
      width="3"
      height="3"
-     fill="#100C07"
+     fill="#100c07"
      id="rect1253" />
   <rect
-     x="27"
-     y="132"
+     x="43.065475"
+     y="132.5"
      width="3"
      height="3"
-     fill="#110D06"
+     fill="#110d06"
      id="rect1254" />
   <rect
-     x="30"
-     y="132"
+     x="46.065475"
+     y="132.5"
      width="3"
      height="3"
-     fill="#100C06"
+     fill="#100c06"
      id="rect1255" />
   <rect
-     x="33"
-     y="132"
+     x="49.065475"
+     y="132.5"
      width="3"
      height="3"
-     fill="#110D06"
+     fill="#110d06"
      id="rect1256" />
   <rect
-     x="36"
-     y="132"
+     x="52.065475"
+     y="132.5"
      width="3"
      height="3"
-     fill="#16110A"
+     fill="#16110a"
      id="rect1257" />
   <rect
-     x="39"
-     y="132"
+     x="55.065475"
+     y="132.5"
      width="3"
      height="3"
-     fill="#1B1415"
+     fill="#1b1415"
      id="rect1258" />
   <rect
-     x="12"
-     y="135"
+     x="28.065474"
+     y="135.5"
      width="3"
      height="3"
-     fill="#130E07"
+     fill="#130e07"
      id="rect1281" />
   <rect
-     x="15"
-     y="135"
+     x="31.065474"
+     y="135.5"
      width="3"
      height="3"
-     fill="#1D180F"
+     fill="#1d180f"
      id="rect1282" />
   <rect
-     x="18"
-     y="135"
+     x="34.065475"
+     y="135.5"
      width="3"
      height="3"
-     fill="#1D1A12"
+     fill="#1d1a12"
      id="rect1283" />
   <rect
-     x="21"
-     y="135"
+     x="37.065475"
+     y="135.5"
      width="3"
      height="3"
-     fill="#13100A"
+     fill="#13100a"
      id="rect1284" />
   <rect
-     x="27"
-     y="135"
+     x="43.065475"
+     y="135.5"
      width="3"
      height="3"
-     fill="#130C05"
+     fill="#130c05"
      id="rect1285" />
   <rect
-     x="30"
-     y="135"
+     x="46.065475"
+     y="135.5"
      width="3"
      height="3"
-     fill="#16120C"
+     fill="#16120c"
      id="rect1286" />
   <rect
-     x="33"
-     y="135"
+     x="49.065475"
+     y="135.5"
      width="3"
      height="3"
-     fill="#0D0804"
+     fill="#0d0804"
      id="rect1287" />
   <rect
-     x="36"
-     y="135"
+     x="52.065475"
+     y="135.5"
      width="3"
      height="3"
-     fill="#1C1911"
+     fill="#1c1911"
      id="rect1288" />
   <rect
-     x="39"
-     y="135"
+     x="55.065475"
+     y="135.5"
      width="3"
      height="3"
-     fill="#251E15"
+     fill="#251e15"
      id="rect1289" />
   <rect
-     x="12"
-     y="138"
+     x="28.065474"
+     y="138.5"
      width="3"
      height="3"
      fill="#131009"
      id="rect1311" />
   <rect
-     x="15"
-     y="138"
+     x="31.065474"
+     y="138.5"
      width="3"
      height="3"
-     fill="#1E1913"
+     fill="#1e1913"
      id="rect1312" />
   <rect
-     x="18"
-     y="138"
+     x="34.065475"
+     y="138.5"
      width="3"
      height="3"
-     fill="#19150D"
+     fill="#19150d"
      id="rect1313" />
   <rect
-     x="21"
-     y="138"
+     x="37.065475"
+     y="138.5"
      width="3"
      height="3"
-     fill="#100C05"
+     fill="#100c05"
      id="rect1314" />
   <rect
-     x="27"
-     y="138"
+     x="43.065475"
+     y="138.5"
      width="3"
      height="3"
      fill="#141108"
      id="rect1315" />
   <rect
-     x="30"
-     y="138"
+     x="46.065475"
+     y="138.5"
      width="3"
      height="3"
      fill="#161109"
      id="rect1316" />
   <rect
-     x="33"
-     y="138"
+     x="49.065475"
+     y="138.5"
      width="3"
      height="3"
-     fill="#140F0A"
+     fill="#140f0a"
      id="rect1317" />
   <rect
-     x="36"
-     y="138"
+     x="52.065475"
+     y="138.5"
      width="3"
      height="3"
-     fill="#231C15"
+     fill="#231c15"
      id="rect1318" />
   <rect
-     x="39"
-     y="138"
+     x="55.065475"
+     y="138.5"
      width="3"
      height="3"
-     fill="#1F1E16"
+     fill="#1f1e16"
      id="rect1319" />
   <rect
-     x="12"
-     y="141"
+     x="28.065474"
+     y="141.5"
      width="3"
      height="3"
-     fill="#0C0704"
+     fill="#0c0704"
      id="rect1339" />
   <rect
-     x="15"
-     y="141"
+     x="31.065474"
+     y="141.5"
      width="3"
      height="3"
-     fill="#17120C"
+     fill="#17120c"
      id="rect1340" />
   <rect
-     x="18"
-     y="141"
+     x="34.065475"
+     y="141.5"
      width="3"
      height="3"
-     fill="#140E07"
+     fill="#140e07"
      id="rect1341" />
   <rect
-     x="21"
-     y="141"
+     x="37.065475"
+     y="141.5"
      width="3"
      height="3"
-     fill="#0F0B06"
+     fill="#0f0b06"
      id="rect1342" />
   <rect
-     x="27"
-     y="141"
+     x="43.065475"
+     y="141.5"
      width="3"
      height="3"
      fill="#121008"
      id="rect1343" />
   <rect
-     x="30"
-     y="141"
+     x="46.065475"
+     y="141.5"
      width="3"
      height="3"
      fill="#161109"
      id="rect1344" />
   <rect
-     x="33"
-     y="141"
+     x="49.065475"
+     y="141.5"
      width="3"
      height="3"
-     fill="#1C160F"
+     fill="#1c160f"
      id="rect1345" />
   <rect
-     x="36"
-     y="141"
+     x="52.065475"
+     y="141.5"
      width="3"
      height="3"
-     fill="#2C261D"
+     fill="#2c261d"
      id="rect1346" />
   <rect
-     x="39"
-     y="141"
+     x="55.065475"
+     y="141.5"
      width="3"
      height="3"
-     fill="#18190C"
+     fill="#18190c"
      id="rect1347" />
   <rect
-     x="12"
-     y="144"
+     x="28.065474"
+     y="144.5"
      width="3"
      height="3"
-     fill="#12110A"
+     fill="#12110a"
      id="rect1368" />
   <rect
-     x="15"
-     y="144"
+     x="31.065474"
+     y="144.5"
      width="3"
      height="3"
-     fill="#1A1410"
+     fill="#1a1410"
      id="rect1369" />
   <rect
-     x="18"
-     y="144"
+     x="34.065475"
+     y="144.5"
      width="3"
      height="3"
-     fill="#1D1A10"
+     fill="#1d1a10"
      id="rect1370" />
   <rect
-     x="21"
-     y="144"
+     x="37.065475"
+     y="144.5"
      width="3"
      height="3"
-     fill="#110E09"
+     fill="#110e09"
      id="rect1371" />
   <rect
-     x="27"
-     y="144"
+     x="43.065475"
+     y="144.5"
      width="3"
      height="3"
-     fill="#17120B"
+     fill="#17120b"
      id="rect1372" />
   <rect
-     x="30"
-     y="144"
+     x="46.065475"
+     y="144.5"
      width="3"
      height="3"
-     fill="#150E09"
+     fill="#150e09"
      id="rect1373" />
   <rect
-     x="33"
-     y="144"
+     x="49.065475"
+     y="144.5"
      width="3"
      height="3"
-     fill="#15120A"
+     fill="#15120a"
      id="rect1374" />
   <rect
-     x="36"
-     y="144"
+     x="52.065475"
+     y="144.5"
      width="3"
      height="3"
-     fill="#1E1810"
+     fill="#1e1810"
      id="rect1375" />
   <rect
-     x="39"
-     y="144"
+     x="55.065475"
+     y="144.5"
      width="3"
      height="3"
-     fill="#1A160E"
+     fill="#1a160e"
      id="rect1376" />
   <rect
-     x="12"
-     y="147"
+     x="28.065474"
+     y="147.5"
      width="3"
      height="3"
-     fill="#130E09"
+     fill="#130e09"
      id="rect1395" />
   <rect
-     x="15"
-     y="147"
+     x="31.065474"
+     y="147.5"
      width="3"
      height="3"
      fill="#151309"
      id="rect1396" />
   <rect
-     x="18"
-     y="147"
+     x="34.065475"
+     y="147.5"
      width="3"
      height="3"
-     fill="#18130E"
+     fill="#18130e"
      id="rect1397" />
   <rect
-     x="21"
-     y="147"
+     x="37.065475"
+     y="147.5"
      width="3"
      height="3"
-     fill="#14100A"
+     fill="#14100a"
      id="rect1398" />
   <rect
-     x="27"
-     y="147"
+     x="43.065475"
+     y="147.5"
      width="3"
      height="3"
-     fill="#100C06"
+     fill="#100c06"
      id="rect1399" />
   <rect
-     x="30"
-     y="147"
+     x="46.065475"
+     y="147.5"
      width="3"
      height="3"
-     fill="#1E1710"
+     fill="#1e1710"
      id="rect1400" />
   <rect
-     x="33"
-     y="147"
+     x="49.065475"
+     y="147.5"
      width="3"
      height="3"
-     fill="#15100B"
+     fill="#15100b"
      id="rect1401" />
   <rect
-     x="36"
-     y="147"
+     x="52.065475"
+     y="147.5"
      width="3"
      height="3"
-     fill="#1A140F"
+     fill="#1a140f"
      id="rect1402" />
   <rect
-     x="39"
-     y="147"
+     x="55.065475"
+     y="147.5"
      width="3"
      height="3"
      fill="#282018"
      id="rect1403" />
   <rect
-     x="12"
-     y="150"
+     x="28.065474"
+     y="150.5"
      width="3"
      height="3"
-     fill="#0E0B09"
+     fill="#0e0b09"
      id="rect1419" />
   <rect
-     x="15"
-     y="150"
+     x="31.065474"
+     y="150.5"
      width="3"
      height="3"
-     fill="#1B170E"
+     fill="#1b170e"
      id="rect1420" />
   <rect
-     x="18"
-     y="150"
+     x="34.065475"
+     y="150.5"
      width="3"
      height="3"
      fill="#151009"
      id="rect1421" />
   <rect
-     x="21"
-     y="150"
+     x="37.065475"
+     y="150.5"
      width="3"
      height="3"
-     fill="#100C09"
+     fill="#100c09"
      id="rect1422" />
   <rect
-     x="27"
-     y="150"
+     x="43.065475"
+     y="150.5"
      width="3"
      height="3"
-     fill="#19100A"
+     fill="#19100a"
      id="rect1423" />
   <rect
-     x="30"
-     y="150"
+     x="46.065475"
+     y="150.5"
      width="3"
      height="3"
-     fill="#1F1A14"
+     fill="#1f1a14"
      id="rect1424" />
   <rect
-     x="33"
-     y="150"
+     x="49.065475"
+     y="150.5"
      width="3"
      height="3"
-     fill="#1D1A11"
+     fill="#1d1a11"
      id="rect1425" />
   <rect
-     x="36"
-     y="150"
+     x="52.065475"
+     y="150.5"
      width="3"
      height="3"
-     fill="#18150D"
+     fill="#18150d"
      id="rect1426" />
   <rect
-     x="39"
-     y="150"
+     x="55.065475"
+     y="150.5"
      width="3"
      height="3"
      fill="#191912"
      id="rect1427" />
   <rect
-     x="12"
-     y="153"
+     x="28.065474"
+     y="153.5"
      width="3"
      height="3"
-     fill="#130F08"
+     fill="#130f08"
      id="rect1442" />
   <rect
-     x="15"
-     y="153"
+     x="31.065474"
+     y="153.5"
      width="3"
      height="3"
-     fill="#1A160F"
+     fill="#1a160f"
      id="rect1443" />
   <rect
-     x="18"
-     y="153"
+     x="34.065475"
+     y="153.5"
      width="3"
      height="3"
-     fill="#211D17"
+     fill="#211d17"
      id="rect1444" />
   <rect
-     x="21"
-     y="153"
+     x="37.065475"
+     y="153.5"
      width="3"
      height="3"
-     fill="#0E0D06"
+     fill="#0e0d06"
      id="rect1445" />
   <rect
-     x="27"
-     y="153"
+     x="43.065475"
+     y="153.5"
      width="3"
      height="3"
-     fill="#16100B"
+     fill="#16100b"
      id="rect1446" />
   <rect
-     x="30"
-     y="153"
+     x="46.065475"
+     y="153.5"
      width="3"
      height="3"
-     fill="#1A150F"
+     fill="#1a150f"
      id="rect1447" />
   <rect
-     x="33"
-     y="153"
+     x="49.065475"
+     y="153.5"
      width="3"
      height="3"
-     fill="#1A150D"
+     fill="#1a150d"
      id="rect1448" />
   <rect
-     x="36"
-     y="153"
+     x="52.065475"
+     y="153.5"
      width="3"
      height="3"
-     fill="#150E09"
+     fill="#150e09"
      id="rect1449" />
   <rect
-     x="39"
-     y="153"
+     x="55.065475"
+     y="153.5"
      width="3"
      height="3"
-     fill="#140F06"
+     fill="#140f06"
      id="rect1450" />
   <rect
-     x="42"
-     y="153"
+     x="58.065475"
+     y="153.5"
      width="3"
      height="3"
-     fill="#0B0E04"
+     fill="#0b0e04"
      id="rect1451" />
   <rect
-     x="42"
-     y="6"
+     x="58.065475"
+     y="6.5"
      width="3"
      height="3"
      fill="#18110b"
      id="rect27"
      style="opacity:1" />
   <rect
-     x="42"
-     y="9"
+     x="58.065475"
+     y="9.5"
      width="3"
      height="3"
      fill="#1b1311"
      id="rect38"
      style="opacity:1" />
   <rect
-     x="42"
-     y="12"
+     x="58.065475"
+     y="12.5"
      width="3"
      height="3"
      fill="#1a110c"
      id="rect49"
      style="opacity:1" />
   <rect
-     x="42"
-     y="15"
+     x="58.065475"
+     y="15.5"
      width="3"
      height="3"
      fill="#120b06"
      id="rect60"
      style="opacity:1" />
   <rect
-     x="42"
-     y="18"
+     x="58.065475"
+     y="18.5"
      width="3"
      height="3"
      fill="#130b03"
      id="rect79"
      style="opacity:1" />
   <rect
-     x="42"
-     y="21"
+     x="58.065475"
+     y="21.5"
      width="3"
      height="3"
      fill="#170f09"
      id="rect99"
      style="opacity:1" />
   <rect
-     x="42"
-     y="24"
+     x="58.065475"
+     y="24.5"
      width="3"
      height="3"
      fill="#1c170f"
      id="rect121"
      style="opacity:1" />
   <rect
-     x="42"
-     y="27"
+     x="58.065475"
+     y="27.5"
      width="3"
      height="3"
      fill="#17110c"
      id="rect143"
      style="opacity:1" />
   <rect
-     x="42"
-     y="30"
+     x="58.065475"
+     y="30.5"
      width="3"
      height="3"
      fill="#0f0a0e"
      id="rect165"
      style="opacity:1" />
   <rect
-     x="9"
-     y="156"
+     x="25.065474"
+     y="156.5"
      width="3"
      height="3"
-     fill="#1A1209"
+     fill="#1a1209"
      id="rect1465" />
   <rect
-     x="12"
-     y="156"
+     x="28.065474"
+     y="156.5"
      width="3"
      height="3"
      fill="#201912"
      id="rect1466" />
   <rect
-     x="15"
-     y="156"
+     x="31.065474"
+     y="156.5"
      width="3"
      height="3"
-     fill="#1C130D"
+     fill="#1c130d"
      id="rect1467" />
   <rect
-     x="18"
-     y="156"
+     x="34.065475"
+     y="156.5"
      width="3"
      height="3"
-     fill="#1F1811"
+     fill="#1f1811"
      id="rect1468" />
   <rect
-     x="21"
-     y="156"
+     x="37.065475"
+     y="156.5"
      width="3"
      height="3"
-     fill="#17110D"
+     fill="#17110d"
      id="rect1469" />
   <rect
-     x="27"
-     y="156"
+     x="43.065475"
+     y="156.5"
      width="3"
      height="3"
-     fill="#1A140D"
+     fill="#1a140d"
      id="rect1470" />
   <rect
-     x="30"
-     y="156"
+     x="46.065475"
+     y="156.5"
      width="3"
      height="3"
-     fill="#1A150E"
+     fill="#1a150e"
      id="rect1471" />
   <rect
-     x="33"
-     y="156"
+     x="49.065475"
+     y="156.5"
      width="3"
      height="3"
-     fill="#15100A"
+     fill="#15100a"
      id="rect1472" />
   <rect
-     x="36"
-     y="156"
+     x="52.065475"
+     y="156.5"
      width="3"
      height="3"
-     fill="#1A1710"
+     fill="#1a1710"
      id="rect1473" />
   <rect
-     x="39"
-     y="156"
+     x="55.065475"
+     y="156.5"
      width="3"
      height="3"
-     fill="#1C180F"
+     fill="#1c180f"
      id="rect1474" />
   <rect
-     x="42"
-     y="156"
+     x="58.065475"
+     y="156.5"
      width="3"
      height="3"
-     fill="#100E04"
+     fill="#100e04"
      id="rect1475" />
   <rect
-     x="45"
-     y="156"
+     x="61.065475"
+     y="156.5"
      width="3"
      height="3"
      fill="#000000"
      id="rect1476" />
   <rect
-     x="48"
-     y="156"
+     x="64.065475"
+     y="156.5"
      width="3"
      height="3"
      fill="#000000"
      id="rect1477" />
   <rect
-     x="6"
-     y="159"
+     x="22.065474"
+     y="159.5"
      width="3"
      height="3"
      fill="#130501"
      id="rect1478" />
   <rect
-     x="9"
-     y="159"
+     x="25.065474"
+     y="159.5"
      width="3"
      height="3"
-     fill="#0F0D06"
+     fill="#0f0d06"
      id="rect1479" />
   <rect
-     x="12"
-     y="159"
+     x="28.065474"
+     y="159.5"
      width="3"
      height="3"
-     fill="#24221B"
+     fill="#24221b"
      id="rect1480" />
   <rect
-     x="15"
-     y="159"
+     x="31.065474"
+     y="159.5"
      width="3"
      height="3"
-     fill="#17120B"
+     fill="#17120b"
      id="rect1481" />
   <rect
-     x="18"
-     y="159"
+     x="34.065475"
+     y="159.5"
      width="3"
      height="3"
-     fill="#1F1911"
+     fill="#1f1911"
      id="rect1482" />
   <rect
-     x="21"
-     y="159"
+     x="37.065475"
+     y="159.5"
      width="3"
      height="3"
      fill="#130501"
      id="rect1483" />
   <rect
-     x="27"
-     y="159"
+     x="43.065475"
+     y="159.5"
      width="3"
      height="3"
-     fill="#19140B"
+     fill="#19140b"
      id="rect1484" />
   <rect
-     x="30"
-     y="159"
+     x="46.065475"
+     y="159.5"
      width="3"
      height="3"
-     fill="#160F0A"
+     fill="#160f0a"
      id="rect1485" />
   <rect
-     x="33"
-     y="159"
+     x="49.065475"
+     y="159.5"
      width="3"
      height="3"
-     fill="#15110C"
+     fill="#15110c"
      id="rect1486" />
   <rect
-     x="36"
-     y="159"
+     x="52.065475"
+     y="159.5"
      width="3"
      height="3"
-     fill="#17120D"
+     fill="#17120d"
      id="rect1487" />
   <rect
-     x="39"
-     y="159"
+     x="55.065475"
+     y="159.5"
      width="3"
      height="3"
      fill="#282316"
      id="rect1488" />
   <rect
-     x="42"
-     y="159"
+     x="58.065475"
+     y="159.5"
      width="3"
      height="3"
-     fill="#241E14"
+     fill="#241e14"
      id="rect1489" />
   <rect
-     x="45"
-     y="159"
+     x="61.065475"
+     y="159.5"
      width="3"
      height="3"
-     fill="#1D150E"
+     fill="#1d150e"
      id="rect1490" />
   <rect
-     x="48"
-     y="159"
+     x="64.065475"
+     y="159.5"
      width="3"
      height="3"
-     fill="#1F1A0F"
+     fill="#1f1a0f"
      id="rect1491" />
   <rect
-     x="51"
-     y="159"
+     x="67.065475"
+     y="159.5"
      width="3"
      height="3"
      fill="#130501"
      id="rect1492" />
   <rect
-     x="6"
-     y="162"
+     x="22.065474"
+     y="162.5"
      width="3"
      height="3"
      fill="#130501"
      id="rect1493" />
   <rect
-     x="9"
-     y="162"
+     x="25.065474"
+     y="162.5"
      width="3"
      height="3"
-     fill="#130F08"
+     fill="#130f08"
      id="rect1494" />
   <rect
-     x="12"
-     y="162"
+     x="28.065474"
+     y="162.5"
      width="3"
      height="3"
-     fill="#120F07"
+     fill="#120f07"
      id="rect1495" />
   <rect
-     x="15"
-     y="162"
+     x="31.065474"
+     y="162.5"
      width="3"
      height="3"
-     fill="#130F09"
+     fill="#130f09"
      id="rect1496" />
   <rect
-     x="18"
-     y="162"
+     x="34.065475"
+     y="162.5"
      width="3"
      height="3"
-     fill="#110C07"
+     fill="#110c07"
      id="rect1497" />
   <rect
-     x="21"
-     y="162"
+     x="37.065475"
+     y="162.5"
      width="3"
      height="3"
-     fill="#12100A"
+     fill="#12100a"
      id="rect1498" />
   <rect
-     x="27"
-     y="162"
+     x="43.065475"
+     y="162.5"
      width="3"
      height="3"
-     fill="#13100C"
+     fill="#13100c"
      id="rect1499" />
   <rect
-     x="30"
-     y="162"
+     x="46.065475"
+     y="162.5"
      width="3"
      height="3"
-     fill="#110C05"
+     fill="#110c05"
      id="rect1500" />
   <rect
-     x="33"
-     y="162"
+     x="49.065475"
+     y="162.5"
      width="3"
      height="3"
-     fill="#17120C"
+     fill="#17120c"
      id="rect1501" />
   <rect
-     x="36"
-     y="162"
+     x="52.065475"
+     y="162.5"
      width="3"
      height="3"
-     fill="#19120D"
+     fill="#19120d"
      id="rect1502" />
   <rect
-     x="39"
-     y="162"
+     x="55.065475"
+     y="162.5"
      width="3"
      height="3"
-     fill="#0C0A03"
+     fill="#0c0a03"
      id="rect1503" />
   <rect
-     x="42"
-     y="162"
+     x="58.065475"
+     y="162.5"
      width="3"
      height="3"
-     fill="#110B05"
+     fill="#110b05"
      id="rect1504" />
   <rect
-     x="45"
-     y="162"
+     x="61.065475"
+     y="162.5"
      width="3"
      height="3"
-     fill="#130C05"
+     fill="#130c05"
      id="rect1505" />
   <rect
-     x="48"
-     y="162"
+     x="64.065475"
+     y="162.5"
      width="3"
      height="3"
-     fill="#110C08"
+     fill="#110c08"
      id="rect1506" />
   <rect
-     x="51"
-     y="162"
+     x="67.065475"
+     y="162.5"
      width="3"
      height="3"
      fill="#130501"
@@ -11397,23 +11398,23 @@
      style="fill:url(#radialGradient881);fill-opacity:1;stroke-width:2.66434;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers"
      id="path880"
      sodipodi:type="arc"
-     sodipodi:cx="28.012953"
-     sodipodi:cy="165.39946"
+     sodipodi:cx="44.078426"
+     sodipodi:cy="165.89946"
      sodipodi:rx="38.555248"
      sodipodi:ry="10.991745"
      sodipodi:start="5.2574902"
      sodipodi:end="5.257368"
      sodipodi:open="true"
      sodipodi:arc-type="arc"
-     d="M 48.004028,156.0007 A 38.555248,10.991745 0 0 1 60.981185,171.09844 38.555248,10.991745 0 0 1 8.0238919,174.79857 38.555248,10.991745 0 0 1 -4.9565009,159.70105 38.555248,10.991745 0 0 1 47.999999,156" />
+     d="M 64.069502,156.5007 A 38.555248,10.991745 0 0 1 77.046659,171.59844 38.555248,10.991745 0 0 1 24.089365,175.29857 38.555248,10.991745 0 0 1 11.108973,160.20105 38.555248,10.991745 0 0 1 64.065473,156.5" />
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.6667px;line-height:1.25;font-family:'Under Rock';-inkscape-font-specification:'Under Rock';text-align:center;text-anchor:middle"
-     x="28.478853"
-     y="193.63626"
+     x="44.544327"
+     y="194.13626"
      id="text881"><tspan
        sodipodi:role="line"
        id="tspan881"
-       x="28.478853"
-       y="193.63626">Giovanni</tspan></text>
+       x="44.544327"
+       y="194.13626">Giovanni</tspan></text>
 </svg>
