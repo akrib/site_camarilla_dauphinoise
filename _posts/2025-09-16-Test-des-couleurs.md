@@ -1,6 +1,5 @@
 ---
 title: "Test des couleurs du futur site"
-date: 2025-09-16 12:00:00 +0200
 categories:
   - blog
 tags:
