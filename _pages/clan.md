@@ -7,8 +7,6 @@ carousel_css: "carousel"
 ---
 
 Les clans vampiriques représentent les différentes lignées de vampires, chacune possédant des caractéristiques, des philosophies et des disciplines propres. Chaque clan façonne la manière dont ses membres interagissent avec le monde des vivants et des morts-vivants, et détermine leur rôle dans la société vampirique.
-
-
 <div class="carousel">
   <div class="carousel__container">
     <img src="{{ site.baseurl }}/assets/images/svg/clan/brujah.svg" alt="">
@@ -20,7 +18,7 @@ Les clans vampiriques représentent les différentes lignées de vampires, chacu
     <img src="{{ site.baseurl }}/assets/images/svg/clan/ventrue.svg" alt="">
   </div>
 </div>
-
+<br/><br/><br/><br/>
 Voici un aperçu des principaux clans :
 - **[Brujah]({{ site.baseurl }}/clans/brujah/)** : Des révolutionnaires passionnés, connus pour leur fougue et leur force physique.
 - **[Gangrel]({{ site.baseurl }}/clans/gangrel/)** : Des solitaires proches de la nature, capables de se transformer en bêtes sauvages.
