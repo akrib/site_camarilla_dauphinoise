@@ -3,6 +3,7 @@ layout: single
 title: "Clans"
 section: clans
 permalink: /clans/
+carousel_css: "carousel"
 ---
 
 Les clans vampiriques représentent les différentes lignées de vampires, chacune possédant des caractéristiques, des philosophies et des disciplines propres. Chaque clan façonne la manière dont ses membres interagissent avec le monde des vivants et des morts-vivants, et détermine leur rôle dans la société vampirique.
