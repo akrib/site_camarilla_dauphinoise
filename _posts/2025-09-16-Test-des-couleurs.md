@@ -1,9 +1,8 @@
 ---
 layout: post-centered
-title: "🎨 Test des couleurs du futur site"
+title: "Test des couleurs du futur site"
 date: 2025-09-16 12:00:00 +0200
 tags: jekyll update
-date:   2025-09-12 17:27:41 +0200
 categories: blog
 author: "Camarilla Dauphinoise"
 excerpt: "Un petit post technique pour permettre de tester les couleurs potentielles du futur site."
