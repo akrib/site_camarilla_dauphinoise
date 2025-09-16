@@ -1,4 +1,5 @@
 ---
+layout: post-centered
 title: "Test des couleurs du futur site"
 categories:
   - blog
