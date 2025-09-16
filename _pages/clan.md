@@ -15,6 +15,12 @@ Les clans vampiriques représentent les différentes lignées de vampires, chacu
     <img src="{{ site.baseurl }}/assets/images/svg/clan/nosferatu.svg" alt="">
     <img src="{{ site.baseurl }}/assets/images/svg/clan/toreador.svg" alt="">
     <img src="{{ site.baseurl }}/assets/images/svg/clan/tremere.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/assamite.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/giovanni.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/lasombras.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/ravnos.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/sethite.svg" alt="">
+    <img src="{{ site.baseurl }}/assets/images/svg/clan/tzimice.svg" alt="">
     <img src="{{ site.baseurl }}/assets/images/svg/clan/ventrue.svg" alt="">
   </div>
 </div>
