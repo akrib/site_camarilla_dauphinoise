@@ -1,0 +1,180 @@
+/* === Splatoon Light Theme for Minimal Mistakes (Jekyll) === */
+/* Place this file in assets/css/splatoon-light.css */
+
+/* Import fonts */
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Orbitron:wght@500;700&display=swap");
+
+:root {
+  --accent1: #FF4EC8; /* Pink */
+  --accent2: #2AFBFF; /* Cyan */
+  --accent3: #FFB82A; /* Yellow */
+  --accent4: #4EFF5A; /* Green */
+  --accent5: #FF6A2A; /* Orange */
+  --text-dark: #1b1b1b;
+  --text-mid: #333;
+  --bg-light: #fdfdfd;
+  --bg-soft: #f7f7fa;
+  --border-light: rgba(0,0,0,0.08);
+}
+
+/* Base */
+body {
+  font-family: "Fredoka", "Inter", sans-serif;
+  background: var(--bg-light);
+  color: var(--text-dark);
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Orbitron, sans-serif;
+  font-weight: 700;
+  color: var(--accent5);
+  margin-top: 1em;
+  margin-bottom: 0.4em;
+}
+
+p, li {
+  color: var(--text-mid);
+}
+
+/* Links */
+a {
+  color: var(--accent1);
+  text-decoration: none;
+  font-weight: 600;
+}
+a:hover {
+  color: var(--accent3);
+  text-decoration: underline;
+}
+
+/* Buttons */
+.btn,
+button,
+input[type="submit"] {
+  background: linear-gradient(135deg, var(--accent1), var(--accent2));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.6em 1.2em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover,
+button:hover,
+input[type="submit"]:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+/* Header / Navigation */
+.site-title,
+.site-title a {
+  font-family: Orbitron, sans-serif;
+  font-weight: 700;
+  color: var(--accent4) !important;
+}
+
+.masthead {
+  background: var(--bg-soft);
+  border-bottom: 2px solid var(--border-light);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+/* Navigation container */
+#site-nav.greedy-nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 16px;
+  border: 2px solid var(--border-light);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+}
+
+/* Logo */
+#site-nav .site-logo img {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  border: 2px solid var(--accent3);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+/* Links */
+#site-nav ul.visible-links a {
+  color: var(--text-mid);
+  padding: 8px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+#site-nav ul.visible-links a:hover {
+  color: white;
+  background: linear-gradient(135deg, var(--accent4), var(--accent5));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* Active link */
+#site-nav ul.visible-links a.active,
+#site-nav ul.visible-links a[aria-current="page"] {
+  background: linear-gradient(135deg, var(--accent1), var(--accent2));
+  color: white;
+}
+
+/* Cards / Boxes */
+.card, .archive__item, .page__content blockquote {
+  background: var(--bg-soft);
+  border: 2px solid var(--border-light);
+  border-radius: 14px;
+  padding: 1em;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+}
+
+/* Footer */
+.page__footer {
+  background: var(--bg-soft);
+  border-top: 2px solid var(--border-light);
+  color: var(--text-mid);
+}
+.page__footer a {
+  color: var(--accent2);
+  font-weight: 600;
+}
+
+/* Decorative Splatoon paint line */
+.splatoon-line {
+  height: 6px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3), var(--accent4), var(--accent5));
+  width: 160px;
+  margin: 14px 0 24px;
+}
+
+/* Thumbnails */
+.thumb {
+  background: white;
+  border: 2px solid var(--border-light);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-mid);
+  font-size: 14px;
+  height: 120px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body { font-size: 90%; }
+  #site-nav ul.visible-links { display: none; }
+  #site-nav ul.hidden-links { display: flex; flex-direction: column; gap: 8px; }
+}
