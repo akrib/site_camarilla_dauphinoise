@@ -1,7 +1,7 @@
 .carousel {
   perspective: 1200px; /* profondeur */
   width: 500px; 
-  height: 600px;
+  height: 250px;
   margin: 50px auto;
   position: relative;
   overflow: visible;
@@ -21,10 +21,10 @@
   top: 50%;
   transform-style: preserve-3d;
   transform-origin: center center;
-  width: 160px; /* ajuste selon tes images */
+  width: auto; /* ajuste selon tes images */
   height: auto;
   border-radius: 10px;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+/*   box-shadow: 0 6px 14px rgba(0,0,0,0.35); */
 }
 
 /* Placement des 13 images (360/13 ≈ 27.7°) */
