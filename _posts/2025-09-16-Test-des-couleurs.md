@@ -6,8 +6,6 @@ categories:
 tags:
   - Jekyll
   - update
-author: "Camarilla Dauphinoise"
-excerpt: "Un petit post technique pour permettre de tester les couleurs potentielles du futur site."
 link: https://github.com
 ---
 Ceci est un article de **test visuel** ✨.  
