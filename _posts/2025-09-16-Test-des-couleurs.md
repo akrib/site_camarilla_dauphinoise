@@ -20,7 +20,7 @@ Vous pouvez vous amuser à :
 👉 N’hésitez pas à nous dire en **réunion ou sur Discord** quelles couleurs vous plaisent le plus !  
 Ce post est donc **éphémère**, il sera supprimé une fois le thème final choisi.
 
-[color_test_1]({{ site.baseurl }}color_test_1/) 
-[color_test_2]({{ site.baseurl }}color_test_2/) 
-[color_test_3]({{ site.baseurl }}color_test_3/) 
-[color_test_4]({{ site.baseurl }}color_test_4/) 
+[color_test_1]({{ site.baseurl }}color_test_1/) <br/>
+[color_test_2]({{ site.baseurl }}color_test_2/) <br/>
+[color_test_3]({{ site.baseurl }}color_test_3/) <br/>
+[color_test_4]({{ site.baseurl }}color_test_4/) <br/>
