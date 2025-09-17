@@ -1,7 +1,7 @@
 ---
 layout: single
 title: "Mind’s Eye Theater"
-permalink: /met/
+permalink: /univers/met/
 ---
 
 Mind’s Eye TheaterPermalink
