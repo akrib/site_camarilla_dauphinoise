@@ -2,6 +2,7 @@
 layout: single
 title: "Le Monde Vampirique"
 permalink: /univers/monde_vampirique/
+section: univers
 ---
 
 Le Monde Vampirique
