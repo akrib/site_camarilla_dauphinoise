@@ -3,6 +3,8 @@ layout: single
 title: "Contact & réseaux"
 permalink: /contact/
 ---
+
+<div style="text-align: center;">
 Informations pour nous contacter et nos réseaux sociaux.
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
  <div style="min-width:500px;max-width:500px; ">
@@ -20,25 +22,20 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
 <iframe src="https://discord.com/widget?id=626455168116064297&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
   </div>
 </div>
-<!-- <div style=" margin:10px;display: grid; grid-template-columns: 350px 300px 350px;">
-<div style="min-width:500px;max-width:500px; "></div> -->
+
 <div style="text-align: center;">
   <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
 </div>
-<!-- <div style="min-width:500px;max-width:500px; "></div>
-</div> -->
-<!-- <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-  - Colonne Liens utiles
- <div style="min-width:500px;max-width:500px; "> -->
+
   <h2>Liens pour la Camarilla Dauphinoise</h2>
-  Nos autres médias et points de contact :
+  Nos autres médias et points de contact :<br/>
   <a href="https://facebook.com/camarilla.dauphinoise"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
   <a href="https://discord.gg/wTGMEGVcWk"><img src="https://img.shields.io/badge/Discord%20-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
 <div style="text-align: center;">
   <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
 </div>
  <h2>Fédération de Camarilla Française</h2>
-  La fédération d’associations loi 1901 à but ludique qui fédère la Camarilla Dauphinoise et près d’une vingtaine de villes dans tout le pays, englobant plus de 600 participants.
+  La fédération d’associations loi 1901 à but ludique qui fédère la Camarilla Dauphinoise et près d’une vingtaine de villes dans tout le pays, englobant plus de 600 participants.<br/>
   <a href="https://camarilla-fr.com/"><img src="https://img.shields.io/badge/Site-Voir-red?style=for-the-badge&logo=internetarchive&logoColor=white"></a>
   <a href="http://www.camarilla-fr.com/forum/index.php"><img src="https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=phpbb&logoColor=white"></a>
   <a href="https://facebook.com/Federation.Camarilla.France"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
@@ -49,20 +46,20 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
   <p>Les vampires ne vous plaisent pas ? Essayez les autres univers de nos partenaires et découvrez des expériences immersives tout aussi captivantes !</p>
 
   <h3>Le Théâtre des Ténèbres</h3>
-  Association visant à promouvoir un jeu francophone prenant place dans l'univers de White Wolf, notamment Loup-Garou : l'Apocalypse, ainsi que d'autres thèmes et univers.
+  Association visant à promouvoir un jeu francophone prenant place dans l'univers de White Wolf, notamment Loup-Garou : l'Apocalypse, ainsi que d'autres thèmes et univers.<br/>
 <a href="https://www.theatredestenebres.com/"><img src="https://img.shields.io/badge/Site-Voir-red?style=for-the-badge&logo=internetarchive&logoColor=white"></a>
 <a href="https://www.facebook.com/TheatredesTenebres"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
-<div style="text-align: center;">
+<!-- <div style="text-align: center;">
   <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
-</div>
- <h2>Autres liens</h2>
+</div> -->
+---
+ <h2>Autres liens</h2><br/>
   <a href="https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade"><img src="https://img.shields.io/badge/Wiki-Vampire-red?style=for-the-badge&logo=wikipedia&logoColor=white"></a>
 
-
- <!-- </div> 
+ 
     
 
-</div> -->
+</div>
 
 
 
