@@ -31,15 +31,30 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
   <!-- Colonne Liens utiles -->
  <div style="min-width:500px;max-width:500px; ">
   <h2>Liens pour la Camarilla Dauphinoise</h2>
+  Nos autres médias et points de contact :
   <a href="https://facebook.com/camarilla.dauphinoise"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
   <a href="https://discord.gg/wTGMEGVcWk"><img src="https://img.shields.io/badge/Discord%20-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
-
+<div style="text-align: center;">
+  <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
+</div>
  <h2>Fédération de Camarilla Française</h2>
+  La fédération d’associations loi 1901 à but ludique qui fédère la Camarilla Dauphinoise et près d’une vingtaine de villes dans tout le pays, englobant plus de 600 participants.
   <a href="https://camarilla-fr.com/"><img src="https://img.shields.io/badge/Site-Voir-red?style=for-the-badge&logo=internetarchive&logoColor=white"></a>
   <a href="http://www.camarilla-fr.com/forum/index.php"><img src="https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=phpbb&logoColor=white"></a>
   <a href="https://facebook.com/Federation.Camarilla.France"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
+  <div style="text-align: center;">
+  <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
+</div>
+  <h2>Nos partenaires</h2>
+  <p>Les vampires ne vous plaisent pas ? Essayez les autres univers de nos partenaires et découvrez des expériences immersives tout aussi captivantes !</p>
 
-
+  <h3>Le Théâtre des Ténèbres</h3>
+  Association visant à promouvoir un jeu francophone prenant place dans l'univers de White Wolf, notamment Loup-Garou : l'Apocalypse, ainsi que d'autres thèmes et univers.
+<a href="https://www.theatredestenebres.com/"><img src="https://img.shields.io/badge/Site-Voir-red?style=for-the-badge&logo=internetarchive&logoColor=white"></a>
+<a href="https://www.facebook.com/TheatredesTenebres"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
+<div style="text-align: center;">
+  <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
+</div>
  <h2>Autres liens</h2>
   <a href="https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade"><img src="https://img.shields.io/badge/Wiki-Vampire-red?style=for-the-badge&logo=wikipedia&logoColor=white"></a>
 
@@ -53,22 +68,6 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
 </div>
 
 
-<section id="partenaire" class="section">
-  <div class="section-inner">
-    <h2>Nos partenaires</h2>
-    <p>Les vampires ne vous plaisent pas ? Essayez les autres univers de nos partenaires et découvrez des expériences immersives tout aussi captivantes !</p>
-    
-    <div class="partner-list" style="display:flex; flex-wrap:wrap; gap:1.5em; margin-top:1em;">
-      <!-- Partenaire 1 -->
-      <div class="partner-card" style="flex:1 1 250px; border:1px solid #ccc; border-radius:8px; padding:1em; text-align:center; background:#f9f9f9;">
-        <a href="https://www.theatredestenebres.com/" target="_blank" rel="noopener">
-          <img src="https://www.theatredestenebres.com/wp-content/uploads/2020/12/logo-theatre.png" 
-               alt="Théâtre des Ténèbres" 
-               style="max-width:150px; height:auto; margin-bottom:1em;">
-          <h3>Théâtre des Ténèbres</h3>
-          <p>Plongez dans un univers théâtral immersif et captivant, avec des spectacles et expériences pour tous les âges.</p>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
+
+
+
