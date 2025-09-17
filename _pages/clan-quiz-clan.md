@@ -1,6 +1,6 @@
 ---
 title: "Quel clan de la Camarilla es-tu ?"
-permalink: /quiz-clan/
+permalink: /clan/quiz-clan/
 layout: single
 ---
 
