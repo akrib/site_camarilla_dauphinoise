@@ -51,3 +51,24 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
 <iframe src="https://discord.com/widget?id=626455168116064297&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
   </div>
 </div>
+
+
+<section id="partenaire" class="section">
+  <div class="section-inner">
+    <h2>Nos partenaires</h2>
+    <p>Les vampires ne vous plaisent pas ? Essayez les autres univers de nos partenaires et découvrez des expériences immersives tout aussi captivantes !</p>
+    
+    <div class="partner-list" style="display:flex; flex-wrap:wrap; gap:1.5em; margin-top:1em;">
+      <!-- Partenaire 1 -->
+      <div class="partner-card" style="flex:1 1 250px; border:1px solid #ccc; border-radius:8px; padding:1em; text-align:center; background:#f9f9f9;">
+        <a href="https://www.theatredestenebres.com/" target="_blank" rel="noopener">
+          <img src="https://www.theatredestenebres.com/wp-content/uploads/2020/12/logo-theatre.png" 
+               alt="Théâtre des Ténèbres" 
+               style="max-width:150px; height:auto; margin-bottom:1em;">
+          <h3>Théâtre des Ténèbres</h3>
+          <p>Plongez dans un univers théâtral immersif et captivant, avec des spectacles et expériences pour tous les âges.</p>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
