@@ -35,7 +35,6 @@ chroniques:
   - "Les batailles perdues contre leur propre rage."
 media:
   - /assets/discipline/potence.png
-  # - /assets/videos/discipline2.mp4
 ---
 
 Les Brujah sont des vampires passionnés, enflammés par la révolte et l’idéalisme. Leur colère est aussi légendaire que leur soif de liberté.
