@@ -1,8 +1,8 @@
 ---
 layout: clan
 title: "Clan Toreador"
-section: clans
-permalink: /clans/toreador/
+section: clan
+permalink: /clan/toreador/
 header:
   overlay_image: /assets/images/clans/toreador-banner.jpg
   overlay_filter: 0.5
