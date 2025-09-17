@@ -1,10 +1,10 @@
 main:
   - title: "Qui sommes-nous ?"
     url: /qui_sommes_nous/
+  - title: "Nos valeurs"
+    url: /rules/
   - title: "L'univers"
     url: /univers/
-  - title: "Nos valeurs et nos règles"
-    url: /rules/
   - title: "Contact & réseaux"
     url: /contact/
     target: _blank
