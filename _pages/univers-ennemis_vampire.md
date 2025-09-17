@@ -3,6 +3,7 @@ layout: single
 title: "Les Ennemis des Vampires"
 permalink: /univers/ennemis_vampire/
 mermaid: "true"
+section: univers
 ---
 
 Les Ennemis des Vampires
