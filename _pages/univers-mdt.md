@@ -1,7 +1,7 @@
 ---
 layout: single
 title: "Le Monde des Ténèbres"
-permalink: /mdt/
+permalink: /univers/mdt/
 ---
 
 Le Monde des Ténèbres
