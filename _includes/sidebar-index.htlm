@@ -1,1 +1,32 @@
+<div class="sidebar sticky page__sidebar">
+  <h3>L'association</h3>
+  <ul class="nav__list">
+    <li class="{% if page.url == '/' %}active{% endif %}"><a href="{{ site.baseurl }}/">Accueil</a></li>
+    <li class="{% if page.url == '/qui_sommes_nous/' %}active{% endif %}"><a href="{{ site.baseurl }}/qui_sommes_nous/">Qui sommes nous?</a></li>
+    <li class="{% if page.url == '/rules/' %}active{% endif %}"><a href="{{ site.baseurl }}/rules/">Nos valeurs et nos règles</a></li>
+    <li class="{% if page.url == '/univers/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/">L'univers</a></li>
+    <li class="{% if page.url == '/contact/ %}active{% endif %}"><a href="{{ site.baseurl }}/contact/">Contact & réseaux</a></li>
+  </ul>
+</div>
+<style>
+.sidebar .nav__list .active > a {
+  font-weight: bold;
+  font-size: 1.15em;                   
+  border-left: 5px solid #ff5f6d;
+  background: linear-gradient(90deg, #ff5f6d 0%, #ffc371 100%); 
+  padding-left: 14px;           
+  position: relative;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  transition: all 0.2s ease;
+  padding: 5px;
+  color: white !important;
+  text-decoration: unset;
+}
 
+/* Petit effet hover pour renforcer encore */
+.sidebar .nav__list .active > a:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+</style>
