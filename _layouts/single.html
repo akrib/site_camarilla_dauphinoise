@@ -2,6 +2,11 @@
 layout: default
 ---
 
+{% if page.call_to_action or page.description %}
+<meta name="description" content="{{ page.call_to_action | default: page.description }}">
+<meta property="og:description" content="{{ page.call_to_action | default: page.description }}">
+{% endif %}
+
 <!--  test de couleur pour le site a retirer en prod -->
 {% if page.custom_css == "neon" %}
 <link rel="stylesheet" href="{{ '/assets/css/neon_theme.css' | relative_url }}">
