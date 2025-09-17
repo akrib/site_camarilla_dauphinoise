@@ -40,14 +40,9 @@ Chaque partie est conçue pour être immersive, mais jamais au détriment du con
 - Une **liste des membres formés aux premiers gestes de secours** est tenue à jour.
 - Une **trousse de premiers secours** est disponible et opérationnelle à chaque événement.
 
----
+## 🗣️ Expression libre et gestion des situations
+À la fin de chaque partie, un temps est dédié à l’expression libre des joueurs. Chacun peut partager son ressenti, ses impressions sur le déroulement du jeu, et proposer des améliorations pour les prochaines sessions. Ce moment d’échange est essentiel pour maintenir une dynamique bienveillante et collaborative au sein de l’association.
 
-## 🤝 Un cadre rassurant pour nos partenaires
-
-Nous mettons tout en œuvre pour que nos activités se déroulent dans un **cadre sécurisé, respectueux et structuré**, en conformité avec les attentes des établissements publics et privés susceptibles de nous accueillir.
-
-Notre association est fière de son **expérience de plus de 30 ans**, de son **ancrage local** et de sa **démarche responsable**.
-
-Pour en savoir plus sur notre histoire et nos activités, consultez la page [Qui sommes-nous](https://akrib.github.io/site_camarilla_dauphinoise/qui_sommes_nous/).
+Les situations survenant en jeu sont prises en charge par l’équipe des maîtres de jeu, également appelés Conteurs, qui veillent à la cohérence narrative et au respect des règles. En revanche, tout problème hors jeu (relationnel, organisationnel, etc.) est traité avec sérieux et discrétion par le Conseil d’administration de l’association, garant d’un cadre sain et respectueux pour tous.
 
 ---
