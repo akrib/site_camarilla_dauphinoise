@@ -2,6 +2,7 @@
 layout: single
 title: "Nos valeurs et nos règles"
 permalink: /rules/
+section: "rules"
 header:
   overlay_image: /assets/images/univers/masquerade-banner.jpg
   overlay_filter: 0.5
