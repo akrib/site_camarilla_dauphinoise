@@ -2,9 +2,7 @@
 title: "Mentions légales"
 layout: single
 permalink: /mentions-legales/
-author_profile: false
-sidebar:
-  nav: "main"
+section: "rules"
 ---
 
 ## 🏛️ Informations générales
