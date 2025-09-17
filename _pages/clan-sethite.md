@@ -1,8 +1,8 @@
 ---
 layout: clan
 title: "Clan Sethite"
-section: clans
-permalink: /clans/sethite/
+section: clan
+permalink: /clan/sethite/
 header:
   overlay_image: /assets/images/clans/sethite-banner.jpg
   overlay_filter: 0.5
