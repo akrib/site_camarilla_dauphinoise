@@ -1,8 +1,8 @@
 ---
 layout: clan
 title: "Clan Gangrel"
-custom_sidebar: sidebar-clans.html
-permalink: /clans/gangrel/
+permalink: /clan/gangrel/
+section: clan
 header:
   overlay_image: /assets/images/clans/gangrel-banner.jpg
   overlay_filter: 0.5
