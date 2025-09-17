@@ -20,8 +20,8 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
 <iframe src="https://discord.com/widget?id=626455168116064297&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
   </div>
 </div>
-<div style=" margin:10px;display: grid; grid-template-columns: 350px 300px 350px;">
-<div style="min-width:500px;max-width:500px; "></div>
+<!-- <div style=" margin:10px;display: grid; grid-template-columns: 350px 300px 350px;">
+<div style="min-width:500px;max-width:500px; "></div> -->
 <div style="text-align: center;">
   <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
 </div>
@@ -59,10 +59,11 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
   <a href="https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade"><img src="https://img.shields.io/badge/Wiki-Vampire-red?style=for-the-badge&logo=wikipedia&logoColor=white"></a>
 
 
-  </div>
-    <!-- Colonne Widget Discord -->
+ <!-- </div> 
+    
 
-</div>
+</div> -->
+
 
 
 
