@@ -2,6 +2,7 @@
 layout: single
 title: "Autres Concepts Importants"
 permalink: /univers/autres_concepts/
+section: univers
 ---
 
 Autres Concepts Importants
