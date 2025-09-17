@@ -1,18 +1,40 @@
 <div class="sidebar sticky page__sidebar">
   <h3>Navigation Clan</h3>
-  <ul>
-    <li><a href="{{ site.baseurl }}/clans/brujah/">Brujah</a></li>
-    <li><a href="{{ site.baseurl }}/clans/malkavian/">Malkavian</a></li>
-    <li><a href="{{ site.baseurl }}/clans/gangrel/">Gangrel</a></li>
-    <li><a href="{{ site.baseurl }}/clans/nosferatu/">Nosferatu</a></li>
-    <li><a href="{{ site.baseurl }}/clans/toreador/">Toreador</a></li>
-    <li><a href="{{ site.baseurl }}/clans/tremere/">Tremere</a></li>
-    <li><a href="{{ site.baseurl }}/clans/ventrue/">Ventrue</a></li>
-    <li><a href="{{ site.baseurl }}/clans/lasombra/">Lasombra</a></li>
-    <li><a href="{{ site.baseurl }}/clans/tzimisce/">Tzimisce</a></li>
-    <li><a href="{{ site.baseurl }}/clans/giovanni/">Giovanni</a></li>
-    <li><a href="{{ site.baseurl }}/clans/ravnos/">Ravnos</a></li>
-    <li><a href="{{ site.baseurl }}/clans/sethite/">Sethite</a></li>
-    <li><a href="{{ site.baseurl }}/clans/assamite/">Assamite</a></li>
+  <ul class="nav__list">
+    <li class="{% if page.url == '/clan/assamite/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/assamite/">Assamite</a></li>
+    <li class="{% if page.url == '/clan/brujah/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/brujah/">Brujah</a></li>
+    <li class="{% if page.url == '/clan/gangrel/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/gangrel/">Gangrel</a></li>
+    <li class="{% if page.url == '/clan/giovanni/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/giovanni/">Giovanni</a></li>
+    <li class="{% if page.url == '/clan/lasombra/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/lasombra/">Lasombra</a></li>
+    <li class="{% if page.url == '/clan/malkavian/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/malkavian/">Malkavian</a></li>
+    <li class="{% if page.url == '/clan/nosferatu/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/nosferatu/">Nosferatu</a></li>    
+    <li class="{% if page.url == '/clan/ravnos/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/ravnos/">Ravnos</a></li>
+    <li class="{% if page.url == '/clan/sethite/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/sethite/">Sethite</a></li>
+    <li class="{% if page.url == '/clan/toreador/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/toreador/">Toreador</a></li>
+    <li class="{% if page.url == '/clan/tremere/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/tremere/">Tremere</a></li>
+    <li class="{% if page.url == '/clan/tzimisce/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/tzimisce/">Tzimisce</a></li>
+    <li class="{% if page.url == '/clan/ventrue/' %}active{% endif %}"><a href="{{ site.baseurl }}/clan/ventrue/">Ventrue</a></li>
   </ul>
 </div>
+<style>
+.sidebar .nav__list .active > a {
+  font-weight: bold;
+  font-size: 1.15em;                   
+  border-left: 5px solid #ff5f6d;
+  background: linear-gradient(90deg, #ff5f6d 0%, #ffc371 100%); 
+  padding-left: 14px;           
+  position: relative;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  transition: all 0.2s ease;
+  padding: 5px;
+  color: white !important;
+  text-decoration: unset;
+}
+
+/* Petit effet hover pour renforcer encore */
+.sidebar .nav__list .active > a:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+</style>
