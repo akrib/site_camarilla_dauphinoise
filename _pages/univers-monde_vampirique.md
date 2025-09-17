@@ -1,7 +1,7 @@
 ---
 layout: single
 title: "Le Monde Vampirique"
-permalink: /monde_vampirique/
+permalink: /univers/monde_vampirique/
 ---
 
 Le Monde Vampirique
