@@ -1,0 +1,17 @@
+# Autoriser tous les robots à indexer le site
+User-agent: *
+Allow: /
+
+# Exclure les dossiers inutiles à l'indexation
+Disallow: /assets/
+Disallow: /node_modules/
+Disallow: /vendor/
+Disallow: /_site/
+Disallow: /_sass/
+Disallow: /_includes/
+
+# Lien vers le sitemap pour aider Google et les moteurs à indexer
+Sitemap: https://akrib.github.io/site_camarilla_dauphinoise/sitemap.xml
+
+# Facultatif : taux de crawl (limite le nombre de requêtes par seconde si besoin)
+# Crawl-delay: 10
