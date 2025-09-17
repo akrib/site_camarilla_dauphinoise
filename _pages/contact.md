@@ -10,15 +10,15 @@ Informations pour nous contacter et nos réseaux sociaux.
 L’équipe des Maîtres du Jeu, aussi appelée équipe de conte, gère toutes les questions liées au jeu au sein de l’association : l’histoire, le respect des règles de jeu, la création de fiches de personnage, etc.<br/>
 <a href="mailto:conte.grenoble@gmail.com"><img src="https://img.shields.io/badge/Email-conte.grenoble@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white"></a>
 
-
- </div>
- <div style="min-width:500px;max-width:500px; ">
  <h2> Le Conseil d'Administration</h2>
 Le conseil d'administration est chargé de toutes les questions hors-jeu de l’association : gestion des inscriptions, de la salle, de la trésorerie, du matériel, etc.<br/>
 <a href="mailto:ca.gratianopolis@gmail.com"><img src="https://img.shields.io/badge/Email-ca.gratianopolis@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white"></a>
 
-
 </div>
+ <div style="min-width:500px;max-width:500px; ">
+    <h2>Le discord</h2>
+<iframe src="https://discord.com/widget?id=626455168116064297&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+  </div>
 </div>
 <div style=" margin:10px;display: grid; grid-template-columns: 350px 300px 350px;">
 <div style="min-width:500px;max-width:500px; "></div>
@@ -61,10 +61,7 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
 
   </div>
     <!-- Colonne Widget Discord -->
- <div style="min-width:500px;max-width:500px; ">
-    <h2>Le discord</h2>
-<iframe src="https://discord.com/widget?id=626455168116064297&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
-  </div>
+
 </div>
 
 
