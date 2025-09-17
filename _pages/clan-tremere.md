@@ -1,8 +1,8 @@
 ---
 layout: clan
 title: "Clan Tremere"
-section: clans
-permalink: /clans/tremere/
+section: clan
+permalink: /clan/tremere/
 header:
   overlay_image: /assets/images/clans/tremere-banner.jpg
   overlay_filter: 0.5
