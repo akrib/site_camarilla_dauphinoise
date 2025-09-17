@@ -1,7 +1,7 @@
 ---
 layout: single
 title: "Les Statuts d’Âge"
-permalink: /status_age/
+permalink: /univers/status_age/
 ---
 
 
