@@ -1,7 +1,7 @@
 ---
 layout: single
 title: "Autres Concepts Importants"
-permalink: /autres_concepts/
+permalink: /univers/autres_concepts/
 ---
 
 Autres Concepts Importants
