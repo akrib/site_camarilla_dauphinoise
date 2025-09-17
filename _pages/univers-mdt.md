@@ -2,6 +2,7 @@
 layout: single
 title: "Le Monde des Ténèbres"
 permalink: /univers/mdt/
+section: univers
 ---
 
 Le Monde des Ténèbres
