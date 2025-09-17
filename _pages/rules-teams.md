@@ -1,7 +1,7 @@
 ---
 title: "Nos équipes"
 layout: single
-permalink: /teams/
+permalink: /rules/teams/
 section: "rules"
 ---
 
