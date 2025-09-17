@@ -16,6 +16,19 @@ Derrière la façade du quotidien, des créatures surnaturelles — vampires, lo
 
 ---
 
+
+## Mind’s Eye Theater
+
+_Mind’s Eye Theater_ est l’adaptation **grandeur nature (LARP)** de _Vampire : La Mascarade_.  
+Les joueurs incarnent des vampires et interagissent entre eux à travers :
+
+- **Intrigues politiques** (alliances, trahisons, complots).
+- **Duels sociaux** (rhétorique, intimidation, séduction).
+- **Conflits physiques** (résolus par un système de jeu simplifié, souvent basé sur pierre-feuille-ciseaux).  
+    C’est un théâtre d’ombres et de manipulations où chaque décision peut changer le destin d’un clan ou d’une cité entière.
+
+---
+
 ## Le Monde Vampirique
 
 Les vampires sont des prédateurs immortels, condamnés à vivre de sang et de complots.  
@@ -80,14 +93,4 @@ Les vampires ne règnent pas seuls dans le Monde des Ténèbres. Ils font face �
 - **Le Sang (Vitae)** : Source de pouvoir, carburant de leurs disciplines et de leur survie.
 - **Les Disciplines** : Pouvoirs surnaturels propres aux vampires (force, célérité, invisibilité, sorcellerie, etc.).
 
----
 
-## Mind’s Eye Theater
-
-_Mind’s Eye Theater_ est l’adaptation **grandeur nature (LARP)** de _Vampire : La Mascarade_.  
-Les joueurs incarnent des vampires et interagissent entre eux à travers :
-
-- **Intrigues politiques** (alliances, trahisons, complots).
-- **Duels sociaux** (rhétorique, intimidation, séduction).
-- **Conflits physiques** (résolus par un système de jeu simplifié, souvent basé sur pierre-feuille-ciseaux).  
-    C’est un théâtre d’ombres et de manipulations où chaque décision peut changer le destin d’un clan ou d’une cité entière.
