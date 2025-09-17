@@ -1,8 +1,8 @@
 ---
 layout: clan
 title: "Clan Nosferatu"
-section: clans
-permalink: /clans/nosferatu/
+section: clan
+permalink: /clan/nosferatu/
 header:
   overlay_image: /assets/images/clans/nosferatu-banner.jpg
   overlay_filter: 0.5
