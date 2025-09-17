@@ -1,7 +1,7 @@
 ---
 title: "Mentions légales"
 layout: single
-permalink: /mentions-legales/
+permalink: /rules/mentions-legales/
 section: "rules"
 ---
 
