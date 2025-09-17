@@ -39,7 +39,30 @@ Voici un aperçu des principaux clans :
 - **[Ravnos]({{ site.baseurl }}/clans/ravnos/)** : Voyageurs et illusionnistes, maîtres de la ruse et de l’évasion.
 - **[Sethite]({{ site.baseurl }}/clans/sethite/)** : Initiés aux mystères antiques, mystérieux et manipulateurs, liés aux dieux anciens.
 - **[Assamite]({{ site.baseurl }}/clans/assamite/)** : Assassins silencieux et précis, redoutables dans l’art du meurtre et de la discrétion.
+<br/>
 
-<div style="margin-top: 2em; padding-top: 1em; border-top: 1px solid #ccc; text-align: center;">
-  <p>Encore indécis ? <a href="{{ site.baseurl }}//quiz-clan/" style="color:#0066cc; font-weight:bold; text-decoration:none;">Réalise ce quiz pour connaître ton affinité avec les clans de la Camarilla !</a></p>
+
+<div style="margin-top: 2em; text-align: center;">
+  <a href="{{ site.baseurl }}//quiz-clan/"
+     style="
+       display: inline-block;
+       padding: 12px 24px;
+       background: linear-gradient(135deg, #ff5f6d, #ffc371);
+       color: #fff;
+       font-weight: bold;
+       font-size: 16px;
+       border-radius: 25px;
+       text-decoration: none;
+       box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+       transition: all 0.2s ease;
+     ">
+    ❓ Encore indécis ? Réalise ce quiz pour découvrir ton clan de la Camarilla !
+  </a>
 </div>
+
+<style>
+  div a:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 10px rgba(0,0,0,0.3);
+  }
+</style>
