@@ -20,6 +20,14 @@ repo temporaire du site de la camarilla dauphinoise
 
 - faire un formulaire d'enregistrement qui envoi un mail au conte et au ca (a voir qui est en dest)
 
+- ajouter des photos rassurantes pour les mairies 
+ - joueur en train de ranger en fin de partie
+ - CA en train de remplir de la paperasse
+ - joueurs de plusieurs générations en train de joueur ensemble
+ - activités culturelles (mentionner les joutes, les chants, les monologues, l'improvisation etc.)
+ - mettre l'âge du plus jeune et du plus vieux joueur 
+ - ajouter le règlement intérieur, les documents du CA. 
+
 
 
 
