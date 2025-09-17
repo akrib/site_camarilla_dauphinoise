@@ -39,5 +39,5 @@ Accueillir la **Camarilla Dauphinoise**, c’est :
 ## Contact  
 Nous serions ravis d’échanger avec vous et de construire un partenariat adapté à vos disponibilités et à vos espaces.  
 
-📩 **Contactez-nous** : **ca.gratianopolis@gmail.com**
+📩 **Contactez-nous** : **ca.gratianopolis@gmail.com**<br/>
 📞 **Téléphone** : **06 60 78 84 44**
