@@ -1,8 +1,8 @@
 ---
 layout: clan
 title: "Clan Lasombra"
-section: clans
-permalink: /clans/lasombra/
+section: clan
+permalink: /clan/lasombra/
 header:
   overlay_image: /assets/images/clans/lasombra-banner.jpg
   overlay_filter: 0.5
