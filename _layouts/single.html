@@ -58,6 +58,8 @@ layout: default
   {% include sidebar-contacts.html %}
 {% elsif page.section == "rules" %}
   {% include sidebar-rules.html %}
+{% elsif page.section == "index" %}
+  {% include sidebar-index.html %}
 {% else %}
   {% include sidebar-default.html %}
 {% endif %}
