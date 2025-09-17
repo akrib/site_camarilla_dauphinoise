@@ -12,3 +12,12 @@
     <li class="{% if page.url == '/univers/autres_concepts/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/autres_concepts/">Autres Concepts Importants</a></li>
   </ul>
 </div>
+<style>
+  .sidebar .nav__list .active > a {
+  font-weight: bold;
+  color: #ff5f6d;   // couleur d’accent
+  border-left: 4px solid #ff5f6d;
+  background: rgba(255, 95, 109, 0.1);
+  padding-left: 8px;
+}
+</style>
