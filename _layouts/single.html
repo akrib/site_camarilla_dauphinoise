@@ -13,6 +13,13 @@ layout: default
 <link rel="stylesheet" href="{{ '/assets/css/lightsplat.css' | relative_url }}">
 {% endif %}
 
+{% if page.mermaid == "true" %}
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
+{% endif %}
+
 {% if page.carousel_css == "carousel" %}
 <link rel="stylesheet" href="{{ '/assets/css/module/clan-carousel.css' | relative_url }}">
 {% endif %}
