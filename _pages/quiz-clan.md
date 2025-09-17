@@ -103,3 +103,42 @@ layout: single
   }
 })();
 </script>
+<style>
+  #clan-quiz button {
+    display: inline-block;
+    width: 100%;          /* Tous les boutons prennent toute la largeur de leur conteneur */
+    max-width: 280px;     /* Limite la largeur sur grand écran */
+    padding: 12px 20px;   /* Hauteur uniforme */
+    margin: 8px auto;     /* Espacement entre boutons */
+    border: 2px solid #444;
+    border-radius: 8px;
+    background-color: #eee;
+    color: #222;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  #clan-quiz button:hover {
+    background-color: #444;
+    color: #fff;
+    transform: scale(1.05);
+  }
+
+  /* Centrer les boutons dans leur conteneur */
+  .question {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Assurer une uniformité sur petits écrans */
+  @media (max-width: 480px) {
+    #clan-quiz button {
+      font-size: 14px;
+      padding: 10px 16px;
+    }
+  }
+</style>
