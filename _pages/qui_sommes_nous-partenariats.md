@@ -1,8 +1,8 @@
 ---
 title: "Partenariats & Prêt de Salle"
-permalink: /partenariat/
+permalink: /qui_sommes_nous/partenariat/
 layout: single
-author_profile: false
+section: qui_sommes_nous
 ---
 
 ## Qui sommes-nous ?  
