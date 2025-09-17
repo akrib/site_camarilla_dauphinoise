@@ -2,7 +2,7 @@
 layout: single
 title: "Clans"
 section: clans
-permalink: /clans/
+permalink: /univers/clans/
 carousel_css: "carousel"
 ---
 
