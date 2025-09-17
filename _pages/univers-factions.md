@@ -10,6 +10,7 @@ excerpt: "Camarilla, Anarchs, Sabbat et bien d’autres s’affrontent dans une 
 toc: true
 toc_label: "Navigation"
 toc_icon: "sitemap"
+section: univers
 ---
 
 # [La Camarilla]({{ site.baseurl }}/factions/camarilla/)
