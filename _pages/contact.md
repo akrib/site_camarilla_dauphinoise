@@ -7,7 +7,7 @@ permalink: /contact/
 <div style="text-align: center;">
 Informations pour nous contacter et nos réseaux sociaux.
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
- <div style="min-width:500px;max-width:500px;text-align: left; ">
+ <div style="min-width:500px;max-width:500px;text-align: justify; ">
  <h2> L'Equipe des Maitres du jeu</h2>
 L’équipe des Maîtres du Jeu, aussi appelée équipe de conte, gère toutes les questions liées au jeu au sein de l’association : l’histoire, le respect des règles de jeu, la création de fiches de personnage, etc.<br/>
 <a href="mailto:conte.grenoble@gmail.com"><img src="https://img.shields.io/badge/Email-conte.grenoble@gmail.com-blue?style=for-the-badge&logo=gmail&logoColor=white"></a>
@@ -42,9 +42,9 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
   <a href="http://www.camarilla-fr.com/forum/index.php"><img src="https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=phpbb&logoColor=white"></a>
   <a href="https://facebook.com/Federation.Camarilla.France"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
 </div>
-  <div style="text-align: center;">
+<br/><div style="text-align: center;">
   <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
-</div>
+</div><br/>
 <div style="text-align: left;">
   <h2>Nos partenaires</h2>
   <p>Les vampires ne vous plaisent pas ? Essayez les autres univers de nos partenaires et découvrez des expériences immersives tout aussi captivantes !</p>
@@ -61,9 +61,6 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
  <h2>Autres liens</h2><br/>
   <a href="https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade"><img src="https://img.shields.io/badge/Wiki-Vampire-red?style=for-the-badge&logo=wikipedia&logoColor=white"></a>
 </div>
- 
-    
-
 </div>
 
 
