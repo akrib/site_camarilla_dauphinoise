@@ -2,6 +2,7 @@
 layout: single
 title: "Les Ennemis des Vampires"
 permalink: /ennemis_vampire/
+mermaid: "true"
 ---
 
 Les Ennemis des Vampires
