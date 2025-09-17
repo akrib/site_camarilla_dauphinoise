@@ -1,7 +1,7 @@
 ---
 layout: single
 title: "L'association"
-permalink: /notre_activite/
+permalink: /qui_sommes_nous/notre_activite/
 section: qui_sommes_nous
 header:
   overlay_image: /assets/images/univers/masquerade-banner.jpg
