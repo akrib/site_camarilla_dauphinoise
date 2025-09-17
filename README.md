@@ -18,6 +18,11 @@ repo temporaire du site de la camarilla dauphinoise
 - faire la balise meta pour être plus facilement trouvable des site de recherche 
 - faire le site map et robo.txt pour améliorer le référencement 
 - https://pagespeed.web.dev/ pour évaluer la vitesse d'affichage du site et suivre les recommandations afin d'optimiser sa visibilité.
+- utiliser lighthouse (opti seo)
+ - Ouvre ton site dans Google Chrome.
+ - Clic droit > "Inspecter" > onglet "Lighthouse".
+ - Clique sur "Générer un rapport".
+
 
 - faire un formulaire d'enregistrement qui envoi un mail au conte et au ca (a voir qui est en dest)
 
