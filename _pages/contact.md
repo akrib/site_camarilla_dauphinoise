@@ -25,11 +25,11 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
 <div style="text-align: center;">
   <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
 </div>
-<div style="min-width:500px;max-width:500px; "></div>
-</div>
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-  <!-- Colonne Liens utiles -->
- <div style="min-width:500px;max-width:500px; ">
+<!-- <div style="min-width:500px;max-width:500px; "></div>
+</div> -->
+<!-- <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+  - Colonne Liens utiles
+ <div style="min-width:500px;max-width:500px; "> -->
   <h2>Liens pour la Camarilla Dauphinoise</h2>
   Nos autres médias et points de contact :
   <a href="https://facebook.com/camarilla.dauphinoise"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
