@@ -1,27 +1,25 @@
-# Minimal Mistakes remote theme starter
+repo temporaire du site de la camarilla dauphinoise
 
-Click [**Use this template**](https://github.com/mmistakes/mm-github-pages-starter/generate) button above for the quickest method of getting started with the [Minimal Mistakes Jekyll theme](https://github.com/mmistakes/minimal-mistakes).
+## todo list
+- modification page univers
+ - ajout section d'organisation de la ville
+- modifier la sidebar univers pour ajouter organisation
+-faire page organisation 
+ -ajouter l'organigramme en mermaid
 
-Contains basic configuration to get you a site with:
+- lister les pages vides et les remplir
 
-- Sample posts.
-- Sample top navigation.
-- Sample author sidebar with social links.
-- Sample footer links.
-- Paginated home page.
-- Archive pages for posts grouped by year, category, and tag.
-- Sample about page.
-- Sample 404 page.
-- Site wide search.
+- ajouter widget facebook a la page contact
+- ajouter google analitics pour avoir des stats sur le site
+- lister les sites partenaires, les site communautaire ou s'enregistrer, les site de référencement, les sites de LARP
 
-Replace sample content with your own and [configure as necessary](https://mmistakes.github.io/minimal-mistakes/docs/configuration/).
+- générer le qrcode du site et de la page Facebook 
 
----
+- faire la balise meta pour être plus facilement trouvable des site de recherche 
+- faire le site map pour améliorer le référencement 
 
-## Troubleshooting
+- faire un formulaire d'enregistrement qui envoi un mail au conte et au ca (a voir qui est en dest)
 
-If you have a question about using Jekyll, start a discussion on the [Jekyll Forum](https://talk.jekyllrb.com/) or [StackOverflow](https://stackoverflow.com/questions/tagged/jekyll). Other resources:
 
-- [Ruby 101](https://jekyllrb.com/docs/ruby-101/)
-- [Setting up a Jekyll site with GitHub Pages](https://jekyllrb.com/docs/github-pages/)
-- [Configuring GitHub Metadata](https://github.com/jekyll/github-metadata/blob/master/docs/configuration.md#configuration) to work properly when developing locally and avoid `No GitHub API authentication could be found. Some fields may be missing or have incorrect data.` warnings.
+
+
