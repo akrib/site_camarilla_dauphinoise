@@ -26,22 +26,26 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
 <div style="text-align: center;">
   <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
 </div>
-
+<div style="text-align: left;">
   <h2>Liens pour la Camarilla Dauphinoise</h2>
   Nos autres médias et points de contact :<br/>
   <a href="https://facebook.com/camarilla.dauphinoise"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
   <a href="https://discord.gg/wTGMEGVcWk"><img src="https://img.shields.io/badge/Discord%20-Rejoindre%20le%20discord-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
+</div>
 <div style="text-align: center;">
   <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
 </div>
+<div style="text-align: left;">
  <h2>Fédération de Camarilla Française</h2>
   La fédération d’associations loi 1901 à but ludique qui fédère la Camarilla Dauphinoise et près d’une vingtaine de villes dans tout le pays, englobant plus de 600 participants.<br/>
   <a href="https://camarilla-fr.com/"><img src="https://img.shields.io/badge/Site-Voir-red?style=for-the-badge&logo=internetarchive&logoColor=white"></a>
   <a href="http://www.camarilla-fr.com/forum/index.php"><img src="https://img.shields.io/badge/Forum-Communauté-orange?style=for-the-badge&logo=phpbb&logoColor=white"></a>
   <a href="https://facebook.com/Federation.Camarilla.France"><img src="https://img.shields.io/badge/Facebook-Suivre-1877F2?style=for-the-badge&logo=facebook&logoColor=white"></a>
+</div>
   <div style="text-align: center;">
   <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
 </div>
+<div style="text-align: left;">
   <h2>Nos partenaires</h2>
   <p>Les vampires ne vous plaisent pas ? Essayez les autres univers de nos partenaires et découvrez des expériences immersives tout aussi captivantes !</p>
 
@@ -52,10 +56,12 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
 <!-- <div style="text-align: center;">
   <img src="{{ site.baseurl }}/assets/separator.svg"  style="" >
 </div> -->
+</div><br/>
 ---
+  <div style="text-align: center;">
  <h2>Autres liens</h2><br/>
   <a href="https://fr.wikipedia.org/wiki/Vampire:_La_Mascarade"><img src="https://img.shields.io/badge/Wiki-Vampire-red?style=for-the-badge&logo=wikipedia&logoColor=white"></a>
-
+</div>
  
     
 
