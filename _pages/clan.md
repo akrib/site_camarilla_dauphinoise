@@ -41,5 +41,5 @@ Voici un aperçu des principaux clans :
 - **[Assamite]({{ site.baseurl }}/clans/assamite/)** : Assassins silencieux et précis, redoutables dans l’art du meurtre et de la discrétion.
 
 <div style="margin-top: 2em; padding-top: 1em; border-top: 1px solid #ccc; text-align: center;">
-  <p>Encore indécis ? <a href="/quiz-clan/" style="color:#0066cc; font-weight:bold; text-decoration:none;">Réalise ce quiz pour connaître ton affinité avec les clans de la Camarilla !</a></p>
+  <p>Encore indécis ? <a href="{{ site.baseurl }}//quiz-clan/" style="color:#0066cc; font-weight:bold; text-decoration:none;">Réalise ce quiz pour connaître ton affinité avec les clans de la Camarilla !</a></p>
 </div>
