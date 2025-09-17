@@ -1,8 +1,9 @@
 ---
-layout: splash
+layout: single
 title: "Bienvenue sur le site officiel de la <br/> **Camarilla Dauphinoise**"
 classes: wide
 permalink: /
+section: index
 header:
   overlay_image: /assets/images/hero-bg.jpg
   overlay_filter: 0.5 # optionnel, fonce l’image pour que le texte reste lisible
