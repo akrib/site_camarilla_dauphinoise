@@ -2,6 +2,11 @@
 layout: single
 title: "Nos valeurs et nos règles"
 permalink: /rules/
+header:
+  overlay_image: /assets/images/univers/masquerade-banner.jpg
+  overlay_filter: 0.5
+  caption: "Un cadre ludique, encadré et bienveillant"
+excerpt: "La Camarilla Dauphinoise propose un jeu de rôle grandeur nature dans un cadre sécurisé, respectueux et structuré, favorisant l'expression théâtrale et la cohésion sociale."
 ---
 
 ## 🎭 Une pratique théâtrale encadrée
