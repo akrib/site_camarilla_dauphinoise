@@ -1,1 +1,84 @@
-<!-- social-share.html Placehoder -->
+<div class="share-links">
+  <span>📢 Partager :</span>
+
+  <!-- Icônes principales -->
+  <a href="https://www.facebook.com/sharer/sharer.php?u={{ page.url | absolute_url }}" target="_blank" rel="noopener" aria-label="Partager sur Facebook">
+    <i class="fab fa-facebook"></i>
+  </a>
+
+  <a href="https://twitter.com/intent/tweet?url={{ page.url | absolute_url }}&text={{ page.title }}" target="_blank" rel="noopener" aria-label="Partager sur Twitter">
+    <i class="fab fa-twitter"></i>
+  </a>
+
+  <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ page.url | absolute_url }}&title={{ page.title }}" target="_blank" rel="noopener" aria-label="Partager sur LinkedIn">
+    <i class="fab fa-linkedin"></i>
+  </a>
+
+  <a href="mailto:?subject={{ page.title }}&body={{ page.url | absolute_url }}" aria-label="Partager par email">
+    <i class="fas fa-envelope"></i>
+  </a>
+
+  <!-- Bouton Plus -->
+  <a href="#" onclick="document.getElementById('more-share').style.display='block'; return false;" aria-label="Plus d'options">
+    <i class="fas fa-plus-circle"></i>
+  </a>
+</div>
+
+<!-- Popup -->
+<div id="more-share" class="share-popup" style="display:none;">
+  <div class="share-popup-content">
+    <span class="close" onclick="document.getElementById('more-share').style.display='none';">&times;</span>
+    <h3>Plus d’options de partage</h3>
+
+    <a href="https://wa.me/?text={{ page.title }}%20{{ page.url | absolute_url }}" target="_blank" rel="noopener" aria-label="Partager sur WhatsApp">
+      <i class="fab fa-whatsapp"></i> WhatsApp
+    </a><br>
+
+    <a href="https://www.reddit.com/submit?url={{ page.url | absolute_url }}&title={{ page.title }}" target="_blank" rel="noopener" aria-label="Partager sur Reddit">
+      <i class="fab fa-reddit"></i> Reddit
+    </a><br>
+
+    <a href="https://mastodon.social/share?text={{ page.title }}%20{{ page.url | absolute_url }}" target="_blank" rel="noopener" aria-label="Partager sur Mastodon">
+      <i class="fab fa-mastodon"></i> Mastodon
+    </a><br>
+
+    <a href="https://t.me/share/url?url={{ page.url | absolute_url }}&text={{ page.title }}" target="_blank" rel="noopener" aria-label="Partager sur Telegram">
+      <i class="fab fa-telegram"></i> Telegram
+    </a><br>
+  </div>
+</div>
+
+<!-- Styles basiques -->
+<style>
+.share-links {
+  margin-top: 1em;
+}
+.share-links a {
+  margin-right: 0.5em;
+  font-size: 1.4em;
+  color: #555;
+}
+.share-links a:hover {
+  color: #000;
+}
+
+.share-popup {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.share-popup-content {
+  background: #fff;
+  padding: 1.5em;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+}
+.share-popup .close {
+  float: right;
+  font-size: 1.5em;
+  cursor: pointer;
+}
+</style>
