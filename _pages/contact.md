@@ -65,7 +65,30 @@ Le conseil d'administration est chargé de toutes les questions hors-jeu de l’
     <h2>Le discord</h2>
 <iframe src="https://discord.com/widget?id=626455168116064297&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
   </div>
+<!-- Facebook SDK -->
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" 
+  src="https://connect.facebook.net/fr_FR/sdk.js#xfbml=1&version=v18.0" 
+  nonce="abc123">
+</script>
+
+<!-- Facebook Page Plugin -->
+<div class="fb-page" 
+     data-href="https://www.facebook.com/camarilla.dauphinoise" 
+     data-tabs="timeline" 
+     data-width="500" 
+     data-height="" 
+     data-small-header="false" 
+     data-adapt-container-width="true" 
+     data-hide-cover="false" 
+     data-show-facepile="true">
+  <blockquote cite="https://www.facebook.com/camarilla.dauphinoise" 
+              class="fb-xfbml-parse-ignore">
+    <a href="https://www.facebook.com/camarilla.dauphinoise">Camarilla Dauphinoise</a>
+  </blockquote>
 </div>
+</div>
+
 
 
 
