@@ -1,7 +1,7 @@
 ---
 layout: single
 title: "Les différentes factions"
-permalink: /factions/
+permalink: /univers/factions/
 header:
   overlay_image: /assets/images/factions/factions-banner.jpg
   overlay_filter: 0.4
