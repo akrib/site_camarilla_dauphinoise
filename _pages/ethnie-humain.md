@@ -1,7 +1,8 @@
 ---
 layout: clan
 title: "Les Humains"
-permalink: /clans/humain/
+permalink: /ethnies/humain/
+section: ethnie
 header:
   overlay_image: /assets/images/factions/humain-banner.jpg
   overlay_filter: 0.5
