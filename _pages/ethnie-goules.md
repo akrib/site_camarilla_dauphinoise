@@ -1,7 +1,8 @@
 ---
 layout: clan
 title: "Les Ghoules"
-permalink: /clans/goule/
+permalink: /ethnies/goule/
+section: ethnie
 header:
   overlay_image: /assets/images/factions/goule-banner.jpg
   overlay_filter: 0.5
