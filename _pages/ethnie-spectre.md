@@ -1,5 +1,7 @@
 ---
 layout: clan
-title: "Les Spéctres"
+title: "Les Spectres"
 permalink: /ethnies/spectre/
 section: ethnie
+---
+wip
