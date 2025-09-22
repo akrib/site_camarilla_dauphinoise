@@ -1,7 +1,8 @@
 ---
 layout: clan
 title: "L’Inquisition"
-permalink: /clans/inquisition/
+permalink: /ethnies/inquisition/
+section: ethnie
 header:
   overlay_image: /assets/images/factions/inquisition-banner.jpg
   overlay_filter: 0.5
