@@ -1,7 +1,7 @@
 ---
 layout: single
 title: "Les Ennemis des Vampires"
-permalink: /univers/ennemis_vampire/
+permalink: /univers/ethnies/
 mermaid: "true"
 section: univers
 ---
