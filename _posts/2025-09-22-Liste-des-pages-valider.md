@@ -1,4 +1,13 @@
-# Liste des pages a valider
+---
+layout: post-centered
+title: "Liste des pages à valider"
+categories:
+  - blog
+tags:
+  - site_web
+  - update
+---
+# 
 
 ## Pages principales
 [Page d'accueil](https://akrib.github.io/site_camarilla_dauphinoise/)
