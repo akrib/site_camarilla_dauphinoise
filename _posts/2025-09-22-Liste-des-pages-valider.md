@@ -7,7 +7,7 @@ tags:
   - site_web
   - update
 ---
-# 
+# 73 pages
 
 ## Pages principales
 [Page d'accueil](https://akrib.github.io/site_camarilla_dauphinoise/)<br/>
