@@ -49,7 +49,7 @@ tags:
 [Ravnos](https://akrib.github.io/site_camarilla_dauphinoise/clan/ravnos/)<br/>
 [Sethite](https://akrib.github.io/site_camarilla_dauphinoise/clan/sethite/)<br/>
 [Toreador](https://akrib.github.io/site_camarilla_dauphinoise/clan/toreador/)<br/>
-[tremere](https://akrib.github.io/site_camarilla_dauphinoise/clan/tremere/)<br/>
+[Tremere](https://akrib.github.io/site_camarilla_dauphinoise/clan/tremere/)<br/>
 [Tzimice](https://akrib.github.io/site_camarilla_dauphinoise/clan/tzimisce/)<br/>
 [Ventrue](https://akrib.github.io/site_camarilla_dauphinoise/clan/ventrue/)<br/>
 [Quizz Clan](https://akrib.github.io/site_camarilla_dauphinoise/clan/quiz-clan/)<br/>
