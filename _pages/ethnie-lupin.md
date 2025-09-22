@@ -1,7 +1,8 @@
 ---
 layout: clan
 title: "Les Loups-garous"
-permalink: /clans/loup-garou/
+permalink: /ethnies/loup-garou/
+section: ethnie
 header:
   overlay_image: /assets/images/factions/loup-garou-banner.jpg
   overlay_filter: 0.5
