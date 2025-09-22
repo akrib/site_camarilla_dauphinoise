@@ -29,7 +29,7 @@ tags:
 [Mon Vampirique](https://akrib.github.io/site_camarilla_dauphinoise/univers/monde_vampirique/)
 [Les status d'age](https://akrib.github.io/site_camarilla_dauphinoise/univers/status_age/)
 [Les autres concepts a connaitre](https://akrib.github.io/site_camarilla_dauphinoise/univers/autres_concepts/)
-[Les ennemis des vampires](https://akrib.github.io/site_camarilla_dauphinoise/univers/ennemis_vampire/)
+[Les ennemis des vampires](https://akrib.github.io/site_camarilla_dauphinoise/univers/ethnies/)
 
 ## Rules
 [Nos Valeurs](https://akrib.github.io/site_camarilla_dauphinoise/rules/)
