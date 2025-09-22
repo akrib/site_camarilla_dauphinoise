@@ -45,6 +45,12 @@ optimisation du site
 
 - ajouter le règlement intérieur, les documents du CA. 
 
+---
 
+- créer un escape game/suite d'enigme a proposer lors des conventions (a base de quelques objets a poser par-ci par la et de quelques fiches de personnages ou d'enigmes) le tout avec une sorte de dossier d'enquete pour decouvrir l'existance des vampire
+
+- flyer "le théatre dont vous etes le héros"
+
+ 
 
 
