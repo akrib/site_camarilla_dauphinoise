@@ -23,6 +23,9 @@ layout: default
 <meta property="og:description" content="{{ page.call_to_action | default: page.description }}">
 {% endif %}
 
+<link rel="stylesheet" href="{{ '/assets/css/main_custom.css' | relative_url }}">
+
+
 <!--  test de couleur pour le site a retirer en prod -->
 {% if page.custom_css == "neon" %}
 <link rel="stylesheet" href="{{ '/assets/css/neon_theme.css' | relative_url }}">
@@ -34,12 +37,6 @@ layout: default
 <link rel="stylesheet" href="{{ '/assets/css/lightsplat.css' | relative_url }}">
 {% endif %}
 
-{% if page.mermaid == "true" %}
-<script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: true });
-</script>
-{% endif %}
 
 {% if page.carousel_css == "carousel" %}
 <link rel="stylesheet" href="{{ '/assets/css/module/clan-carousel.css' | relative_url }}">
