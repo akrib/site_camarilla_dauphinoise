@@ -37,4 +37,4 @@ chroniques:
 
 Les Toreador incarnent la passion, la beauté et l’art, parfois jusqu’à l’obsession la plus destructrice.
 
-[← Retour à la liste des clans](/univers/clans/)
+
