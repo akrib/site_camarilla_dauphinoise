@@ -2,7 +2,7 @@
 layout: clan_v2
 title: "Clan Ventrue"
 section: clan
-permalink: /clan/ventrue/
+permalink: /clan/ventrue/v2/
 header:
   overlay_image: /assets/images/clans/ventrue-banner-2.jpg
   overlay_filter: 0.5
