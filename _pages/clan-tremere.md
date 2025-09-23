@@ -37,4 +37,4 @@ chroniques:
 
 Les Tremere sont nés de la soif de dominer par la connaissance. Issus d’une cabale de mages, ils ont sacrifié leur humanité pour l’immortalité. Aujourd’hui, ils règnent sur l’occulte et craignent autant qu’ils fascinent.
 
-[← Retour à la liste des clans](/univers/clans/)
+
