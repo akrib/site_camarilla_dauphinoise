@@ -20,7 +20,7 @@ layout: default
     <div class="clan-header-overlay" style="background-color: rgba(0,0,0,{{ page.header.overlay_filter | default: 0.2 }});width:1920px; height:0px;">
       <h1 class="clan-title" style="color:#b39861;margin-left:10%" >{{ page.title }}</h1>
       {% if page.header.caption %}
-        <p class="clan-caption" style="color:white;margin-left:8%">{{ page.header.caption }}</p>
+        <p class="clan-caption" style="color:white;margin-left:8%">{{ page.header.caption }}</p><img src="{{ page.header.overlay_icon | relative_url }}" style="filter: invert(100%);">
         <hr style="margin-left:4%;border: none; width: 46%; height: 2px; background-color: #b39861;">
       {% endif %}
       {% if page.excerpt %}
