@@ -5,6 +5,7 @@ section: clan
 permalink: /clan/ventrue/v2/
 header:
   overlay_image: /assets/images/clans/ventrue-banner-5.jpg
+  overlay_icon: /assets/images/icons/clan/330px-Ventrue_symbol.png
   overlay_filter: 0.5
   caption: "Le clan des rois"
 excerpt: "Le pouvoir se conquiert et se maintient, coûte que coûte."
