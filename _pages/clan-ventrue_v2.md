@@ -6,7 +6,7 @@ permalink: /clan/ventrue/v2/
 header:
   overlay_image: /assets/images/clans/ventrue-banner-5.jpg
   overlay_filter: 0.5
-  caption: "Les Seigneurs de la nuit"
+  caption: "Le clan des rois"
 excerpt: "Le pouvoir se conquiert et se maintient, coûte que coûte."
 disciplines:
   - name: "Domination"
@@ -24,12 +24,11 @@ gallery:
   - /assets/images/clans/ventrue_003.png
 ---
 
-Clan Ventrue
 Froids, implacables et inébranlables, les Ventrue sont les rois d’un empire nocturne qui s’étend sur les cadavres de ceux qui ont osé les défier. Ils se voient comme les bergers de la race damnée, les seuls capables de maintenir l’ordre dans le chaos d’une éternité de ténèbres. Derrière leurs sourires polis et leurs manières aristocratiques, se cache une soif absolue de contrôle : des humains, des cités, des lignées.
 
 Depuis l’Antiquité, ils tissent leurs fils dans l’ombre des trônes de l'humanité. Empereurs romains, rois médiévaux, banquiers renaissants, patrons modernes : à chaque époque, une main glacée de Ventrue a tenu les rênes du pouvoir. Leur histoire est celle d’un long règne invisible, jalonné de complots et de purges, où le clan a imposé sa vision d’un ordre stable, même si cela signifiait le payer par la guerre, le sang ou la trahison. Leurs rivaux les accusent d’arrogance et de tyrannie, mais l’histoire du clan est la chronique de leur victoire continue : les civilisations qui s’effondrent, mais eux qui perdurent.
 
-Chaque Ventrue est un monolithe, taillé dans la pierre de la domination. Ils ne se contentent pas de boire du sang: ils choisissent soigneusement leur proie, avec une obsession glaciale pour la pureté et l’exclusivité, jusqu'à l'obsession. Leur Baiser est une condamnation prononcée par un juge invisible, et leurs victimes, sélectionnées comme des trophées, deviennent l’ombre d’un caprice éternel.
+Chaque Ventrue est un monolithe, taillé dans la pierre de la domination. Ils ne se contentent pas de boire du sang: ils choisissent soigneusement leur proie, avec une obsession glaciale pour la pureté et l’exclusivité, jusqu'à la psychose. Leur Baiser est une condamnation prononcée par un juge invisible, et leurs victimes, sélectionnées comme des trophées, deviennent l’ombre d’un caprice éternel.
 
 Sous leur vernis de noblesse se tapit une cruauté subtile : une main de fer gantée de velours. Pour eux, l’humanité n’est qu’un pion sur l’échiquier de leur pouvoir, et les autres clans des pièces fragiles, utiles tant qu’elles obéissent. Les Ventrue ne se battent pas : ils gouvernent, ils manipulent, ils écrasent. Et pour eux, tout ceci n'est pas un droit, mais un devoir, pour lequel ils ont été dûment sélectionné et éduqués.
 
