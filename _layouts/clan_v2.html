@@ -58,13 +58,16 @@ layout: default
 -->
   {% if page.disciplines %}
   <section class="clan-disciplines" style="background-color: #0f1f3f;">
-    <h2>Disciplines du Clan</h2>
+    <br/><br/>
+    <h2 style="color:white;">Disciplines du Clan</h2>
+    <hr style="border: none; width: 54%; height: 2px; background-color: #b39861;">
     <div class="disciplines-grid" style="display: grid; grid-template-columns: repeat(3, 18%) 35%; gap: 1rem; align-items: start; flex-wrap: wrap;">
 
       {% for d in page.disciplines %}
       <div class="ability" style="text-align: center;">
         <img src="{{ d.icon | relative_url }}" alt="{{ d.name }}" style="max-width: 100%; margin-bottom: 0.5rem;">
         <h4>{{ d.name }}</h4>
+        <hr style="border: none; width: 17%; height: 2px; background-color: #b39861;">
         <p>{{ d.desc }}</p>
       </div>
       {% endfor %}
