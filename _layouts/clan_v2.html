@@ -16,25 +16,25 @@ layout: default
 {% else %}
   {% include sidebar-default.html %}
 {% endif %}
-  <header class="clan-header" style="background-image: url('{{ page.header.overlay_image | relative_url }}'); width:1920px; height:640px;">
-    <div class="clan-header-overlay" style="background-color: rgba(0,0,0,{{ page.header.overlay_filter | default: 0.2 }});width:1920px; height:640px;">
+  <header class="clan-header" style="background-image: url('{{ page.header.overlay_image | relative_url }}'); width:1920px; height:1280px;">
+    <div class="clan-header-overlay" style="background-color: rgba(0,0,0,{{ page.header.overlay_filter | default: 0.2 }});width:1920px; height:0px;">
       <h1 class="clan-title">{{ page.title }}</h1>
       {% if page.header.caption %}
-        <p class="clan-caption">{{ page.header.caption }}</p>
+        <p class="clan-caption" style="color:white">{{ page.header.caption }}</p>
       {% endif %}
       {% if page.excerpt %}
-        <p class="clan-excerpt">{{ page.excerpt }}</p>
+        <p class="clan-excerpt" style="color:white">{{ page.excerpt }}</p>
       {% endif %}
     </div>
-  </header>
+
 
   <section class="clan-description">
     {{ content }}
   </section>
-
-  <!-- Backlink avant hiérarchie -->
+  </header>
+ <!--  Backlink avant hiérarchie 
   <p class="backlink"><a href="{{ site.baseurl }}/univers/clans/">← Retour à la liste des clans</a></p>
-
+-->
   {% if page.hierarchy %}
   <section class="clan-hierarchy">
     <h2>Hiérarchie & Rôles</h2>
