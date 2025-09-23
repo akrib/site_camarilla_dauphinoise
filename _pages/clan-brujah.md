@@ -39,4 +39,3 @@ media:
 
 Les Brujah sont des vampires passionnés, enflammés par la révolte et l’idéalisme. Leur colère est aussi légendaire que leur soif de liberté.
 
-[← Retour à la liste des clans](/univers/clans/)
