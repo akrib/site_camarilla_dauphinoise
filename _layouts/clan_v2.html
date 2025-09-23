@@ -20,17 +20,18 @@ layout: default
     <div class="clan-header-overlay" style="background-color: rgba(0,0,0,{{ page.header.overlay_filter | default: 0.2 }});width:1920px; height:0px;">
       <h1 class="clan-title">{{ page.title }}</h1>
       {% if page.header.caption %}
-        <p class="clan-caption" style="color:white">{{ page.header.caption }}</p>
+        <p class="clan-caption" style="color:white;">{{ page.header.caption }}</p>
       {% endif %}
       {% if page.excerpt %}
-        <p class="clan-excerpt" style="color:white">{{ page.excerpt }}</p>
+        <p class="clan-excerpt" style="color:white;">{{ page.excerpt }}</p>
       {% endif %}
-    </div>
 
 
-  <section class="clan-description">
+
+  <section class="clan-description" style="widht: 50%;color:white;">
     {{ content }}
   </section>
+  </div>
   </header>
  <!--  Backlink avant hiérarchie 
   <p class="backlink"><a href="{{ site.baseurl }}/univers/clans/">← Retour à la liste des clans</a></p>
