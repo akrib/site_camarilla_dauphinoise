@@ -37,4 +37,4 @@ chroniques:
 
 Les Malkavians portent la malédiction de la folie, mais dans leur délire se trouvent souvent les plus grandes vérités.
 
-[← Retour à la liste des clans](/clans/)
+[← Retour à la liste des clans](/univers/clans/)
