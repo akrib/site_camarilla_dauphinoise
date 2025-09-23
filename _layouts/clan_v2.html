@@ -18,8 +18,9 @@ layout: default
 {% endif %}
   <header class="clan-header" style="background-image: url('{{ page.header.overlay_image | relative_url }}'); width:1920px; height:1280px;">
     <div class="clan-header-overlay" style="background-color: rgba(0,0,0,{{ page.header.overlay_filter | default: 0.2 }});width:1920px; height:0px;">
-     <div style="width:10%"><img src="{{ page.header.overlay_icon | relative_url }}" style="filter: invert(100%);width:auto;height:auto;"></div>
-      <div style="width:90%">
+     <table style="width:100%">
+       <tr><td style="width:10%"><img src="{{ page.header.overlay_icon | relative_url }}" style="filter: invert(100%);width:auto;height:auto;"></td>
+      <td style="width:90%">
       <h1 class="clan-title" style="color:#b39861;margin-left:10%" >{{ page.title }}</h1>
       {% if page.header.caption %}
         <p class="clan-caption" style="color:white;margin-left:8%">{{ page.header.caption }}</p>
@@ -28,7 +29,7 @@ layout: default
       {% if page.excerpt %}
         <h5 class="clan-excerpt" style="color:#a51d1d;margin-left:6%">{{ page.excerpt }}</h5>
       {% endif %}
-  </div>
+  </td></tr></table>
 
 
   <section class="clan-description" style="width: 50%;color:white; margin-left:3%; text-align: justify;">
