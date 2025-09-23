@@ -36,3 +36,5 @@ chroniques:
 ---
 
 Les Tzimisce sont des monstres savants, remodelant les corps et les esprits avec une cruauté raffinée.
+
+[← Retour à la liste des clans](/univers/clans/)
