@@ -8,13 +8,6 @@ header:
   overlay_filter: 0.5
   caption: "Les Seigneurs de la nuit"
 excerpt: "Le pouvoir se conquiert et se maintient, coûte que coûte."
-hierarchy:
-  - rank: "Prince"
-    desc: "Dirigeant d’une cité, incarnation de l’autorité."
-  - rank: "Héritier"
-    desc: "Ambitieux, prêt à prendre le trône."
-  - rank: "Courtisan"
-    desc: "Jeune vampire en quête d’influence."
 disciplines:
   - name: "Domination"
     icon: /assets/images/discipline/330px-Dominate_symbol.png
@@ -29,10 +22,6 @@ gallery:
   - /assets/images/clans/ventrue_001.png
   - /assets/images/clans/ventrue_002.png
   - /assets/images/clans/ventrue_003.png
-chroniques:
-  - "Les empires forgés dans l’ombre."
-  - "Les serments qui lièrent des générations entières."
-  - "Les trahisons pour un siège au sommet."
 ---
 
 Clan Ventrue
