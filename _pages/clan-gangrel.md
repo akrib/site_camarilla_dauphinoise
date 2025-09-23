@@ -37,4 +37,4 @@ chroniques:
 
 Les Gangrel sont des nomades sauvages, proches des animaux et de la terre. Indomptables, ils incarnent la liberté brute.
 
-[← Retour à la liste des clans](/clans/)
+[← Retour à la liste des clans](/univers/clans/)
