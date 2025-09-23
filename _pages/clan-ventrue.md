@@ -17,13 +17,13 @@ hierarchy:
     desc: "Jeune vampire en quête d’influence."
 disciplines:
   - name: "Domination"
-    icon: /assets/images/icons/dominate.png
+    icon: /assets/images/discipline/330px-Dominate_symbol.png
     desc: "Le pouvoir d’asservir l’esprit, de plier les volontés et d’éteindre la rébellion dans les regards."
   - name: "Présence"
-    icon: /assets/images/icons/presence.png
+    icon: /assets/images/discipline/330px-Presence_symbol.png
     desc: "L’aura souveraine des rois damnés, le charisme des meneurs: cette force irrésistible qui attire, soumet ou inspire la dévotion la plus aveugle."
   - name: "Force d’âme"
-    icon: /assets/images/icons/fortitude.png
+    icon: /assets/images/discipline/330px-Fortitude_symbol.png
     desc: "La résilience des maîtres, un rempart contre la douleur, les blessures et la mort elle-même."
 gallery:
   - /assets/images/clans/ventrue1.jpg
