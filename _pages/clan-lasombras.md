@@ -37,4 +37,4 @@ chroniques:
 
 Les Lasombra règnent par la peur et l’obscurité, transformant les ténèbres en armes et en sceptres.
 
-[← Retour à la liste des clans](/univers/clans/)
+
