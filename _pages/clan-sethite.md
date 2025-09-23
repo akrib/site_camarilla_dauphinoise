@@ -37,4 +37,3 @@ chroniques:
 
 Les Sethites sont des adorateurs des dieux antiques, mystérieux et manipulateurs, mêlant charisme et magie occulte.
 
-[← Retour à la liste des clans](/univers/clans/)
