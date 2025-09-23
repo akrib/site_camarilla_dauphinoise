@@ -26,9 +26,9 @@ disciplines:
     icon: /assets/images/discipline/330px-Fortitude_symbol.png
     desc: "La résilience des maîtres, un rempart contre la douleur, les blessures et la mort elle-même."
 gallery:
-  - /assets/images/clans/ventrue1.jpg
-  - /assets/images/clans/ventrue2.jpg
-  - /assets/images/clans/ventrue3.jpg
+  - /assets/images/clans/ventrue_001.png
+  - /assets/images/clans/ventrue_002.png
+  - /assets/images/clans/ventrue_003.png
 chroniques:
   - "Les empires forgés dans l’ombre."
   - "Les serments qui lièrent des générations entières."
