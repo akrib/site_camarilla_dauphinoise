@@ -46,5 +46,3 @@ Sous leur vernis de noblesse se tapit une cruauté subtile : une main de fer gan
 
 Ils sont la nuit devenue loi, l’ordre imposé par le sang, les souverains maudits d’un royaume de cendres.
 
-
-[← Retour à la liste des clans](/univers/clans/)
