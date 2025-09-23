@@ -67,7 +67,7 @@ layout: default
       <div class="ability" style="text-align: center;color:white;">
         <img src="{{ d.icon | relative_url }}" alt="{{ d.name }}" style="max-width: 100%; margin-bottom: 0.5rem;">
         <h4 style="color:#b39861;">{{ d.name }}</h4>
-        <hr style="border: none; width: 80%; height: 2px; background-color: #b39861;">
+        <hr style="padding-left:10%;padding-right:10%; text-align: center; border: none; width: 80%; height: 2px; background-color: #b39861;">
         <p style="color:white;">{{ d.desc }}</p>
       </div>
       {% endfor %}
@@ -90,7 +90,7 @@ layout: default
     <h2>Galerie</h2>
     <div class="image-grid">
       {% for img in page.gallery %}
-      <img src="{{ img | relative_url }}" alt="Image du clan" style="border: 3mm ridge rgba(211, 220, 50, 0.6);">
+      <img src="{{ img | relative_url }}" alt="Image du clan" style="width:30%; height:auto; border: 3mm ridge rgba(211, 220, 50, 0.6);">
       {% endfor %}
     </div>
   </section>
