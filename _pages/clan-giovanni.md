@@ -36,4 +36,3 @@ chroniques:
 
 Le clan Giovanni mêle ambition, famille et nécromancie, contrôlant l’art de la mort et de l’argent.
 
-[← Retour à la liste des clans](/univers/clans/)
