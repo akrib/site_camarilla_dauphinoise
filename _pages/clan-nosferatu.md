@@ -37,4 +37,3 @@ chroniques:
 
 Horriblement défigurés, les Nosferatu vivent en marge mais détiennent le plus grand des trésors : la connaissance.
 
-[← Retour à la liste des clans](/univers/clans/)
