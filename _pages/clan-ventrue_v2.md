@@ -4,7 +4,7 @@ title: "Clan Ventrue"
 section: clan
 permalink: /clan/ventrue/v2/
 header:
-  overlay_image: /assets/images/clans/ventrue-banner-4.jpg
+  overlay_image: /assets/images/clans/ventrue-banner-5.jpg
   overlay_filter: 0.5
   caption: "Les Seigneurs de la nuit"
 excerpt: "Le pouvoir se conquiert et se maintient, coûte que coûte."
