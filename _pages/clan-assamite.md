@@ -17,13 +17,13 @@ hierarchy:
     desc: "Nouveau disciple, en apprentissage du code de sang."
 disciplines:
   - name: "Célérité"
-    icon: /assets/images/icons/celerity.png
+    icon: /assets/images/discipline/330px-Celerity_symbol.png
     desc: "Rapidité inhumaine, frappant avant que l’ennemi n’ait conscience du danger."
   - name: "Occultation"
-    icon: /assets/images/icons/obfuscate.png
+    icon: /assets/images/discipline/330px-Obfuscate_symbol.png
     desc: "Pouvoir de disparaître dans l’ombre et frapper sans être vu."
   - name: "Sorciers de Sang"
-    icon: /assets/images/icons/bloodmagic.png
+    icon: /assets/images/discipline/330px-Blood_Sorcery_symbol.png
     desc: "Arts occultes hérités du lignage, utilisant le sang comme vecteur de pouvoir."
 gallery:
   - /assets/images/clans/assamite1.jpg
@@ -37,5 +37,6 @@ chroniques:
 
 Mystérieux et redoutés, les Assamites sont réputés comme assassins et exécuteurs de justice parmi les Damnés. Leur clan est guidé par un strict code moral et une discipline de fer.  
 Maîtres du meurtre silencieux, certains se tournent vers la sorcellerie du sang, tandis que d’autres s’imposent comme juges impartiaux des conflits vamp
+
 
 
