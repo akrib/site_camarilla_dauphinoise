@@ -18,13 +18,13 @@ hierarchy:
 disciplines:
   - name: "Domination"
     icon: /assets/images/icons/dominate.png
-    desc: "Contrôle absolu de l’esprit des autres."
+    desc: "Le pouvoir d’asservir l’esprit, de plier les volontés et d’éteindre la rébellion dans les regards."
   - name: "Présence"
     icon: /assets/images/icons/presence.png
-    desc: "Charisme imposant qui soumet les foules."
+    desc: "L’aura souveraine des rois damnés, le charisme des meneurs: cette force irrésistible qui attire, soumet ou inspire la dévotion la plus aveugle."
   - name: "Force d’âme"
     icon: /assets/images/icons/fortitude.png
-    desc: "Résilience et endurance face à l’adversité."
+    desc: "La résilience des maîtres, un rempart contre la douleur, les blessures et la mort elle-même."
 gallery:
   - /assets/images/clans/ventrue1.jpg
   - /assets/images/clans/ventrue2.jpg
@@ -35,6 +35,16 @@ chroniques:
   - "Les trahisons pour un siège au sommet."
 ---
 
-Les Ventrue sont les seigneurs, les rois et les banquiers de la nuit, prêts à tout pour régner éternellement.
+Clan Ventrue
+Froids, implacables et inébranlables, les Ventrue sont les rois d’un empire nocturne qui s’étend sur les cadavres de ceux qui ont osé les défier. Ils se voient comme les bergers de la race damnée, les seuls capables de maintenir l’ordre dans le chaos d’une éternité de ténèbres. Derrière leurs sourires polis et leurs manières aristocratiques, se cache une soif absolue de contrôle : des humains, des cités, des lignées.
 
-[← Retour à la liste des clans](/clans/)
+Depuis l’Antiquité, ils tissent leurs fils dans l’ombre des trônes de l'humanité. Empereurs romains, rois médiévaux, banquiers renaissants, patrons modernes : à chaque époque, une main glacée de Ventrue a tenu les rênes du pouvoir. Leur histoire est celle d’un long règne invisible, jalonné de complots et de purges, où le clan a imposé sa vision d’un ordre stable, même si cela signifiait le payer par la guerre, le sang ou la trahison. Leurs rivaux les accusent d’arrogance et de tyrannie, mais l’histoire du clan est la chronique de leur victoire continue : les civilisations qui s’effondrent, mais eux qui perdurent.
+
+Chaque Ventrue est un monolithe, taillé dans la pierre de la domination. Ils ne se contentent pas de boire du sang: ils choisissent soigneusement leur proie, avec une obsession glaciale pour la pureté et l’exclusivité, jusqu'à l'obsession. Leur Baiser est une condamnation prononcée par un juge invisible, et leurs victimes, sélectionnées comme des trophées, deviennent l’ombre d’un caprice éternel.
+
+Sous leur vernis de noblesse se tapit une cruauté subtile : une main de fer gantée de velours. Pour eux, l’humanité n’est qu’un pion sur l’échiquier de leur pouvoir, et les autres clans des pièces fragiles, utiles tant qu’elles obéissent. Les Ventrue ne se battent pas : ils gouvernent, ils manipulent, ils écrasent. Et pour eux, tout ceci n'est pas un droit, mais un devoir, pour lequel ils ont été dûment sélectionné et éduqués.
+
+Ils sont la nuit devenue loi, l’ordre imposé par le sang, les souverains maudits d’un royaume de cendres.
+
+
+[← Retour à la liste des clans](/univers/clans/)
