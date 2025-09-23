@@ -38,4 +38,4 @@ chroniques:
 Mystérieux et redoutés, les Assamites sont réputés comme assassins et exécuteurs de justice parmi les Damnés. Leur clan est guidé par un strict code moral et une discipline de fer.  
 Maîtres du meurtre silencieux, certains se tournent vers la sorcellerie du sang, tandis que d’autres s’imposent comme juges impartiaux des conflits vamp
 
-[← Retour à la liste des clans](/univers/clans/)
+
