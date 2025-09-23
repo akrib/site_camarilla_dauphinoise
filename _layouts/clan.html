@@ -16,7 +16,7 @@ layout: default
 {% else %}
   {% include sidebar-default.html %}
 {% endif %}
-  <header class="clan-header" style="background-image: url('{{ page.header.overlay_image | relative_url }}');">
+  <header class="clan-header" style="background-image: url('{{ page.header.overlay_image | relative_url }}'); width:1920px; height:640px;">
     <div class="clan-header-overlay" style="background-color: rgba(0,0,0,{{ page.header.overlay_filter | default: 0.5 }});">
       <h1 class="clan-title">{{ page.title }}</h1>
       {% if page.header.caption %}
