@@ -73,7 +73,7 @@ layout: default
       {% endfor %}
 
       <!-- Cellule pour vidéos/GIF -->
-      <div class="ability-media" style="text-align: center;">
+      <div class="ability-media" style="text-align: center;border: thick double #b39861;">
         {% if page.media %}
           {% for m in page.media %}
             <video src="{{ m | relative_url }}" controls style="max-width: 100%; margin-bottom: 1rem;"></video>
