@@ -1,0 +1,107 @@
+---
+layout: default
+---
+
+<article class="clan_v2">
+{% if page.section == "clans" %}
+  {% include sidebar-clans.html %}
+{% elsif page.section == "factions" %}
+  {% include sidebar-factions.html %}
+{% elsif page.section == "qui_sommes_nous" %}
+  {% include sidebar-qui_sommes_nous.html %}
+{% elsif page.section == "univers" %}
+  {% include sidebar-univers.html %}
+{% elsif page.section == "contacts" %}
+  {% include sidebar-contacts.html %}
+{% else %}
+  {% include sidebar-default.html %}
+{% endif %}
+  <header class="clan-header" style="background-image: url('{{ page.header.overlay_image | relative_url }}'); width:1920px; height:640px;">
+    <div class="clan-header-overlay" style="background-color: rgba(0,0,0,{{ page.header.overlay_filter | default: 0.2 }});width:1920px; height:640px;">
+      <h1 class="clan-title">{{ page.title }}</h1>
+      {% if page.header.caption %}
+        <p class="clan-caption">{{ page.header.caption }}</p>
+      {% endif %}
+      {% if page.excerpt %}
+        <p class="clan-excerpt">{{ page.excerpt }}</p>
+      {% endif %}
+    </div>
+  </header>
+
+  <section class="clan-description">
+    {{ content }}
+  </section>
+
+  <!-- Backlink avant hiérarchie -->
+  <p class="backlink"><a href="{{ site.baseurl }}/univers/clans/">← Retour à la liste des clans</a></p>
+
+  {% if page.hierarchy %}
+  <section class="clan-hierarchy">
+    <h2>Hiérarchie & Rôles</h2>
+    <table>
+      <thead>
+        <tr><th>Rang</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        {% for role in page.hierarchy %}
+        <tr>
+          <td><strong>{{ role.rank }}</strong></td>
+          <td>{{ role.desc }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  {% if page.disciplines %}
+  <section class="clan-disciplines">
+    <h2>Disciplines du Clan</h2>
+    <div class="disciplines-grid" style="display: grid; grid-template-columns: repeat(3, 18%) 35%; gap: 1rem; align-items: start; flex-wrap: wrap;">
+
+      {% for d in page.disciplines %}
+      <div class="ability" style="text-align: center;">
+        <img src="{{ d.icon | relative_url }}" alt="{{ d.name }}" style="max-width: 100%; margin-bottom: 0.5rem;">
+        <h4>{{ d.name }}</h4>
+        <p>{{ d.desc }}</p>
+      </div>
+      {% endfor %}
+
+      <!-- Cellule pour vidéos/GIF -->
+      <div class="ability-media" style="text-align: center;">
+        {% if page.media %}
+          {% for m in page.media %}
+            <video src="{{ m | relative_url }}" controls style="max-width: 100%; margin-bottom: 1rem;"></video>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+    </div>
+  </section>
+  {% endif %}
+
+  {% if page.gallery %}
+  <section class="clan-gallery">
+    <h2>Galerie</h2>
+    <div class="image-grid">
+      {% for img in page.gallery %}
+      <img src="{{ img | relative_url }}" alt="Image du clan">
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if page.chroniques %}
+  <section class="clan-chroniques">
+    <h2>Chroniques</h2>
+    <ul>
+      {% for item in page.chroniques %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+
+    <!-- Backlink après chroniques -->
+    <p class="backlink"><a href="{{ site.baseurl }}/univers/clans/">← Retour à la liste des clans</a></p>
+  </section>
+  {% endif %}
+</article>
