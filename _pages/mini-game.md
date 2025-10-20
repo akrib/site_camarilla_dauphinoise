@@ -3,7 +3,7 @@ layout: page
 title: "Mini-jeu Hack — Enigmes"
 permalink: /mini-game/
 ---
-<!DOCTYPE html>
+<!-- <!DOCTYPE html> -->
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
