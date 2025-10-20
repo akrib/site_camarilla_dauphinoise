@@ -1,5 +1,5 @@
 ---
-layout: single
+layout: page
 title: "Coffre-fort Sécurisé"
 permalink: /coffre-fort/
 ---
