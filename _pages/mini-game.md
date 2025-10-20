@@ -8,7 +8,7 @@ permalink: /mini-game/
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM</title>
+    <title>AKRIB INDUSTRIES UNIFIED OPERATING SYSTEM</title>
     <style>
         * {
             margin: 0;
