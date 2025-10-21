@@ -458,18 +458,16 @@ permalink: /cadran/
     </style>
 </head>
 <body>
-    <table style="height: 20px;width:100%;">
-<tbody>
-<tr>
-<td style="width: 40%;">
-    <div class="container">
-        <div class="safe-container" id="safeContainer">
+  <div class="container">
+    <div class="safe-container" id="safeContainer">
+      <table style="height: 20px;width:100%;">
+        <tbody>
+          <tr><td style="width: 40%;">
             <h1>🔓 Coffre-fort à Cadran</h1>
             <p class="instructions">
                 Comme un vrai coffre-fort :<br>
                 <strong>① Max à droite ② Max à gauche ③ Position finale</strong>
             </p>
-
             <div class="dial-container">
                 <div class="marker"></div>
                 <div class="dial" id="dial">
@@ -477,7 +475,6 @@ permalink: /cadran/
                     <div class="center-knob"></div>
                 </div>
             </div>
-
             <div class="status-panel">
                 <div class="sequence-display">
                     <div class="sequence-item active" id="step1">
@@ -501,25 +498,19 @@ permalink: /cadran/
             <button class="btn btn-validate" id="validateBtn" onclick="validateCurrentNumber()" style="background: linear-gradient(145deg, #27ae60, #229954); color: white; box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);">
                 ✓ Valider ce chiffre
             </button>
-
             <div class="lever-container">
                 <div class="lever" id="lever" onclick="pullLever()"></div>
                 <div class="lever-label">Tirer pour ouvrir</div>
             </div>
-
             <button class="btn btn-auspex" id="auspexBtn" onclick="requestAuspexPassword()">
                 🔮 Activer Auspex
             </button>
-
             <button class="btn btn-reset" onclick="resetSafe()">
                 🔄 Réinitialiser
             </button>
-
             <div class="message" id="message" style="display: none;"></div>
-
             <p class="hint">💡 Positionnez le cadran sur le bon chiffre puis cliquez sur "Valider ce chiffre"</p>
         </div>
-
         <div class="document-container" id="documentContainer">
             <div class="document-content" id="documentContent">
                 <!-- Le contenu sera inséré ici après décryptage -->
@@ -527,7 +518,6 @@ permalink: /cadran/
             <button class="btn btn-reset" onclick="closeDocument()">Fermer le document</button>
         </div>
     </div>
-
     <!-- Modal pour le mot de passe Auspex -->
     <div class="modal" id="passwordModal">
         <div class="modal-content">
@@ -537,9 +527,6 @@ permalink: /cadran/
                 <button class="btn-cancel" onclick="closePasswordModal()">Annuler</button>
                 <button class="btn-ok" onclick="validateAuspexPassword()">Valider</button>
             </div>
-        </div>
-    </div>
-
     <script>
         // Configuration du coffre
         const combination = [15, 75, 45]; // Max droite 15, Max gauche 75, Position finale 45
@@ -1085,5 +1072,7 @@ permalink: /cadran/
         */
     </script>
 </td>
+        </div>
+    </div>
 </body>
 </html>
