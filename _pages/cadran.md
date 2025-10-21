@@ -458,7 +458,7 @@ permalink: /cadran/
     </style>
 </head>
 <body>
-    <table style="height: 20px;" width="327">
+    <table style="height: 20px;width:100%;">
 <tbody>
 <tr>
 <td style="width: 40%;">
@@ -539,7 +539,7 @@ permalink: /cadran/
             </div>
         </div>
     </div>
-</td>
+
     <script>
         // Configuration du coffre
         const combination = [15, 75, 45]; // Max droite 15, Max gauche 75, Position finale 45
@@ -1084,5 +1084,6 @@ permalink: /cadran/
         =====================================================
         */
     </script>
+</td>
 </body>
 </html>
