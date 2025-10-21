@@ -546,7 +546,7 @@ permalink: /cadran/
         const tolerance = 3;
         
         // Hash SHA-256 du mot de passe Auspex (actuellement "auspex123")
-        const auspexPasswordHash = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+        const auspexPasswordHash = '7e31fba459fb9b9dd3c6edadf3e9ad17ff798cf368e5e8948074a85840dd8cd0';
         
         // Document crypté (AES-GCM) - déchiffrable avec le code de combinaison correct "15-75-45"
         const encryptedDocument = {
