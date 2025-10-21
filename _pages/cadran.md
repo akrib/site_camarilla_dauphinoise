@@ -458,6 +458,10 @@ permalink: /cadran/
     </style>
 </head>
 <body>
+    <table style="height: 20px;" width="327">
+<tbody>
+<tr>
+<td style="width: 40%;">
     <div class="container">
         <div class="safe-container" id="safeContainer">
             <h1>🔓 Coffre-fort à Cadran</h1>
@@ -492,7 +496,8 @@ permalink: /cadran/
                 <div class="current-number" id="currentNumber">0</div>
                 <div class="direction-indicator" id="direction">Tournez à droite</div>
             </div>
-
+</td>
+<td style="width: 40%;">
             <button class="btn btn-validate" id="validateBtn" onclick="validateCurrentNumber()" style="background: linear-gradient(145deg, #27ae60, #229954); color: white; box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);">
                 ✓ Valider ce chiffre
             </button>
@@ -534,7 +539,7 @@ permalink: /cadran/
             </div>
         </div>
     </div>
-
+</td>
     <script>
         // Configuration du coffre
         const combination = [15, 75, 45]; // Max droite 15, Max gauche 75, Position finale 45
