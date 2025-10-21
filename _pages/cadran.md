@@ -582,13 +582,13 @@ permalink: /cadran/
 
         // Initialiser les numéros sur le cadran
         function initDial() {
-            for (let i = 100; i > 0; i -= 5) {
+            for (let i = 0; i < 100; i += 5) {
                 const number = document.createElement('div');
                 number.className = 'number';
                 number.textContent = i;
                 
                 // Inverser l'angle pour que les numéros soient dans le bon sens
-                const angle = (-i * 3.6);
+                const angle = (i * 3.6);
                 const radius = 105;
                 const radian = (angle - 90) * Math.PI / 180;
                 const x = Math.cos(radian) * radius;
