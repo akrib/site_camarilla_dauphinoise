@@ -582,7 +582,7 @@ permalink: /cadran/
 
         // Initialiser les numéros sur le cadran
         function initDial() {
-            for (let i = 0; i < 100; i += 5) {
+            for (let i = 100; i > 0; i -= 5) {
                 const number = document.createElement('div');
                 number.className = 'number';
                 number.textContent = i;
