@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Coffre-fort Sécurisé"
-permalink: /coffre-fort/
+permalink: /mini-jeu/coffre-fort/
 ---
 <!-- <!DOCTYPE html> -->
 <html lang="fr">
