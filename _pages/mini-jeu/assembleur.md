@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Mini-jeu Hack — Enigmes"
-permalink: /mini-game/
+title: "Mini-jeu assembleur — Enigmes"
+permalink: /mini-jeu/assembleur/
 ---
 <!-- <!DOCTYPE html> -->
 <html lang="fr">
