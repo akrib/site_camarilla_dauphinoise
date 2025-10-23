@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Coffre-fort à Cadran"
-permalink: /cadran/
+permalink: /minijeu/cadran/
 ---
 <html lang="fr">
 <head>
