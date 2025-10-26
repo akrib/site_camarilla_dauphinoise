@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+---
+layout: page
+title: "Coffre-fort à Cadran"
+permalink: /mini-jeu/cadran/
+---
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
