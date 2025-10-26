@@ -1071,7 +1071,7 @@ permalink: /mini-jeu/cadran/
         =====================================================
         */
     </script>
-</td>
+</td></tr></tbody></table>
         </div>
     </div>
 </body>
