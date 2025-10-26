@@ -1,8 +1,4 @@
----
-layout: page
-title: "Coffre-fort à Cadran"
-permalink: /mini-jeu/cadran/
----
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -29,7 +25,11 @@ permalink: /mini-jeu/cadran/
 
         .container {
             width: 100%;
-            max-width: 400px;
+            max-width: 900px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .safe-container {
@@ -38,6 +38,33 @@ permalink: /mini-jeu/cadran/
             padding: 30px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
             text-align: center;
+            flex: 1;
+            min-width: 320px;
+            max-width: 450px;
+        }
+
+        .controls-container {
+            background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 280px;
+            min-width: 280px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .controls-container {
+                width: 100%;
+                max-width: 400px;
+            }
         }
 
         h1 {
@@ -211,7 +238,7 @@ permalink: /mini-jeu/cadran/
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 120px;
+            height: 100px;
             background: #1a1a1a;
             border-radius: 10px;
             border: 2px solid #2a2a2a;
@@ -220,8 +247,8 @@ permalink: /mini-jeu/cadran/
         }
 
         .lever {
-            width: 60px;
-            height: 80px;
+            width: 50px;
+            height: 70px;
             background: linear-gradient(145deg, #c0392b, #e74c3c);
             border-radius: 10px 10px 30px 30px;
             position: relative;
@@ -231,7 +258,7 @@ permalink: /mini-jeu/cadran/
         }
 
         .lever:active {
-            transform: translateY(20px);
+            transform: translateY(15px);
         }
 
         .lever.pulled {
@@ -240,17 +267,17 @@ permalink: /mini-jeu/cadran/
 
         @keyframes leverPull {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(30px); }
+            50% { transform: translateY(20px); }
         }
 
         .lever::before {
             content: '';
             position: absolute;
-            top: 10px;
+            top: 8px;
             left: 50%;
             transform: translateX(-50%);
-            width: 30px;
-            height: 30px;
+            width: 25px;
+            height: 25px;
             background: radial-gradient(circle, #222, #111);
             border-radius: 50%;
             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8);
@@ -258,13 +285,23 @@ permalink: /mini-jeu/cadran/
 
         .lever-label {
             position: absolute;
-            bottom: 10px;
+            bottom: 8px;
             left: 50%;
             transform: translateX(-50%);
             color: #d4af37;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
             white-space: nowrap;
+        }
+
+        .controls-title {
+            color: #d4af37;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .btn {
@@ -458,16 +495,13 @@ permalink: /mini-jeu/cadran/
     </style>
 </head>
 <body>
-  <div class="container">
-    <div class="safe-container" id="safeContainer">
-      <table style="height: 20px;width:100%;">
-        <tbody>
-          <tr><td style="width: 40%;">
+    <div class="container">
+        <div class="safe-container" id="safeContainer">
             <h1>🔓 Coffre-fort à Cadran</h1>
             <p class="instructions">
-                Comme un vrai coffre-fort :<br>
-                <strong>① Max à droite ② Max à gauche ③ Position finale</strong>
+                Positionnez les 3 chiffres de la combinaison
             </p>
+
             <div class="dial-container">
                 <div class="marker"></div>
                 <div class="dial" id="dial">
@@ -475,42 +509,52 @@ permalink: /mini-jeu/cadran/
                     <div class="center-knob"></div>
                 </div>
             </div>
+
             <div class="status-panel">
                 <div class="sequence-display">
                     <div class="sequence-item active" id="step1">
-                        <div class="sequence-label">① Max Droite</div>
+                        <div class="sequence-label">① Premier</div>
                         <div class="sequence-value" id="value1">--</div>
                     </div>
                     <div class="sequence-item" id="step2">
-                        <div class="sequence-label">② Max Gauche</div>
+                        <div class="sequence-label">② Deuxième</div>
                         <div class="sequence-value" id="value2">--</div>
                     </div>
                     <div class="sequence-item" id="step3">
-                        <div class="sequence-label">③ Position</div>
+                        <div class="sequence-label">③ Troisième</div>
                         <div class="sequence-value" id="value3">--</div>
                     </div>
                 </div>
                 <div class="current-number" id="currentNumber">0</div>
-                <div class="direction-indicator" id="direction">Tournez à droite</div>
+                <div class="direction-indicator" id="direction">Positionnez le 1er chiffre et validez</div>
             </div>
-</td>
-<td style="width: 40%;">
+
+            <div class="message" id="message" style="display: none;"></div>
+
+            <p class="hint">💡 Positionnez le cadran sur le bon chiffre puis cliquez sur "Valider ce chiffre"</p>
+        </div>
+
+        <div class="controls-container">
+            <div class="controls-title">⚙️ Contrôles</div>
+            
             <button class="btn btn-validate" id="validateBtn" onclick="validateCurrentNumber()" style="background: linear-gradient(145deg, #27ae60, #229954); color: white; box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);">
                 ✓ Valider ce chiffre
             </button>
+
             <div class="lever-container">
                 <div class="lever" id="lever" onclick="pullLever()"></div>
                 <div class="lever-label">Tirer pour ouvrir</div>
             </div>
+
             <button class="btn btn-auspex" id="auspexBtn" onclick="requestAuspexPassword()">
                 🔮 Activer Auspex
             </button>
+
             <button class="btn btn-reset" onclick="resetSafe()">
                 🔄 Réinitialiser
             </button>
-            <div class="message" id="message" style="display: none;"></div>
-            <p class="hint">💡 Positionnez le cadran sur le bon chiffre puis cliquez sur "Valider ce chiffre"</p>
         </div>
+
         <div class="document-container" id="documentContainer">
             <div class="document-content" id="documentContent">
                 <!-- Le contenu sera inséré ici après décryptage -->
@@ -518,6 +562,7 @@ permalink: /mini-jeu/cadran/
             <button class="btn btn-reset" onclick="closeDocument()">Fermer le document</button>
         </div>
     </div>
+
     <!-- Modal pour le mot de passe Auspex -->
     <div class="modal" id="passwordModal">
         <div class="modal-content">
@@ -527,13 +572,16 @@ permalink: /mini-jeu/cadran/
                 <button class="btn-cancel" onclick="closePasswordModal()">Annuler</button>
                 <button class="btn-ok" onclick="validateAuspexPassword()">Valider</button>
             </div>
+        </div>
+    </div>
+
     <script>
         // Configuration du coffre
         const combination = [15, 75, 45]; // Max droite 15, Max gauche 75, Position finale 45
         const tolerance = 3;
         
         // Hash SHA-256 du mot de passe Auspex (actuellement "auspex123")
-        const auspexPasswordHash = '7e31fba459fb9b9dd3c6edadf3e9ad17ff798cf368e5e8948074a85840dd8cd0';
+        const auspexPasswordHash = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
         
         // Document crypté (AES-GCM) - déchiffrable avec le code de combinaison correct "15-75-45"
         const encryptedDocument = {
@@ -817,26 +865,31 @@ permalink: /mini-jeu/cadran/
 
         function validateCurrentNumber() {
             if (currentStep === 0) {
-                // Valider le premier chiffre (max droite)
+                // Valider le premier chiffre
                 lockedValues[0] = currentNumber;
                 document.getElementById('value1').textContent = currentNumber;
                 document.getElementById('value1').classList.add('locked');
                 document.getElementById('step1').classList.remove('active');
                 document.getElementById('step2').classList.add('active');
                 currentStep = 1;
-                showMessage('✓ Premier chiffre validé ! Tournez à gauche maintenant', 'success');
+                showMessage('✓ Premier chiffre validé : ' + currentNumber, 'success');
             } else if (currentStep === 1) {
-                // Valider le deuxième chiffre (max gauche)
+                // Valider le deuxième chiffre
                 lockedValues[1] = currentNumber;
                 document.getElementById('value2').textContent = currentNumber;
                 document.getElementById('value2').classList.add('locked');
                 document.getElementById('step2').classList.remove('active');
                 document.getElementById('step3').classList.add('active');
                 currentStep = 2;
-                showMessage('✓ Deuxième chiffre validé ! Positionnez le dernier', 'success');
+                showMessage('✓ Deuxième chiffre validé : ' + currentNumber, 'success');
             } else if (currentStep === 2) {
-                // Pour l'étape 3, le levier fait la validation finale
-                showMessage('ℹ️ Position prête ! Tirez le levier pour ouvrir', 'success');
+                // Valider le troisième chiffre
+                lockedValues[2] = currentNumber;
+                document.getElementById('value3').textContent = currentNumber;
+                document.getElementById('value3').classList.add('locked');
+                document.getElementById('step3').classList.remove('active');
+                currentStep = 3; // Passer à l'étape finale
+                showMessage('✓ Séquence complète : ' + lockedValues.join('-') + ' ! Tirez le levier', 'success');
             }
         }
 
@@ -850,14 +903,17 @@ permalink: /mini-jeu/cadran/
 
         function updateDirection() {
             if (currentStep === 0) {
-                directionDisplay.textContent = 'Tournez à droite, puis validez ➡️';
-                directionDisplay.className = 'direction-indicator right';
-            } else if (currentStep === 1) {
-                directionDisplay.textContent = 'Tournez à gauche, puis validez ⬅️';
-                directionDisplay.className = 'direction-indicator left';
-            } else if (currentStep === 2) {
-                directionDisplay.textContent = 'Positionnez puis tirez le levier';
+                directionDisplay.textContent = 'Positionnez le 1er chiffre et validez';
                 directionDisplay.className = 'direction-indicator';
+            } else if (currentStep === 1) {
+                directionDisplay.textContent = 'Positionnez le 2ème chiffre et validez';
+                directionDisplay.className = 'direction-indicator';
+            } else if (currentStep === 2) {
+                directionDisplay.textContent = 'Positionnez le 3ème chiffre et validez';
+                directionDisplay.className = 'direction-indicator';
+            } else if (currentStep === 3) {
+                directionDisplay.textContent = '✓ Séquence complète ! Tirez le levier';
+                directionDisplay.className = 'direction-indicator success';
             }
         }
 
@@ -869,11 +925,7 @@ permalink: /mini-jeu/cadran/
                 lever.classList.remove('pulled');
             }, 500);
             
-            if (currentStep === 2) {
-                // Enregistrer la position finale
-                lockedValues[2] = currentNumber;
-                document.getElementById('value3').classList.add('locked');
-                
+            if (currentStep === 3) {
                 // Vérifier la combinaison complète
                 let allCorrect = true;
                 for (let i = 0; i < 3; i++) {
@@ -905,11 +957,11 @@ permalink: /mini-jeu/cadran/
                         setTimeout(openSafe, 1000);
                     }
                 } else {
-                    showMessage(`❌ Incorrect ! Attendu: ${combination[0]}, ${combination[1]}, ${combination[2]}`, 'error');
-                    setTimeout(resetSafe, 2000);
+                    showMessage(`❌ Incorrect ! Attendu: ${combination[0]}-${combination[1]}-${combination[2]}`, 'error');
+                    setTimeout(resetSafe, 2500);
                 }
             } else {
-                showMessage('⚠️ Complétez d\'abord toute la séquence !', 'error');
+                showMessage('⚠️ Validez d\'abord les 3 chiffres avant de tirer le levier !', 'error');
             }
         }
 
@@ -1071,8 +1123,5 @@ permalink: /mini-jeu/cadran/
         =====================================================
         */
     </script>
-</td></tr></tbody></table>
-        </div>
-    </div>
 </body>
 </html>
