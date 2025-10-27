@@ -961,7 +961,7 @@ permalink: /mini-jeu/cadran/
                         setTimeout(openSafe, 1000);
                     }
                 } else {
-                    showMessage(`❌ Incorrect ! Attendu: ${combination[0]}-${combination[1]}-${combination[2]}`, 'error');
+                    showMessage(`❌ Incorrect !`, 'error');
                     setTimeout(resetSafe, 2500);
                 }
             } else {
