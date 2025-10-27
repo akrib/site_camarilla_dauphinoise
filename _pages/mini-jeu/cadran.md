@@ -584,10 +584,10 @@ permalink: /mini-jeu/cadran/
         const combination = [15, 75, 45]; // Max droite 15, Max gauche 75, Position finale 45
         const tolerance = 3;
         
-        // Hash SHA-256 du mot de passe Auspex (actuellement "auspex123")
-        const auspexPasswordHash = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+
+        const auspexPasswordHash = '7e31fba459fb9b9dd3c6edadf3e9ad17ff798cf368e5e8948074a85840dd8cd0';
         
-        // Document crypté (AES-GCM) - déchiffrable avec le code de combinaison correct "15-75-45"
+
         const encryptedDocument = {
             iv: 'a1b2c3d4e5f6g7h8i9j0',
             data: 'f1e2d3c4b5a69788968574635241302f1e0d9c8b7a695847362514f3e2d1c0b9a8978685f4e3d2c1b0a99887f6e5d4c3b2a1908f7e6d5c4b3a291807f6e5d4c3b2a1908f7e6d5c4b3a291c0b0afa9e8d7c6b5a4938271605f4e3d2c1b0a99887f6e5d4c3b2a1908f7e6d5c4b3a291807f6e5d4c3b2a1908f7e6d5c4b3a2d1c0b0afa9e8d7c6b5a4938271605f4e3d2c1b0a99887f6e5d4c3b2a1908f7e6d5c4b3a291807f6e5d4c3b2a1908f7e6d5c4b3a2e1d0c0bfaea9d8c7b6a5948372615f0e4d3c2b1a09887f6e5d4c3b2a1908f7e6d5c4b3a291807f6e5d4c3b2a1908f7e6d5c4b3a2f1e0d0cfbfaea9d8c7b6a5948372615f0e4d3c2b1a09887f6e5d4c3b2a1908f7e6d5c4b3a291807f6e5d4c3b2a1908f7e6d5c4b3a201f1e0d0cfbfaea9d8c7b6a5948372615f0e4d3c2b1a09887f6e5d4c3b2a1908f7e6d5c4b3a291807f6e5d4c3b2a1'
