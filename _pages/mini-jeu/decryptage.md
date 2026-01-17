@@ -272,7 +272,7 @@ permalink: /mini-jeu/decryptage/
 
         <div class="controls">
             <button onclick="resetMappings()">Réinitialiser</button>
-            <button onclick="showSolution()">Voir la solution</button>
+            //<button onclick="showSolution()">Voir la solution</button>
         </div>
 
         <div class="text-container" id="cipherText"></div>
