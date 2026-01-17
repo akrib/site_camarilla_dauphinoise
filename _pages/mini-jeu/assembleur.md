@@ -401,10 +401,8 @@ permalink: /mini-jeu/assembleur/
                     <div class="prompt-line">FICHIER SECRET DEVERROUILLE...</div>
                     <div class="prompt-line"></div>
                     <div class="prompt-line">INDICE FINAL:</div>
-                    <div class="prompt-line" style="color: #ffff33;">"LE TRESOR SE TROUVE LA OU LES ETOILES</div>
-                    <div class="prompt-line" style="color: #ffff33;">RENCONTRENT LA TERRE"</div>
-                    <div class="prompt-line"></div>
-                    <div class="prompt-line" style="color: #ffff33;">COORDONNEES: 48.8584° N, 2.2945° E</div>
+                    <div class="prompt-line" style="color: #ffff33;">"Bravo vous avez Gangé un jeton</div>
+                    <div class="prompt-line" style="color: #ffff33;">Montrer ce message à un de vos hôtes et il vous donnera un jeton"</div>
                 </div>
                 <div class="button" onclick="restart()">RECOMMENCER</div>
             </div>
