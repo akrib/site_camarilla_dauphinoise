@@ -282,7 +282,7 @@ permalink: /mini-jeu/decryptage/
         const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
         
         // Texte original
-        const originalText = "LE CHAT EST SUR LE TAPIS ET REGARDE PAR LA FENETRE. IL FAIT BEAU AUJOURD'HUI ET LES OISEAUX CHANTENT DANS LE JARDIN.";
+        const originalText = "FELICITATIONS VOUS RECEVEZ UN JETON UNIQUE MERCI DE PRESENTER CE TEXTE VERS UN HOTES DU LIEU POUR OBTENIR VOTRE JETON BONUS OFFERT";
         
         // Créer un chiffrement aléatoire
         let shuffledAlphabet = [...alphabet].sort(() => Math.random() - 0.5);
