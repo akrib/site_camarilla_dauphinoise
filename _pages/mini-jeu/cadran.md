@@ -953,10 +953,8 @@ permalink: /mini-jeu/cadran/
                     } else {
                         // Contenu par défaut si décryptage échoue
                         document.getElementById('documentContent').innerHTML = `
-                            <h2>📜 Document Secret</h2>
-                            <p><strong>Lorem ipsum dolor sit amet</strong>, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
-                            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</p>
+                            <h2>Bravo</h2>
+                            <p><strong>Vous avez gagner un jeton</strong>, Montrer ce message a un de vos hôtes et il vous donnera un jeton</p>
                         `;
                         setTimeout(openSafe, 1000);
                     }
