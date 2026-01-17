@@ -954,7 +954,7 @@ permalink: /mini-jeu/cadran/
                         // Contenu par défaut si décryptage échoue
                         document.getElementById('documentContent').innerHTML = `
                             <h2>Bravo</h2>
-                            <p><strong>Vous avez gagner un jeton</strong>, Montrer ce message a un de vos hôtes et il vous donnera un jeton</p>
+                            <p><strong>Vous avez gagné un jeton</strong>, Montrer ce message à un de vos hôtes et il vous donnera un jeton</p>
                         `;
                         setTimeout(openSafe, 1000);
                     }
