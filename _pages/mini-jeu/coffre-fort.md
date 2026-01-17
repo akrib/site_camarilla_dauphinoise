@@ -262,21 +262,12 @@ permalink: /mini-jeu/coffre-fort/
 
         <div class="document-container" id="documentContainer">
             <div class="document-content">
-                <h2>📄 Document Confidentiel</h2>
-                <p><strong>Lorem ipsum dolor sit amet</strong>, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                
-                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                
-                <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
-                
-                <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.</p>
-                
-                <p><em>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</em></p>
+              <h2>Bravo</h2>
+              <p><strong>Vous avez gagner un jeton</strong>, Montrer ce message a un de vos hôtes et il vous donnera un jeton</p>
             </div>
             <button class="btn btn-close" onclick="closeDocument()">Fermer le document</button>
         </div>
     </div>
-
     <script>
         // Hash SHA-256 du code correct (actuellement "1234")
         // Pour changer le code, utilisez le générateur ci-dessous
