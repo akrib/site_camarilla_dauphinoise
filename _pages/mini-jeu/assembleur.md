@@ -401,7 +401,7 @@ permalink: /mini-jeu/assembleur/
                     <div class="prompt-line">FICHIER SECRET DEVERROUILLE...</div>
                     <div class="prompt-line"></div>
                     <div class="prompt-line">INDICE FINAL:</div>
-                    <div class="prompt-line" style="color: #ffff33;">"Bravo vous avez Gangé un jeton</div>
+                    <div class="prompt-line" style="color: #ffff33;">"Bravo vous avez gagné un jeton</div>
                     <div class="prompt-line" style="color: #ffff33;">Montrer ce message à un de vos hôtes et il vous donnera un jeton"</div>
                 </div>
                 <div class="button" onclick="restart()">RECOMMENCER</div>
