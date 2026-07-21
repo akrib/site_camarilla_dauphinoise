@@ -366,7 +366,7 @@ toc: false
   // CONFIGURATION — remplacez par l'URL de votre déploiement
   // Google Apps Script (Déployer > Nouveau déploiement > App Web)
   // ==========================================================
-  const API_URL = "REMPLACER_PAR_URL_DU_WEB_APP";
+  const API_URL = "https://script.google.com/macros/s/AKfycbxWs0O8FWPoGSTpZQTBegoC6nHkXM9Kfd2cimPwVVFmHxak39OZ8d-le3vNGxthugrqiQ/exec";
 
   const SPECIALITES = [
     'Bureaucratie', 'Crime', 'Education', 'Finances', 'Haute Société',
