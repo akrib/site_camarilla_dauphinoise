@@ -1,6 +1,7 @@
 ---
 title: "Gestion des Influences"
-layout: single
+layout: full-width
+classes: wide
 permalink: /influences/
 author_profile: false
 toc: false
@@ -10,80 +11,109 @@ toc: false
 
 <style>
 #influences-app {
-  --ink: #e9e2d3; --ink-dim: #a89f8f; --bg-deep: #14100f; --bg-panel: #1c1613;
-  --line: #362c26; --gotha: #b08d57; --gotha-dim: #6e5836; --pegre: #7a1f2b;
-  --pegre-dim: #4a1219; --ok: #6f8f6a; --warn: #c98a3a;
-  font-family: 'Source Serif Pro', Georgia, 'Times New Roman', serif;
-  background: var(--bg-deep); color: var(--ink); padding: 2.2rem 2rem 2.5rem;
-  border-radius: 4px; line-height: 1.55;
+  --accent: #7a1f2b; --accent-dim: #a9455a; --gotha: #a3762a; --gotha-bg: #fbf3e4;
+  --pegre: #7a1f2b; --pegre-bg: #f7e9ea; --line: #e2ddd6; --panel: #fafaf8;
+  --ink: #2b2b2b; --ink-dim: #767267; --ok: #3f7a4d; --warn: #a3641a;
+  color: var(--ink); line-height: 1.55;
 }
 #influences-app * { box-sizing: border-box; }
-#influences-app h2, #influences-app h3 { font-family: 'Playfair Display', Georgia, serif; font-weight: 600; letter-spacing: .02em; }
-#influences-app h2 { font-size: 1.35rem; margin: 0 0 .35rem; }
-#influences-app .subtitle { color: var(--ink-dim); font-size: .84rem; font-style: italic; margin: 0 0 1.2rem; }
-#influences-app .id-bar { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; background: var(--bg-panel); border: 1px solid var(--line); border-radius: 3px; padding: 1rem 1.2rem; margin-bottom: 1.4rem; }
+#influences-app h2 { font-size: 1.3rem; margin: 0 0 .3rem; color: var(--accent); }
+#influences-app h3 { font-size: 1rem; margin: 0 0 .2rem; }
+#influences-app .subtitle { color: var(--ink-dim); font-size: .85rem; font-style: italic; margin: 0 0 1.1rem; }
+
+/* Barre d'identification */
+#influences-app .id-bar {
+  display: flex; gap: 1rem; flex-wrap: wrap; align-items: end;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 1rem 1.2rem; margin-bottom: 1.4rem;
+}
 #influences-app .id-bar > div { flex: 1; min-width: 180px; }
 
-/* Onglets */
-#influences-app .tabs { display: flex; gap: .3rem; flex-wrap: wrap; border-bottom: 1px solid var(--line); margin-bottom: 1.4rem; }
+/* Onglets de premier niveau */
+#influences-app .tabs { display: flex; gap: .2rem; flex-wrap: wrap; border-bottom: 2px solid var(--line); margin-bottom: 1.5rem; }
 #influences-app .tab-btn {
-  font-family: 'IBM Plex Mono', monospace; background: transparent; border: none; border-bottom: 2px solid transparent;
-  color: var(--ink-dim); padding: .6rem .9rem; cursor: pointer; font-size: .76rem; text-transform: uppercase; letter-spacing: .05em;
+  background: transparent; border: none; border-bottom: 3px solid transparent;
+  color: var(--ink-dim); padding: .65rem 1.1rem; cursor: pointer; font-size: .9rem;
+  font-weight: 600; margin-bottom: -2px;
 }
-#influences-app .tab-btn:hover { color: var(--ink); }
-#influences-app .tab-btn.active { color: var(--gotha); border-bottom-color: var(--gotha); }
-#influences-app .tab-panel { display: none; background: var(--bg-panel); border: 1px solid var(--line); border-radius: 3px; padding: 1.4rem 1.6rem; }
+#influences-app .tab-btn:hover { color: var(--accent); }
+#influences-app .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+#influences-app .tab-panel { display: none; }
 #influences-app .tab-panel.active { display: block; }
 
-#influences-app label { display: block; font-size: .76rem; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-dim); margin: .8rem 0 .3rem; }
+/* Sous-onglets (uniquement dans l'onglet "Actions") */
+#influences-app .subtabs { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1.3rem; }
+#influences-app .subtab-btn {
+  background: var(--panel); border: 1px solid var(--line); color: var(--ink-dim);
+  padding: .4rem .85rem; border-radius: 999px; cursor: pointer; font-size: .82rem; font-weight: 600;
+}
+#influences-app .subtab-btn:hover { border-color: var(--accent); color: var(--accent); }
+#influences-app .subtab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+#influences-app .subtab-panel { display: none; }
+#influences-app .subtab-panel.active { display: block; }
+
+#influences-app .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 1.4rem 1.6rem; }
+
+#influences-app label { display: block; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-dim); margin: .8rem 0 .3rem; }
 #influences-app input[type=text], #influences-app input[type=number], #influences-app input[type=password],
 #influences-app input[type=date], #influences-app input[type=month], #influences-app select, #influences-app textarea {
-  width: 100%; background: var(--bg-deep); border: 1px solid var(--line); color: var(--ink);
-  padding: .5rem .65rem; border-radius: 2px; font-family: 'IBM Plex Mono', 'Courier New', monospace; font-size: .88rem;
+  width: 100%; background: #fff; border: 1px solid #c9c3b8; color: var(--ink);
+  padding: .5rem .65rem; border-radius: 4px; font-size: .92rem;
 }
 #influences-app textarea { min-height: 4rem; resize: vertical; }
 #influences-app .row { display: flex; gap: 1.1rem; flex-wrap: wrap; }
 #influences-app .row > div { flex: 1; min-width: 190px; }
-#influences-app .split { display: grid; grid-template-columns: 1fr 2px 1fr; gap: 1.4rem; align-items: start; }
-#influences-app .divider { background: linear-gradient(to bottom, transparent, var(--line) 15%, var(--line) 85%, transparent); width: 2px; min-height: 100%; }
+#influences-app .split { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 1.4rem; align-items: start; }
+#influences-app .divider { background: var(--line); width: 1px; min-height: 100%; }
 #influences-app .col-gotha { border-left: 3px solid var(--gotha); padding-left: 1rem; }
 #influences-app .col-pegre { border-left: 3px solid var(--pegre); padding-left: 1rem; }
-#influences-app .col-gotha h3 { color: var(--gotha); font-size: 1rem; margin-bottom: .2rem; }
-#influences-app .col-pegre h3 { color: var(--pegre); font-size: 1rem; margin-bottom: .2rem; }
+#influences-app .col-gotha h3 { color: var(--gotha); }
+#influences-app .col-pegre h3 { color: var(--pegre); }
 #influences-app .spec-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .3rem .8rem; margin-top: .4rem; }
-#influences-app .spec-item { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--ink-dim); }
+#influences-app .spec-item { display: flex; align-items: center; gap: .4rem; font-size: .84rem; color: var(--ink-dim); }
 #influences-app .spec-item input { width: auto; }
-#influences-app .spec-item.active { color: var(--ink); }
-#influences-app .spec-count { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; margin-top: .3rem; }
-#influences-app .spec-count.over { color: var(--pegre); }
+#influences-app .spec-item.active { color: var(--ink); font-weight: 600; }
+#influences-app .spec-count { font-size: .74rem; margin-top: .3rem; color: var(--ink-dim); }
+#influences-app .spec-count.over { color: var(--pegre); font-weight: 600; }
+
 #influences-app button {
-  font-family: 'IBM Plex Mono', monospace; background: transparent; border: 1px solid var(--ink-dim);
-  color: var(--ink); padding: .55rem 1.05rem; border-radius: 2px; cursor: pointer; font-size: .8rem;
-  letter-spacing: .04em; text-transform: uppercase; margin-top: 1rem; transition: border-color .15s, color .15s;
+  background: #fff; border: 1px solid var(--accent); color: var(--accent);
+  padding: .55rem 1.1rem; border-radius: 4px; cursor: pointer; font-size: .85rem;
+  font-weight: 600; margin-top: 1rem; transition: background .15s, color .15s;
 }
-#influences-app button:hover { border-color: var(--ink); }
-#influences-app button.primary { border-color: var(--gotha); color: var(--gotha); }
-#influences-app button.primary:hover { background: var(--gotha); color: var(--bg-deep); }
-#influences-app .status-msg { font-size: .8rem; margin-top: .6rem; min-height: 1.2em; }
+#influences-app button:hover { background: var(--accent); color: #fff; }
+#influences-app button.primary { background: var(--accent); color: #fff; }
+#influences-app button.primary:hover { background: var(--accent-dim); border-color: var(--accent-dim); }
+
+#influences-app .status-msg { font-size: .82rem; margin-top: .6rem; min-height: 1.2em; }
 #influences-app .status-msg.ok { color: var(--ok); }
-#influences-app .status-msg.err { color: var(--pegre); }
-#influences-app .cost-preview { font-family: 'IBM Plex Mono', monospace; font-size: .82rem; background: var(--bg-deep); border: 1px dashed var(--line); padding: .5rem .8rem; margin-top: .8rem; border-radius: 2px; color: var(--warn); }
-#influences-app .action-desc { font-size: .8rem; color: var(--ink-dim); font-style: italic; margin-top: .4rem; border-left: 2px solid var(--line); padding-left: .6rem; }
-#influences-app .history-item { border-bottom: 1px solid var(--line); padding: .75rem 0; font-size: .86rem; }
+#influences-app .status-msg.err { color: var(--pegre); font-weight: 600; }
+#influences-app .cost-preview { font-size: .85rem; background: #fff8ec; border: 1px dashed var(--warn); padding: .5rem .8rem; margin-top: .8rem; border-radius: 4px; color: var(--warn); }
+#influences-app .action-desc { font-size: .82rem; color: var(--ink-dim); font-style: italic; margin-top: .4rem; border-left: 2px solid var(--line); padding-left: .6rem; }
+
+#influences-app .history-item { border-bottom: 1px solid var(--line); padding: .8rem 0; font-size: .88rem; }
 #influences-app .history-item:last-child { border-bottom: none; }
-#influences-app .history-meta { font-family: 'IBM Plex Mono', monospace; font-size: .7rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .3rem; }
-#influences-app .history-meta .tag { padding: .1rem .4rem; border-radius: 2px; margin-right: .4rem; }
-#influences-app .tag.gotha { background: var(--gotha-dim); color: var(--gotha); }
-#influences-app .tag.pegre { background: var(--pegre-dim); color: var(--pegre); }
-#influences-app .history-result { margin-top: .5rem; padding: .55rem .7rem; background: var(--bg-deep); border-left: 2px solid var(--ok); font-size: .84rem; }
+#influences-app .history-meta { font-size: .74rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .3rem; }
+#influences-app .history-meta .tag { padding: .1rem .5rem; border-radius: 999px; margin-right: .4rem; font-weight: 600; }
+#influences-app .tag.gotha { background: var(--gotha-bg); color: var(--gotha); }
+#influences-app .tag.pegre { background: var(--pegre-bg); color: var(--pegre); }
+#influences-app .history-result { margin-top: .5rem; padding: .55rem .7rem; background: #fff; border-left: 3px solid var(--ok); font-size: .86rem; border-radius: 0 4px 4px 0; }
 #influences-app .history-result.empty { border-left-color: var(--line); color: var(--ink-dim); font-style: italic; }
-#influences-app .config-warning { border-left: 3px solid var(--warn); background: #2a2016; color: var(--warn); padding: .8rem 1rem; font-size: .85rem; margin-bottom: 1.4rem; border-radius: 2px; }
+
+#influences-app .config-warning { border-left: 4px solid var(--warn); background: #fff8ec; color: var(--warn); padding: .8rem 1rem; font-size: .85rem; margin-bottom: 1.4rem; border-radius: 4px; }
+
 #influences-app .recap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: .5rem; }
-#influences-app .recap-card { background: var(--bg-deep); border: 1px solid var(--line); border-radius: 3px; padding: 1rem 1.2rem; }
-#influences-app .recap-card h4 { margin: 0 0 .6rem; font-family: 'Playfair Display', serif; }
-#influences-app .recap-card.gotha h4 { color: var(--gotha); }
-#influences-app .recap-card.pegre h4 { color: var(--pegre); }
-#influences-app .recap-line { display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: .85rem; padding: .25rem 0; border-bottom: 1px dashed var(--line); }
+#influences-app .recap-card { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 1rem 1.2rem; }
+#influences-app .recap-card.gotha { border-top: 3px solid var(--gotha); }
+#influences-app .recap-card.pegre { border-top: 3px solid var(--pegre); }
+#influences-app .recap-card.gotha h4 { color: var(--gotha); margin: 0 0 .6rem; }
+#influences-app .recap-card.pegre h4 { color: var(--pegre); margin: 0 0 .6rem; }
+#influences-app .recap-line { display: flex; justify-content: space-between; font-size: .88rem; padding: .3rem 0; border-bottom: 1px dashed var(--line); }
+
+@media (max-width: 700px) {
+  #influences-app .split, #influences-app .recap-grid { grid-template-columns: 1fr; }
+  #influences-app .divider { display: none; }
+}
 </style>
 
 <div id="config-warning" class="config-warning" style="display:none;">
@@ -100,177 +130,190 @@ toc: false
     <label for="in-code">Code joueur</label>
     <input type="password" id="in-code" placeholder="Laissez vide si nouvelle fiche">
   </div>
-  <div><button id="btn-charger">Charger la fiche</button></div>
+  <div><button id="btn-charger" class="primary">Charger la fiche</button></div>
 </div>
 <div id="msg-identification" class="status-msg"></div>
 
 <div class="tabs">
   <button class="tab-btn active" data-tab="fiche">Fiche Personnage</button>
-  <button class="tab-btn" data-tab="globale">Action Globale</button>
-  <button class="tab-btn" data-tab="ciblee">Action Ciblée</button>
-  <button class="tab-btn" data-tab="soutien">Soutien</button>
-  <button class="tab-btn" data-tab="aip">AIP</button>
+  <button class="tab-btn" data-tab="actions">Actions</button>
   <button class="tab-btn" data-tab="recap">Récap du Mois</button>
   <button class="tab-btn" data-tab="resultats">Résultats des Influences</button>
 </div>
 
 <!-- ============ FICHE PERSONNAGE ============ -->
 <div class="tab-panel active" data-tab="fiche">
-  <h2>Fiche Personnage</h2>
-  <div class="row">
-    <div><label for="fp-joueur">Joueur</label><input type="text" id="fp-joueur"></div>
-    <div><label for="fp-ville">Ville</label><select id="fp-ville"></select></div>
-    <div><label for="fp-secte">Secte</label><select id="fp-secte"></select></div>
-  </div>
-  <div class="row">
-    <div><label for="fp-clan">Clan</label><select id="fp-clan"></select></div>
-    <div><label for="fp-rang">Rang</label><select id="fp-rang"></select></div>
-  </div>
-  <div class="split">
-    <div class="col-gotha">
-      <h3>Gotha</h3>
-      <label for="gotha-niveau">Niveau (1–5)</label>
-      <input type="number" id="gotha-niveau" min="0" max="5" value="0">
-      <label>Spécialisations Gotha</label>
-      <div class="spec-grid" id="gotha-specs"></div>
-      <div class="spec-count" id="gotha-spec-count"></div>
+  <div class="card">
+    <h2>Fiche Personnage</h2>
+    <div class="row">
+      <div><label for="fp-joueur">Joueur</label><input type="text" id="fp-joueur"></div>
+      <div><label for="fp-ville">Ville</label><select id="fp-ville"></select></div>
+      <div><label for="fp-secte">Secte</label><select id="fp-secte"></select></div>
     </div>
-    <div class="divider"></div>
-    <div class="col-pegre">
-      <h3>Pègre</h3>
-      <label for="pegre-niveau">Niveau (1–5)</label>
-      <input type="number" id="pegre-niveau" min="0" max="5" value="0">
-      <label>Spécialisations Pègre</label>
-      <div class="spec-grid" id="pegre-specs"></div>
-      <div class="spec-count" id="pegre-spec-count"></div>
+    <div class="row">
+      <div><label for="fp-clan">Clan</label><select id="fp-clan"></select></div>
+      <div><label for="fp-rang">Rang</label><select id="fp-rang"></select></div>
     </div>
-  </div>
-  <button id="btn-enregistrer-fiche" class="primary">Enregistrer la fiche</button>
-  <div id="msg-fiche" class="status-msg"></div>
-</div>
-
-<!-- ============ ACTION GLOBALE ============ -->
-<div class="tab-panel" data-tab="globale">
-  <h2>Nouvelle Action Globale</h2>
-  <p class="subtitle">Coûte 1 Action d'Influence. Le niveau requis dépend de la catégorie choisie.</p>
-  <div class="row">
-    <div><label for="glob-date">Date</label><input type="date" id="glob-date"></div>
-    <div><label for="glob-ville">Ville</label><select id="glob-ville"></select></div>
-    <div><label for="glob-zone">Zone (district)</label><select id="glob-zone"></select></div>
-  </div>
-  <div class="row">
-    <div><label for="glob-categorie">Catégorie</label><select id="glob-categorie"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
-    <div><label for="glob-spec">Spécialisation</label><select id="glob-spec"></select></div>
-  </div>
-  <label for="glob-raison">Raison sociale (cible / organisme)</label>
-  <input type="text" id="glob-raison" placeholder="Ex : Commissariat de Police La Bruyère">
-  <label for="glob-action">Action</label>
-  <select id="glob-action"></select>
-  <div class="action-desc" id="glob-desc"></div>
-  <div class="cost-preview" id="glob-cost"></div>
-  <label for="glob-points">Points d'action</label>
-  <select id="glob-points"></select>
-  <label for="glob-descriptif">Descriptif joueur</label>
-  <textarea id="glob-descriptif"></textarea>
-  <button id="btn-envoyer-globale" class="primary">Envoyer</button>
-  <div id="msg-globale" class="status-msg"></div>
-</div>
-
-<!-- ============ ACTION CIBLÉE ============ -->
-<div class="tab-panel" data-tab="ciblee">
-  <h2>Nouvelle Action Ciblée</h2>
-  <p class="subtitle">Attaque, Défense ou Obstruction — affecte l'Influence d'un autre personnage. La cible est renseignée dans "Raison sociale".</p>
-  <div class="row">
-    <div><label for="cib-date">Date</label><input type="date" id="cib-date"></div>
-    <div><label for="cib-ville">Ville</label><select id="cib-ville"></select></div>
-    <div><label for="cib-zone">Zone (district)</label><select id="cib-zone"></select></div>
-  </div>
-  <div class="row">
-    <div><label for="cib-categorie">Catégorie (source)</label><select id="cib-categorie"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
-    <div><label for="cib-action">Action</label><select id="cib-action"><option>Attaque</option><option>Défense</option><option>Obstruction</option></select></div>
-  </div>
-  <div class="row">
-    <div><label for="cib-raison">Cible (Raison sociale)</label><input type="text" id="cib-raison" list="dl-personnages" placeholder="Personnage ou Influence visée"></div>
-    <div><label for="cib-categorie-cible">Catégorie de la cible</label><select id="cib-categorie-cible"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
-    <div><label for="cib-points">Points visés</label><select id="cib-points"></select></div>
-  </div>
-  <div class="cost-preview" id="cib-cost"></div>
-  <label for="cib-descriptif">Descriptif joueur</label>
-  <textarea id="cib-descriptif"></textarea>
-  <button id="btn-envoyer-ciblee" class="primary">Envoyer</button>
-  <div id="msg-ciblee" class="status-msg"></div>
-</div>
-
-<!-- ============ SOUTIEN ============ -->
-<div class="tab-panel" data-tab="soutien">
-  <h2>Nouveau Soutien</h2>
-  <p class="subtitle">Prêtez vos Actions d'Influence pour augmenter temporairement le niveau d'un autre personnage. Le personnage soutenu est renseigné dans "Raison sociale".</p>
-  <div class="row">
-    <div><label for="sou-date">Date</label><input type="date" id="sou-date"></div>
-    <div><label for="sou-ville">Ville</label><select id="sou-ville"></select></div>
-    <div><label for="sou-zone">Zone (district)</label><select id="sou-zone"></select></div>
-  </div>
-  <div class="row">
-    <div><label for="sou-raison">Personnage soutenu (Raison sociale)</label><input type="text" id="sou-raison" list="dl-personnages"></div>
-    <div><label for="sou-categorie">Catégorie</label><select id="sou-categorie"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
-    <div><label for="sou-niveau">Niveau de la cible avant ce point</label><select id="sou-niveau"></select></div>
-  </div>
-  <div class="row">
-    <div><label for="sou-malus">Malus hors-praxis (0 à -3)</label><input type="number" id="sou-malus" min="-3" max="0" value="0"></div>
-  </div>
-  <div class="cost-preview" id="sou-cost"></div>
-  <label for="sou-descriptif">Descriptif joueur</label>
-  <textarea id="sou-descriptif"></textarea>
-  <button id="btn-envoyer-soutien" class="primary">Envoyer</button>
-  <div id="msg-soutien" class="status-msg"></div>
-</div>
-
-<!-- ============ AIP ============ -->
-<div class="tab-panel" data-tab="aip">
-  <h2>Nouvelle Action AIP</h2>
-  <p class="subtitle">Enquête, Patrouille, Mentorat, Chasse, Troupeau, Informatique, Artisanat, Science, Dépense d'XP…</p>
-  <div class="row">
-    <div><label for="aip-date">Date</label><input type="date" id="aip-date"></div>
-    <div><label for="aip-ville">Ville</label><select id="aip-ville"></select></div>
-    <div><label for="aip-zone">Zone (district)</label><select id="aip-zone"></select></div>
-  </div>
-  <div class="row">
-    <div>
-      <label for="aip-categorie">Catégorie</label>
-      <select id="aip-categorie">
-        <option>AIP</option><option>AIP (Troupeau)</option><option>AIP (Informatique)</option>
-        <option>AIP (Artisanat)</option><option>AIP (Science)</option><option>Dépense d'XP</option>
-      </select>
+    <div class="split">
+      <div class="col-gotha">
+        <h3>Gotha</h3>
+        <label for="gotha-niveau">Niveau (1–5)</label>
+        <input type="number" id="gotha-niveau" min="0" max="5" value="0">
+        <label>Spécialisations Gotha</label>
+        <div class="spec-grid" id="gotha-specs"></div>
+        <div class="spec-count" id="gotha-spec-count"></div>
+      </div>
+      <div class="divider"></div>
+      <div class="col-pegre">
+        <h3>Pègre</h3>
+        <label for="pegre-niveau">Niveau (1–5)</label>
+        <input type="number" id="pegre-niveau" min="0" max="5" value="0">
+        <label>Spécialisations Pègre</label>
+        <div class="spec-grid" id="pegre-specs"></div>
+        <div class="spec-count" id="pegre-spec-count"></div>
+      </div>
     </div>
-    <div><label for="aip-points">Points d'action</label><select id="aip-points"></select></div>
+    <button id="btn-enregistrer-fiche" class="primary">Enregistrer la fiche</button>
+    <div id="msg-fiche" class="status-msg"></div>
   </div>
-  <label for="aip-raison">Raison sociale (optionnel)</label>
-  <input type="text" id="aip-raison">
-  <label for="aip-action">Action</label>
-  <select id="aip-action"></select>
-  <label for="aip-descriptif">Descriptif joueur</label>
-  <textarea id="aip-descriptif"></textarea>
-  <button id="btn-envoyer-aip" class="primary">Envoyer</button>
-  <div id="msg-aip" class="status-msg"></div>
+</div>
+
+<!-- ============ ACTIONS (avec sous-onglets) ============ -->
+<div class="tab-panel" data-tab="actions">
+  <div class="subtabs">
+    <button class="subtab-btn active" data-subtab="globale">Action Globale</button>
+    <button class="subtab-btn" data-subtab="ciblee">Action Ciblée</button>
+    <button class="subtab-btn" data-subtab="soutien">Soutien</button>
+    <button class="subtab-btn" data-subtab="aip">AIP</button>
+  </div>
+
+  <!-- ---- Action Globale ---- -->
+  <div class="subtab-panel active card" data-subtab="globale">
+    <h2>Nouvelle Action Globale</h2>
+    <p class="subtitle">Coûte 1 Action d'Influence. Le niveau requis dépend de la catégorie choisie.</p>
+    <div class="row">
+      <div><label for="glob-date">Date</label><input type="date" id="glob-date"></div>
+      <div><label for="glob-ville">Ville</label><select id="glob-ville"></select></div>
+      <div><label for="glob-zone">Zone (district)</label><select id="glob-zone"></select></div>
+    </div>
+    <div class="row">
+      <div><label for="glob-categorie">Catégorie</label><select id="glob-categorie"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
+      <div><label for="glob-spec">Spécialisation</label><select id="glob-spec"></select></div>
+    </div>
+    <label for="glob-raison">Raison sociale (cible / organisme)</label>
+    <input type="text" id="glob-raison" placeholder="Ex : Commissariat de Police La Bruyère">
+    <label for="glob-action">Action</label>
+    <select id="glob-action"></select>
+    <div class="action-desc" id="glob-desc"></div>
+    <div class="cost-preview" id="glob-cost"></div>
+    <label for="glob-points">Points d'action</label>
+    <select id="glob-points"></select>
+    <label for="glob-descriptif">Descriptif joueur</label>
+    <textarea id="glob-descriptif"></textarea>
+    <button id="btn-envoyer-globale" class="primary">Envoyer</button>
+    <div id="msg-globale" class="status-msg"></div>
+  </div>
+
+  <!-- ---- Action Ciblée ---- -->
+  <div class="subtab-panel card" data-subtab="ciblee">
+    <h2>Nouvelle Action Ciblée</h2>
+    <p class="subtitle">Attaque, Défense ou Obstruction. La cible est renseignée dans "Raison sociale".</p>
+    <div class="row">
+      <div><label for="cib-date">Date</label><input type="date" id="cib-date"></div>
+      <div><label for="cib-ville">Ville</label><select id="cib-ville"></select></div>
+      <div><label for="cib-zone">Zone (district)</label><select id="cib-zone"></select></div>
+    </div>
+    <div class="row">
+      <div><label for="cib-categorie">Catégorie (source)</label><select id="cib-categorie"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
+      <div><label for="cib-action">Action</label><select id="cib-action"><option>Attaque</option><option>Défense</option><option>Obstruction</option></select></div>
+    </div>
+    <div class="row">
+      <div><label for="cib-raison">Cible (Raison sociale)</label><input type="text" id="cib-raison" list="dl-personnages" placeholder="Personnage ou Influence visée"></div>
+      <div><label for="cib-categorie-cible">Catégorie de la cible</label><select id="cib-categorie-cible"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
+      <div><label for="cib-points">Points visés</label><select id="cib-points"></select></div>
+    </div>
+    <div class="cost-preview" id="cib-cost"></div>
+    <label for="cib-descriptif">Descriptif joueur</label>
+    <textarea id="cib-descriptif"></textarea>
+    <button id="btn-envoyer-ciblee" class="primary">Envoyer</button>
+    <div id="msg-ciblee" class="status-msg"></div>
+  </div>
+
+  <!-- ---- Soutien ---- -->
+  <div class="subtab-panel card" data-subtab="soutien">
+    <h2>Nouveau Soutien</h2>
+    <p class="subtitle">Le personnage soutenu est renseigné dans "Raison sociale".</p>
+    <div class="row">
+      <div><label for="sou-date">Date</label><input type="date" id="sou-date"></div>
+      <div><label for="sou-ville">Ville</label><select id="sou-ville"></select></div>
+      <div><label for="sou-zone">Zone (district)</label><select id="sou-zone"></select></div>
+    </div>
+    <div class="row">
+      <div><label for="sou-raison">Personnage soutenu (Raison sociale)</label><input type="text" id="sou-raison" list="dl-personnages"></div>
+      <div><label for="sou-categorie">Catégorie</label><select id="sou-categorie"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
+      <div><label for="sou-niveau">Niveau de la cible avant ce point</label><select id="sou-niveau"></select></div>
+    </div>
+    <div class="row">
+      <div><label for="sou-malus">Malus hors-praxis (0 à -3)</label><input type="number" id="sou-malus" min="-3" max="0" value="0"></div>
+    </div>
+    <div class="cost-preview" id="sou-cost"></div>
+    <label for="sou-descriptif">Descriptif joueur</label>
+    <textarea id="sou-descriptif"></textarea>
+    <button id="btn-envoyer-soutien" class="primary">Envoyer</button>
+    <div id="msg-soutien" class="status-msg"></div>
+  </div>
+
+  <!-- ---- AIP ---- -->
+  <div class="subtab-panel card" data-subtab="aip">
+    <h2>Nouvelle Action AIP</h2>
+    <p class="subtitle">Enquête, Patrouille, Mentorat, Chasse, Troupeau, Informatique, Artisanat, Science, Dépense d'XP…</p>
+    <div class="row">
+      <div><label for="aip-date">Date</label><input type="date" id="aip-date"></div>
+      <div><label for="aip-ville">Ville</label><select id="aip-ville"></select></div>
+      <div><label for="aip-zone">Zone (district)</label><select id="aip-zone"></select></div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="aip-categorie">Catégorie</label>
+        <select id="aip-categorie">
+          <option>AIP</option><option>AIP (Troupeau)</option><option>AIP (Informatique)</option>
+          <option>AIP (Artisanat)</option><option>AIP (Science)</option><option>Dépense d'XP</option>
+        </select>
+      </div>
+      <div><label for="aip-points">Points d'action</label><select id="aip-points"></select></div>
+    </div>
+    <label for="aip-raison">Raison sociale (optionnel)</label>
+    <input type="text" id="aip-raison">
+    <label for="aip-action">Action</label>
+    <select id="aip-action"></select>
+    <label for="aip-descriptif">Descriptif joueur</label>
+    <textarea id="aip-descriptif"></textarea>
+    <button id="btn-envoyer-aip" class="primary">Envoyer</button>
+    <div id="msg-aip" class="status-msg"></div>
+  </div>
 </div>
 
 <!-- ============ RÉCAP DU MOIS ============ -->
 <div class="tab-panel" data-tab="recap">
-  <h2>Récap du Mois</h2>
-  <div class="row">
-    <div><label for="recap-mois">Mois</label><input type="month" id="recap-mois"></div>
-    <div style="display:flex;align-items:end;"><button id="btn-recap">Actualiser</button></div>
+  <div class="card">
+    <h2>Récap du Mois</h2>
+    <div class="row">
+      <div><label for="recap-mois">Mois</label><input type="month" id="recap-mois"></div>
+      <div style="display:flex;align-items:end;"><button id="btn-recap">Actualiser</button></div>
+    </div>
+    <div id="recap-contenu" class="recap-grid"></div>
+    <div id="msg-recap" class="status-msg"></div>
   </div>
-  <div id="recap-contenu" class="recap-grid"></div>
-  <div id="msg-recap" class="status-msg"></div>
 </div>
 
 <!-- ============ RÉSULTATS DES INFLUENCES ============ -->
 <div class="tab-panel" data-tab="resultats">
-  <h2>Résultats des Influences</h2>
-  <p class="subtitle">Toutes vos actions et les réponses du conteur.</p>
-  <button id="btn-rafraichir-historique">Rafraîchir</button>
-  <div id="historique-liste"></div>
+  <div class="card">
+    <h2>Résultats des Influences</h2>
+    <p class="subtitle">Toutes vos actions et les réponses du conteur.</p>
+    <button id="btn-rafraichir-historique">Rafraîchir</button>
+    <div id="historique-liste"></div>
+  </div>
 </div>
 
 </div>
@@ -329,13 +372,23 @@ toc: false
   const $ = (id) => document.getElementById(id);
   if (API_URL.indexOf('REMPLACER') !== -1) { $('config-warning').style.display = 'block'; }
 
-  // ---------- Onglets ----------
-  document.querySelectorAll('.tab-btn').forEach(btn => {
+  // ---------- Onglets de premier niveau ----------
+  document.querySelectorAll('#influences-app > .tabs .tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('#influences-app > .tabs .tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#influences-app > .tab-panel').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
-      document.querySelector(`.tab-panel[data-tab="${btn.dataset.tab}"]`).classList.add('active');
+      document.querySelector(`#influences-app > .tab-panel[data-tab="${btn.dataset.tab}"]`).classList.add('active');
+    });
+  });
+
+  // ---------- Sous-onglets (uniquement visibles dans l'onglet "Actions") ----------
+  document.querySelectorAll('.subtab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.subtab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelector(`.subtab-panel[data-subtab="${btn.dataset.subtab}"]`).classList.add('active');
     });
   });
 
@@ -352,8 +405,7 @@ toc: false
 
   const today = new Date().toISOString().slice(0,10);
   ['glob-date','cib-date','sou-date','aip-date'].forEach(id => $(id).value = today);
-  const nowMonth = new Date().toISOString().slice(0,7);
-  $('recap-mois').value = nowMonth;
+  $('recap-mois').value = new Date().toISOString().slice(0,7);
 
   // ---------- Spécialisations ----------
   function buildSpecGrid(containerId) {
