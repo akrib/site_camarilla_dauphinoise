@@ -156,7 +156,7 @@ toc: false
 
 <script>
 (function () {
-  const API_URL = "https://script.google.com/macros/s/AKfycbzvQ9eGmFpoa-53YQwuCneMM6i9VA3vS2TAw1j8ImxYQpSZmL1Qaa2CZgGEfhCPf6J5xA/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbyOeaYBizM8f-FzIYTuYDlILlXR2AQ_Vf5X5EUrglHSzgmsmneQ93ZXNW2ChggQTGH8oQ/exec";
   const $ = (id) => document.getElementById(id);
 
   document.querySelectorAll('#admin-app .tab-btn').forEach(btn => {
