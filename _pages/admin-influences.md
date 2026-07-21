@@ -63,6 +63,13 @@ toc: false
 #admin-app .bar-cell { display: flex; align-items: center; gap: .5rem; }
 #admin-app .bar { flex: 1; height: 8px; background: #fff; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
 #admin-app .bar-fill { height: 100%; background: var(--accent); }
+#admin-app .pagination { display: flex; align-items: center; gap: .9rem; margin-top: 1rem; font-size: .82rem; color: var(--ink-dim); }
+#admin-app .pagination button {
+  padding: .35rem .8rem; font-size: .78rem; font-weight: 600;
+  background: #fff; border: 1px solid var(--accent); color: var(--accent);
+}
+#admin-app .pagination button:hover { background: var(--accent); color: #fff; }
+#admin-app .pagination button:disabled { border-color: var(--line); color: var(--line); cursor: not-allowed; background: #fff; }
 </style>
 
 <div class="id-bar">
@@ -101,6 +108,7 @@ toc: false
     <h2>Actions Ciblées</h2>
     <p class="subtitle">Lignes de l'onglet AIP où Action = Attaque / Défense / Obstruction.</p>
     <table id="table-ciblees"><thead><tr><th>Date</th><th>Personnage</th><th>Catégorie</th><th>Action</th><th>Raison sociale (cible)</th><th>Points</th><th>Réponse</th></tr></thead><tbody></tbody></table>
+    <div id="ciblees-pagination" class="pagination"></div>
   </div>
 </div>
 
@@ -109,6 +117,7 @@ toc: false
     <h2>Soutiens</h2>
     <p class="subtitle">Lignes de l'onglet AIP où Action = Soutien.</p>
     <table id="table-soutiens"><thead><tr><th>Date</th><th>Personnage</th><th>Raison sociale (soutenu)</th><th>Catégorie</th><th>Points</th><th>Réponse</th></tr></thead><tbody></tbody></table>
+    <div id="soutiens-pagination" class="pagination"></div>
   </div>
 </div>
 
@@ -117,6 +126,7 @@ toc: false
     <h2>Raisons Sociales</h2>
     <p class="subtitle">Registre complet, tous personnages confondus — alimenté automatiquement à chaque action et par l'onglet "Raisons Sociales" côté joueur.</p>
     <table id="table-raisons"><thead><tr><th>Nom</th><th>Personnage lié</th><th>Ville</th><th>Zone</th><th>Catégorie</th><th>Description</th></tr></thead><tbody></tbody></table>
+    <div id="raisons-pagination" class="pagination"></div>
   </div>
 </div>
 
@@ -138,6 +148,7 @@ toc: false
       <thead><tr><th>Date</th><th>Personnage</th><th>Catégorie</th><th>Sujet / Description</th><th>Statut</th><th>Résultat</th><th></th></tr></thead>
       <tbody></tbody>
     </table>
+    <div id="tickets-pagination" class="pagination"></div>
   </div>
 </div>
 
@@ -145,7 +156,7 @@ toc: false
 
 <script>
 (function () {
-  const API_URL = "https://script.google.com/macros/s/AKfycbyYuFI95i4ck6xVyQnU8KhXc781ZRelBoi1erz_3Tb421QjdJDZT7Neca1AXKiWxKrX4g/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbzvQ9eGmFpoa-53YQwuCneMM6i9VA3vS2TAw1j8ImxYQpSZmL1Qaa2CZgGEfhCPf6J5xA/exec";
   const $ = (id) => document.getElementById(id);
 
   document.querySelectorAll('#admin-app .tab-btn').forEach(btn => {
@@ -168,6 +179,22 @@ toc: false
     rows.forEach(r => tbody.appendChild(rowBuilder(r)));
   }
 
+  function renderPagination(containerId, state, onGoto) {
+    const el = $(containerId);
+    if (!el) return;
+    if (!state || state.total <= state.pageSize) { el.innerHTML = ''; return; }
+    const totalPages = Math.ceil(state.total / state.pageSize);
+    el.innerHTML = `
+      <button data-dir="prev" ${state.page <= 0 ? 'disabled' : ''}>← Précédent</button>
+      <span>Page ${state.page + 1} / ${totalPages} (${state.total} résultats)</span>
+      <button data-dir="next" ${!state.hasMore ? 'disabled' : ''}>Suivant →</button>
+    `;
+    const prevBtn = el.querySelector('[data-dir="prev"]');
+    const nextBtn = el.querySelector('[data-dir="next"]');
+    if (prevBtn) prevBtn.addEventListener('click', () => onGoto(state.page - 1));
+    if (nextBtn) nextBtn.addEventListener('click', () => onGoto(state.page + 1));
+  }
+
   $('btn-charger-tout').addEventListener('click', () => {
     const cle = $('admin-cle').value, mois = $('admin-mois').value;
     if (!cle) { setMsg('Entrez la clé conteur.', true); return; }
@@ -175,11 +202,8 @@ toc: false
 
     Promise.all([
       apiGet({ action: 'joueurs', cle, mois }),
-      apiGet({ action: 'districts', cle, mois }),
-      apiGet({ action: 'actionsCiblees', cle }),
-      apiGet({ action: 'soutiens', cle }),
-      apiGet({ action: 'raisonsSociales' })
-    ]).then(([joueurs, districts, ciblees, soutiens, raisons]) => {
+      apiGet({ action: 'districts', cle, mois })
+    ]).then(([joueurs, districts]) => {
       if (!joueurs.ok) { setMsg(joueurs.error, true); return; }
       setMsg(`Tableau de bord chargé pour ${mois}.`, false);
 
@@ -197,43 +221,79 @@ toc: false
         tr.innerHTML = `<td>${d.ZONE}</td><td><div class="bar-cell"><span>${d.NB_ACTIONS}</span><div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div></div></td>`;
         return tr;
       });
+    }).catch(err => setMsg('Erreur réseau : ' + err, true));
 
-      fillTable('#table-ciblees', ciblees.actions, (a) => {
+    chargerCiblees(0);
+    chargerSoutiens(0);
+    chargerRaisons(0);
+    chargerTickets(0);
+  });
+
+  // ---------- Actions Ciblées (paginé) ----------
+  let pageCiblees = 0;
+  function chargerCiblees(page) {
+    if (typeof page === 'number') pageCiblees = page;
+    const cle = $('admin-cle').value;
+    if (!cle) return;
+    apiGet({ action: 'actionsCiblees', cle, page: pageCiblees }).then((res) => {
+      if (!res.ok) { setMsg(res.error, true); return; }
+      fillTable('#table-ciblees', res.actions, (a) => {
         const tr = document.createElement('tr');
         const date = a['DATE'] ? new Date(a['DATE']).toLocaleDateString('fr-FR') : '';
         tr.innerHTML = `<td>${date}</td><td>${a['PERSONNAGE']||''}</td><td>${a['CATEGORIE']||''}</td><td>${a['ACTION']||''}</td><td>${a['RAISON SOCIALE']||''}</td><td>${a["POINTS D'ACTION"]||''}</td><td>${a['REPONSE CONTEUR']||'—'}</td>`;
         return tr;
       });
+      renderPagination('ciblees-pagination', res, chargerCiblees);
+    }).catch(err => setMsg('Erreur réseau (actions ciblées) : ' + err, true));
+  }
 
-      fillTable('#table-soutiens', soutiens.actions, (a) => {
+  // ---------- Soutiens (paginé) ----------
+  let pageSoutiens = 0;
+  function chargerSoutiens(page) {
+    if (typeof page === 'number') pageSoutiens = page;
+    const cle = $('admin-cle').value;
+    if (!cle) return;
+    apiGet({ action: 'soutiens', cle, page: pageSoutiens }).then((res) => {
+      if (!res.ok) { setMsg(res.error, true); return; }
+      fillTable('#table-soutiens', res.actions, (a) => {
         const tr = document.createElement('tr');
         const date = a['DATE'] ? new Date(a['DATE']).toLocaleDateString('fr-FR') : '';
         tr.innerHTML = `<td>${date}</td><td>${a['PERSONNAGE']||''}</td><td>${a['RAISON SOCIALE']||''}</td><td>${a['CATEGORIE']||''}</td><td>${a["POINTS D'ACTION"]||''}</td><td>${a['REPONSE CONTEUR']||'—'}</td>`;
         return tr;
       });
+      renderPagination('soutiens-pagination', res, chargerSoutiens);
+    }).catch(err => setMsg('Erreur réseau (soutiens) : ' + err, true));
+  }
 
-      fillTable('#table-raisons', raisons.raisonsSociales || [], (r) => {
+  // ---------- Raisons Sociales (paginé) ----------
+  let pageRaisons = 0;
+  function chargerRaisons(page) {
+    if (typeof page === 'number') pageRaisons = page;
+    apiGet({ action: 'raisonsSociales', page: pageRaisons }).then((res) => {
+      if (!res.ok) { setMsg(res.error, true); return; }
+      fillTable('#table-raisons', res.raisonsSociales || [], (r) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${r['NOM']||''}</td><td>${r['PERSONNAGE LIE']||''}</td><td>${r['VILLE']||''}</td><td>${r['ZONE']||''}</td><td>${r['CATEGORIE']||''}</td><td>${r['DESCRIPTION']||''}</td>`;
         return tr;
       });
+      renderPagination('raisons-pagination', res, chargerRaisons);
+    }).catch(err => setMsg('Erreur réseau (raisons sociales) : ' + err, true));
+  }
 
-      chargerTickets();
-    }).catch(err => setMsg('Erreur réseau : ' + err, true));
-  });
-
-  // ---------- Tickets ----------
+  // ---------- Tickets (paginé) ----------
   const STATUTS = ['En attente', 'En cours', 'Informations demandées', 'Complété', 'Refusé', 'Annulé'];
 
   function apiPost(body) {
     return fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }).then(r => r.json());
   }
 
-  function chargerTickets() {
+  let pageTickets = 0;
+  function chargerTickets(page) {
+    if (typeof page === 'number') pageTickets = page;
     const cle = $('admin-cle').value;
     if (!cle) return;
     const statut = $('tk-filtre-statut').value;
-    apiGet({ action: 'tickets', cle, statut }).then((res) => {
+    apiGet({ action: 'tickets', cle, statut, page: pageTickets }).then((res) => {
       if (!res.ok) { setMsg(res.error, true); return; }
       fillTable('#table-tickets', res.tickets, (t) => {
         const tr = document.createElement('tr');
@@ -261,8 +321,9 @@ toc: false
         });
         return tr;
       });
+      renderPagination('tickets-pagination', res, chargerTickets);
     }).catch(err => setMsg('Erreur réseau (tickets) : ' + err, true));
   }
-  $('btn-filtrer-tickets').addEventListener('click', chargerTickets);
+  $('btn-filtrer-tickets').addEventListener('click', () => chargerTickets(0));
 })();
 </script>

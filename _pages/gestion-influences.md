@@ -105,6 +105,13 @@ toc: false
 #influences-app .tag.statut-annule { background: #ececec; color: var(--ink-dim); }
 #influences-app .history-result { margin-top: .5rem; padding: .55rem .7rem; background: #fff; border-left: 3px solid var(--ok); font-size: .86rem; border-radius: 0 4px 4px 0; }
 #influences-app .history-result.empty { border-left-color: var(--line); color: var(--ink-dim); font-style: italic; }
+#influences-app .pagination { display: flex; align-items: center; gap: .9rem; margin-top: 1rem; font-size: .82rem; color: var(--ink-dim); }
+#influences-app .pagination button {
+  margin-top: 0; padding: .35rem .8rem; font-size: .78rem; font-weight: 600;
+  background: #fff; border: 1px solid var(--accent); color: var(--accent);
+}
+#influences-app .pagination button:disabled { border-color: var(--line); color: var(--line); cursor: not-allowed; }
+#influences-app .pagination button:disabled:hover { background: #fff; }
 
 #influences-app .config-warning { border-left: 4px solid var(--warn); background: #fff8ec; color: var(--warn); padding: .8rem 1rem; font-size: .85rem; margin-bottom: 1.4rem; border-radius: 4px; }
 
@@ -131,7 +138,6 @@ toc: false
     <label for="in-nom">Personnage</label>
     <input type="text" id="in-nom" list="dl-personnages" placeholder="Ex : Amarok">
     <datalist id="dl-personnages"></datalist>
-    <datalist id="dl-raisons-sociales"></datalist>
   </div>
   <div>
     <label for="in-code">Code joueur</label>
@@ -209,8 +215,9 @@ toc: false
       <div><label for="glob-categorie">Catégorie</label><select id="glob-categorie"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
       <div><label for="glob-spec">Spécialisation</label><select id="glob-spec"></select></div>
     </div>
-    <label for="glob-raison">Raison sociale (cible / organisme) *</label>
-    <input type="text" id="glob-raison" list="dl-raisons-sociales" required placeholder="Ex : Commissariat de Police La Bruyère">
+    <label for="glob-raison">Raison sociale (parmi les vôtres) *</label>
+    <select id="glob-raison" required></select>
+    <p class="subtitle" style="margin:.3rem 0 0;">Aucune ne convient ? Ajoutez-en une dans l'onglet "Raisons Sociales".</p>
     <label for="glob-action">Action</label>
     <select id="glob-action"></select>
     <div class="action-desc" id="glob-desc"></div>
@@ -226,7 +233,7 @@ toc: false
   <!-- ---- Action Ciblée ---- -->
   <div class="subtab-panel card" data-subtab="ciblee">
     <h2>Nouvelle Action Ciblée</h2>
-    <p class="subtitle">Attaque, Défense ou Obstruction. La cible est renseignée dans "Raison sociale".</p>
+    <p class="subtitle">Attaque, Défense ou Obstruction.</p>
     <div class="row">
       <div><label for="cib-date">Date</label><input type="date" id="cib-date"></div>
       <div><label for="cib-ville">Ville</label><select id="cib-ville"></select></div>
@@ -237,10 +244,12 @@ toc: false
       <div><label for="cib-action">Action</label><select id="cib-action"><option>Attaque</option><option>Défense</option><option>Obstruction</option></select></div>
     </div>
     <div class="row">
-      <div><label for="cib-raison">Cible (Raison sociale) *</label><input type="text" id="cib-raison" list="dl-raisons-sociales" required placeholder="Personnage ou Influence visée"></div>
+      <div><label for="cib-raison">Raison sociale (parmi les vôtres) *</label><select id="cib-raison" required></select></div>
       <div><label for="cib-categorie-cible">Catégorie de la cible</label><select id="cib-categorie-cible"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
       <div><label for="cib-points">Points visés</label><select id="cib-points"></select></div>
     </div>
+    <label for="cib-cible">Cible *</label>
+    <input type="text" id="cib-cible" required placeholder="Nom du personnage ou de l'Influence visée (à saisir librement)">
     <div class="cost-preview" id="cib-cost"></div>
     <label for="cib-descriptif">Descriptif joueur *</label>
     <textarea id="cib-descriptif" required></textarea>
@@ -251,17 +260,19 @@ toc: false
   <!-- ---- Soutien ---- -->
   <div class="subtab-panel card" data-subtab="soutien">
     <h2>Nouveau Soutien</h2>
-    <p class="subtitle">Le personnage soutenu est renseigné dans "Raison sociale".</p>
+    <p class="subtitle">Prêtez vos Actions d'Influence pour augmenter temporairement le niveau d'un autre personnage.</p>
     <div class="row">
       <div><label for="sou-date">Date</label><input type="date" id="sou-date"></div>
       <div><label for="sou-ville">Ville</label><select id="sou-ville"></select></div>
       <div><label for="sou-zone">Zone (district)</label><select id="sou-zone"></select></div>
     </div>
     <div class="row">
-      <div><label for="sou-raison">Personnage soutenu (Raison sociale) *</label><input type="text" id="sou-raison" list="dl-raisons-sociales" required></div>
+      <div><label for="sou-raison">Raison sociale (parmi les vôtres) *</label><select id="sou-raison" required></select></div>
       <div><label for="sou-categorie">Catégorie</label><select id="sou-categorie"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
       <div><label for="sou-niveau">Niveau de la cible avant ce point</label><select id="sou-niveau"></select></div>
     </div>
+    <label for="sou-cible">Cible (personnage soutenu) *</label>
+    <input type="text" id="sou-cible" required placeholder="Nom du personnage soutenu (à saisir librement)">
     <div class="row">
       <div><label for="sou-malus">Malus hors-praxis (0 à -3)</label><input type="number" id="sou-malus" min="-3" max="0" value="0"></div>
     </div>
@@ -291,8 +302,8 @@ toc: false
       </div>
       <div><label for="aip-points">Points d'action</label><select id="aip-points"></select></div>
     </div>
-    <label for="aip-raison">Raison sociale *</label>
-    <input type="text" id="aip-raison" list="dl-raisons-sociales" required>
+    <label for="aip-raison">Raison sociale (parmi les vôtres) *</label>
+    <select id="aip-raison" required></select>
     <label for="aip-action">Action</label>
     <select id="aip-action"></select>
     <label for="aip-descriptif">Descriptif joueur *</label>
@@ -322,6 +333,7 @@ toc: false
     <p class="subtitle">Toutes vos actions et les réponses du conteur.</p>
     <button id="btn-rafraichir-historique">Rafraîchir</button>
     <div id="historique-liste"></div>
+    <div id="historique-pagination" class="pagination"></div>
   </div>
 </div>
 
@@ -352,6 +364,7 @@ toc: false
     <h3 style="margin-top:1.6rem;">Raisons sociales liées à ce personnage</h3>
     <button id="btn-rafraichir-rs">Rafraîchir</button>
     <div id="rs-liste"></div>
+    <div id="rs-pagination" class="pagination"></div>
   </div>
 </div>
 
@@ -378,7 +391,7 @@ toc: false
       <option>Autre</option>
     </select>
     <label for="tk-sujet">Sujet *</label>
-    <input type="text" id="tk-sujet" required placeholder="Ex : Scène avec le Prince">
+    <input type="text" id="tk-sujet" required placeholder="Ex : Scène avec Faustine">
     <label for="tk-description">Description *</label>
     <textarea id="tk-description" required placeholder="Détaillez votre demande le plus précisément possible."></textarea>
     <button id="btn-envoyer-ticket" class="primary">Envoyer le ticket</button>
@@ -391,6 +404,7 @@ toc: false
     <p class="subtitle">Vos demandes envoyées au conteur, leur statut et son commentaire.</p>
     <button id="btn-rafraichir-tickets">Rafraîchir</button>
     <div id="tickets-liste"></div>
+    <div id="tickets-pagination" class="pagination"></div>
   </div>
 </div>
 
@@ -401,7 +415,7 @@ toc: false
   // ==========================================================
   // CONFIGURATION — remplacez par l'URL /exec de votre déploiement
   // ==========================================================
-  const API_URL = "https://script.google.com/macros/s/AKfycbyYuFI95i4ck6xVyQnU8KhXc781ZRelBoi1erz_3Tb421QjdJDZT7Neca1AXKiWxKrX4g/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbzvQ9eGmFpoa-53YQwuCneMM6i9VA3vS2TAw1j8ImxYQpSZmL1Qaa2CZgGEfhCPf6J5xA/exec";
 
   const VILLES = ["Grenoble","Angers","Annecy","Bordeaux","Châteauroux","Evry","Lille","Lyon",
     "Melun","Montpellier","Orléans","Périgueux","Strasbourg","Ys","Autres"];
@@ -529,6 +543,23 @@ toc: false
   }
   function setMsg(id, text, ok) { const el = $(id); el.textContent = text; el.className = 'status-msg ' + (ok ? 'ok' : 'err'); }
 
+  // Affiche des boutons Précédent/Suivant si la liste dépasse une page (50 résultats).
+  function renderPagination(containerId, state, onGoto) {
+    const el = $(containerId);
+    if (!el) return;
+    if (!state || state.total <= state.pageSize) { el.innerHTML = ''; return; }
+    const totalPages = Math.ceil(state.total / state.pageSize);
+    el.innerHTML = `
+      <button data-dir="prev" ${state.page <= 0 ? 'disabled' : ''}>← Précédent</button>
+      <span>Page ${state.page + 1} / ${totalPages} (${state.total} résultats)</span>
+      <button data-dir="next" ${!state.hasMore ? 'disabled' : ''}>Suivant →</button>
+    `;
+    const prevBtn = el.querySelector('[data-dir="prev"]');
+    const nextBtn = el.querySelector('[data-dir="next"]');
+    if (prevBtn) prevBtn.addEventListener('click', () => onGoto(state.page - 1));
+    if (nextBtn) nextBtn.addEventListener('click', () => onGoto(state.page + 1));
+  }
+
   // Vérifie qu'un champ texte/textarea n'est pas vide ; retourne le label du premier manquant, ou null.
   function premierChampVideLabel(pairs) {
     for (const [id, label] of pairs) {
@@ -542,13 +573,23 @@ toc: false
     $('dl-personnages').innerHTML = res.personnages.map(n => `<option value="${n}">`).join('');
   }).catch(() => {});
 
-  function chargerDatalistRaisonsSociales() {
-    apiGet({ action: 'raisonsSociales' }).then(res => {
+  // Remplit les 4 menus "Raison sociale" avec UNIQUEMENT les raisons sociales
+  // liées au personnage chargé (jamais celles des autres joueurs).
+  const SELECTS_RAISON_SOCIALE = ['glob-raison', 'cib-raison', 'sou-raison', 'aip-raison'];
+  function remplirSelectsRaisonsSociales() {
+    const nom = nomInput.value.trim();
+    if (!nom) {
+      SELECTS_RAISON_SOCIALE.forEach(id => { $(id).innerHTML = '<option value="">— Chargez d\'abord votre fiche —</option>'; });
+      return;
+    }
+    apiGet({ action: 'raisonsSociales', nom }).then(res => {
       if (!res.ok) return;
-      $('dl-raisons-sociales').innerHTML = res.raisonsSociales.map(r => `<option value="${r['NOM']}">`).join('');
+      const options = res.raisonsSociales.length
+        ? res.raisonsSociales.map(r => `<option value="${r['NOM']}">${r['NOM']}</option>`).join('')
+        : '<option value="">— Aucune, créez-en une dans l\'onglet Raisons Sociales —</option>';
+      SELECTS_RAISON_SOCIALE.forEach(id => { $(id).innerHTML = options; });
     }).catch(() => {});
   }
-  chargerDatalistRaisonsSociales();
 
   // ---------- Identification / Fiche ----------
   const nomInput = $('in-nom'), codeInput = $('in-code');
@@ -570,7 +611,7 @@ toc: false
       setChecked('gotha', String(f['SPECIALISATIONS GOTHA'] || '').split(',').map(s=>s.trim()).filter(Boolean));
       setChecked('pegre', String(f['SPECIALISATIONS PEGRE'] || '').split(',').map(s=>s.trim()).filter(Boolean));
       setMsg('msg-identification', 'Fiche chargée.', true);
-      chargerHistorique(); chargerRecap(); chargerRaisonsSociales(); chargerTickets();
+      chargerHistorique(); chargerRecap(); chargerRaisonsSociales(); chargerTickets(); remplirSelectsRaisonsSociales();
     }).catch(err => setMsg('msg-identification', 'Erreur réseau : ' + err, false));
   });
 
@@ -629,7 +670,7 @@ toc: false
       action: 'nouvelleAction', nom, codeJoueur: codeInput.value, date: $('glob-date').value,
       ville: $('glob-ville').value, zone: $('glob-zone').value, categorie: cat,
       niveau: a.niveau, specialisation: $('glob-spec').value, raisonSociale: $('glob-raison').value.trim(),
-      action: a.nom, pointsAction: parseInt($('glob-points').value || '1', 10), descriptif: $('glob-descriptif').value.trim()
+      nomAction: a.nom, pointsAction: parseInt($('glob-points').value || '1', 10), descriptif: $('glob-descriptif').value.trim()
     }).then((res) => {
       if (!res.ok) { setMsg('msg-globale', res.error, false); return; }
       setMsg('msg-globale', 'Action globale envoyée.', true);
@@ -657,14 +698,16 @@ toc: false
   $('btn-envoyer-ciblee').addEventListener('click', () => {
     const nom = nomInput.value.trim();
     if (!nom) { setMsg('msg-ciblee', "Chargez d'abord votre fiche.", false); return; }
-    const manque = premierChampVideLabel([['cib-raison','Raison sociale (cible)'], ['cib-descriptif','Descriptif joueur']]);
+    const manque = premierChampVideLabel([['cib-raison','Raison sociale'], ['cib-cible','Cible'], ['cib-descriptif','Descriptif joueur']]);
     if (manque) { setMsg('msg-ciblee', `Champ obligatoire manquant : ${manque}.`, false); return; }
     setMsg('msg-ciblee', 'Envoi…', true);
+    const cible = $('cib-cible').value.trim();
     apiPost({
       action: 'nouvelleAction', nom, codeJoueur: codeInput.value, date: $('cib-date').value,
       ville: $('cib-ville').value, zone: $('cib-zone').value, categorie: $('cib-categorie').value,
-      action: $('cib-action').value, raisonSociale: $('cib-raison').value.trim(),
-      pointsAction: parseInt($('cib-points').value || '1', 10), descriptif: $('cib-descriptif').value.trim()
+      nomAction: $('cib-action').value, raisonSociale: $('cib-raison').value.trim(),
+      pointsAction: parseInt($('cib-points').value || '1', 10),
+      descriptif: `Cible : ${cible} — ${$('cib-descriptif').value.trim()}`
     }).then((res) => {
       if (!res.ok) { setMsg('msg-ciblee', res.error, false); return; }
       setMsg('msg-ciblee', 'Action ciblée envoyée.', true);
@@ -685,15 +728,16 @@ toc: false
   $('btn-envoyer-soutien').addEventListener('click', () => {
     const nom = nomInput.value.trim();
     if (!nom) { setMsg('msg-soutien', "Chargez d'abord votre fiche.", false); return; }
-    const manque = premierChampVideLabel([['sou-raison','Raison sociale (soutenu)'], ['sou-descriptif','Descriptif joueur']]);
+    const manque = premierChampVideLabel([['sou-raison','Raison sociale'], ['sou-cible','Cible'], ['sou-descriptif','Descriptif joueur']]);
     if (manque) { setMsg('msg-soutien', `Champ obligatoire manquant : ${manque}.`, false); return; }
     setMsg('msg-soutien', 'Envoi…', true);
+    const cible = $('sou-cible').value.trim();
     apiPost({
       action: 'nouvelleAction', nom, codeJoueur: codeInput.value, date: $('sou-date').value,
       ville: $('sou-ville').value, zone: $('sou-zone').value, categorie: $('sou-categorie').value,
       niveau: parseInt($('sou-niveau').value || '0', 10), raisonSociale: $('sou-raison').value.trim(),
-      action: 'Soutien', pointsAction: parseInt($('sou-niveau').value || '0', 10) + parseInt($('sou-malus').value || '0', 10),
-      descriptif: $('sou-descriptif').value.trim()
+      nomAction: 'Soutien', pointsAction: parseInt($('sou-niveau').value || '0', 10) + parseInt($('sou-malus').value || '0', 10),
+      descriptif: `Cible : ${cible} — ${$('sou-descriptif').value.trim()}`
     }).then((res) => {
       if (!res.ok) { setMsg('msg-soutien', res.error, false); return; }
       setMsg('msg-soutien', 'Soutien envoyé.', true);
@@ -715,7 +759,7 @@ toc: false
     apiPost({
       action: 'nouvelleAction', nom, codeJoueur: codeInput.value, date: $('aip-date').value,
       ville: $('aip-ville').value, zone: $('aip-zone').value, categorie: $('aip-categorie').value,
-      raisonSociale: $('aip-raison').value.trim(), action: $('aip-action').value,
+      raisonSociale: $('aip-raison').value.trim(), nomAction: $('aip-action').value,
       pointsAction: parseInt($('aip-points').value || '1', 10), descriptif: $('aip-descriptif').value.trim()
     }).then((res) => {
       if (!res.ok) { setMsg('msg-aip', res.error, false); return; }
@@ -751,14 +795,16 @@ toc: false
   $('btn-recap').addEventListener('click', chargerRecap);
 
   // ---------- Résultats des Influences ----------
-  function chargerHistorique() {
+  let pageHistorique = 0;
+  function chargerHistorique(page) {
+    if (typeof page === 'number') pageHistorique = page;
     const nom = nomInput.value.trim();
     const list = $('historique-liste');
-    if (!nom) { list.innerHTML = '<p class="subtitle">Chargez une fiche pour voir les résultats.</p>'; return; }
+    if (!nom) { list.innerHTML = '<p class="subtitle">Chargez une fiche pour voir les résultats.</p>'; $('historique-pagination').innerHTML = ''; return; }
     list.innerHTML = '<p class="subtitle">Chargement…</p>';
-    apiGet({ action: 'historique', nom }).then((res) => {
+    apiGet({ action: 'historique', nom, page: pageHistorique }).then((res) => {
       if (!res.ok) { list.innerHTML = `<p class="status-msg err">${res.error}</p>`; return; }
-      if (!res.actions.length) { list.innerHTML = '<p class="subtitle">Aucune action enregistrée pour le moment.</p>'; return; }
+      if (!res.actions.length) { list.innerHTML = '<p class="subtitle">Aucune action enregistrée pour le moment.</p>'; $('historique-pagination').innerHTML = ''; return; }
       list.innerHTML = '';
       res.actions.forEach((a) => {
         const cat = a['CATEGORIE'] || '';
@@ -777,19 +823,22 @@ toc: false
         `;
         list.appendChild(div);
       });
+      renderPagination('historique-pagination', res, chargerHistorique);
     }).catch(err => { list.innerHTML = `<p class="status-msg err">Erreur réseau : ${err}</p>`; });
   }
-  $('btn-rafraichir-historique').addEventListener('click', chargerHistorique);
+  $('btn-rafraichir-historique').addEventListener('click', () => chargerHistorique(0));
 
   // ---------- Raisons Sociales ----------
-  function chargerRaisonsSociales() {
+  let pageRaisons = 0;
+  function chargerRaisonsSociales(page) {
+    if (typeof page === 'number') pageRaisons = page;
     const nom = nomInput.value.trim();
     const list = $('rs-liste');
-    if (!nom) { list.innerHTML = '<p class="subtitle">Chargez une fiche pour voir ses raisons sociales.</p>'; return; }
+    if (!nom) { list.innerHTML = '<p class="subtitle">Chargez une fiche pour voir ses raisons sociales.</p>'; $('rs-pagination').innerHTML = ''; return; }
     list.innerHTML = '<p class="subtitle">Chargement…</p>';
-    apiGet({ action: 'raisonsSociales', nom }).then((res) => {
+    apiGet({ action: 'raisonsSociales', nom, page: pageRaisons }).then((res) => {
       if (!res.ok) { list.innerHTML = `<p class="status-msg err">${res.error}</p>`; return; }
-      if (!res.raisonsSociales.length) { list.innerHTML = '<p class="subtitle">Aucune raison sociale liée pour le moment.</p>'; return; }
+      if (!res.raisonsSociales.length) { list.innerHTML = '<p class="subtitle">Aucune raison sociale liée pour le moment.</p>'; $('rs-pagination').innerHTML = ''; return; }
       list.innerHTML = '';
       res.raisonsSociales.forEach((r) => {
         const cat = r['CATEGORIE'] || '';
@@ -805,9 +854,10 @@ toc: false
         `;
         list.appendChild(div);
       });
+      renderPagination('rs-pagination', res, chargerRaisonsSociales);
     }).catch(err => { list.innerHTML = `<p class="status-msg err">Erreur réseau : ${err}</p>`; });
   }
-  $('btn-rafraichir-rs').addEventListener('click', chargerRaisonsSociales);
+  $('btn-rafraichir-rs').addEventListener('click', () => chargerRaisonsSociales(0));
 
   $('btn-envoyer-rs').addEventListener('click', () => {
     const nom = nomInput.value.trim();
@@ -823,7 +873,7 @@ toc: false
       if (!res.ok) { setMsg('msg-rs', res.error, false); return; }
       setMsg('msg-rs', 'Raison sociale ajoutée au registre.', true);
       $('rs-nom').value = ''; $('rs-description').value = '';
-      chargerRaisonsSociales(); chargerDatalistRaisonsSociales();
+      chargerRaisonsSociales(0); remplirSelectsRaisonsSociales();
     }).catch(err => setMsg('msg-rs', 'Erreur réseau : ' + err, false));
   });
 
@@ -847,18 +897,20 @@ toc: false
       if (!res.ok) { setMsg('msg-ticket', res.error, false); return; }
       setMsg('msg-ticket', `Ticket envoyé (${res.ticketId}).`, true);
       $('tk-sujet').value = ''; $('tk-description').value = '';
-      chargerTickets();
+      chargerTickets(0);
     }).catch(err => setMsg('msg-ticket', 'Erreur réseau : ' + err, false));
   });
 
-  function chargerTickets() {
+  let pageTickets = 0;
+  function chargerTickets(page) {
+    if (typeof page === 'number') pageTickets = page;
     const nom = nomInput.value.trim();
     const list = $('tickets-liste');
-    if (!nom) { list.innerHTML = '<p class="subtitle">Chargez une fiche pour voir vos tickets.</p>'; return; }
+    if (!nom) { list.innerHTML = '<p class="subtitle">Chargez une fiche pour voir vos tickets.</p>'; $('tickets-pagination').innerHTML = ''; return; }
     list.innerHTML = '<p class="subtitle">Chargement…</p>';
-    apiGet({ action: 'mesTickets', nom }).then((res) => {
+    apiGet({ action: 'mesTickets', nom, page: pageTickets }).then((res) => {
       if (!res.ok) { list.innerHTML = `<p class="status-msg err">${res.error}</p>`; return; }
-      if (!res.tickets.length) { list.innerHTML = '<p class="subtitle">Aucun ticket envoyé pour le moment.</p>'; return; }
+      if (!res.tickets.length) { list.innerHTML = '<p class="subtitle">Aucun ticket envoyé pour le moment.</p>'; $('tickets-pagination').innerHTML = ''; return; }
       list.innerHTML = '';
       res.tickets.forEach((t) => {
         const statut = t['STATUT'] || 'En attente';
@@ -877,8 +929,9 @@ toc: false
         `;
         list.appendChild(div);
       });
+      renderPagination('tickets-pagination', res, chargerTickets);
     }).catch(err => { list.innerHTML = `<p class="status-msg err">Erreur réseau : ${err}</p>`; });
   }
-  $('btn-rafraichir-tickets').addEventListener('click', chargerTickets);
+  $('btn-rafraichir-tickets').addEventListener('click', () => chargerTickets(0));
 })();
 </script>
