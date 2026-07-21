@@ -378,7 +378,7 @@ toc: false
       <option>Autre</option>
     </select>
     <label for="tk-sujet">Sujet *</label>
-    <input type="text" id="tk-sujet" required placeholder="Ex : Scène avec Faustine">
+    <input type="text" id="tk-sujet" required placeholder="Ex : Scène avec le Prince">
     <label for="tk-description">Description *</label>
     <textarea id="tk-description" required placeholder="Détaillez votre demande le plus précisément possible."></textarea>
     <button id="btn-envoyer-ticket" class="primary">Envoyer le ticket</button>
