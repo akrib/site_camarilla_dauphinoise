@@ -1,0 +1,23 @@
+---
+layout: default
+---
+
+<link rel="stylesheet" href="{{ '/assets/css/main_custom.css' | relative_url }}">
+
+<div id="main" role="main">
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <div class="page__inner-wrap">
+      {% if page.title %}
+        <header>
+          <h1 id="page-title" class="page__title">
+            <a href="{{ page.url | absolute_url }}">{{ page.title | markdownify | remove: "<p>" | remove: "</p>" }}</a>
+          </h1>
+        </header>
+      {% endif %}
+
+      <section class="page__content" itemprop="text">
+        {{ content }}
+      </section>
+    </div>
+  </article>
+</div>
