@@ -10,234 +10,122 @@ toc: false
 
 <style>
 #influences-app {
-  --ink: #e9e2d3;
-  --ink-dim: #a89f8f;
-  --bg-deep: #14100f;
-  --bg-panel: #1c1613;
-  --line: #362c26;
-  --gotha: #b08d57;
-  --gotha-dim: #6e5836;
-  --pegre: #7a1f2b;
-  --pegre-dim: #4a1219;
-  --ok: #6f8f6a;
-  --warn: #c98a3a;
+  --ink: #e9e2d3; --ink-dim: #a89f8f; --bg-deep: #14100f; --bg-panel: #1c1613;
+  --line: #362c26; --gotha: #b08d57; --gotha-dim: #6e5836; --pegre: #7a1f2b;
+  --pegre-dim: #4a1219; --ok: #6f8f6a; --warn: #c98a3a;
   font-family: 'Source Serif Pro', Georgia, 'Times New Roman', serif;
-  background: var(--bg-deep);
-  color: var(--ink);
-  padding: 2.5rem 2rem;
-  border-radius: 4px;
-  line-height: 1.55;
+  background: var(--bg-deep); color: var(--ink); padding: 2.2rem 2rem 2.5rem;
+  border-radius: 4px; line-height: 1.55;
 }
 #influences-app * { box-sizing: border-box; }
-#influences-app h2, #influences-app h3 {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-weight: 600;
-  letter-spacing: .02em;
+#influences-app h2, #influences-app h3 { font-family: 'Playfair Display', Georgia, serif; font-weight: 600; letter-spacing: .02em; }
+#influences-app h2 { font-size: 1.35rem; margin: 0 0 .35rem; }
+#influences-app .subtitle { color: var(--ink-dim); font-size: .84rem; font-style: italic; margin: 0 0 1.2rem; }
+#influences-app .id-bar { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; background: var(--bg-panel); border: 1px solid var(--line); border-radius: 3px; padding: 1rem 1.2rem; margin-bottom: 1.4rem; }
+#influences-app .id-bar > div { flex: 1; min-width: 180px; }
+
+/* Onglets */
+#influences-app .tabs { display: flex; gap: .3rem; flex-wrap: wrap; border-bottom: 1px solid var(--line); margin-bottom: 1.4rem; }
+#influences-app .tab-btn {
+  font-family: 'IBM Plex Mono', monospace; background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--ink-dim); padding: .6rem .9rem; cursor: pointer; font-size: .76rem; text-transform: uppercase; letter-spacing: .05em;
 }
-#influences-app h2 {
-  font-size: 1.5rem;
-  margin: 0 0 .35rem;
-  color: var(--ink);
-  border-bottom: 1px solid var(--line);
-  padding-bottom: .6rem;
+#influences-app .tab-btn:hover { color: var(--ink); }
+#influences-app .tab-btn.active { color: var(--gotha); border-bottom-color: var(--gotha); }
+#influences-app .tab-panel { display: none; background: var(--bg-panel); border: 1px solid var(--line); border-radius: 3px; padding: 1.4rem 1.6rem; }
+#influences-app .tab-panel.active { display: block; }
+
+#influences-app label { display: block; font-size: .76rem; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-dim); margin: .8rem 0 .3rem; }
+#influences-app input[type=text], #influences-app input[type=number], #influences-app input[type=password],
+#influences-app input[type=date], #influences-app input[type=month], #influences-app select, #influences-app textarea {
+  width: 100%; background: var(--bg-deep); border: 1px solid var(--line); color: var(--ink);
+  padding: .5rem .65rem; border-radius: 2px; font-family: 'IBM Plex Mono', 'Courier New', monospace; font-size: .88rem;
 }
-#influences-app .subtitle {
-  color: var(--ink-dim);
-  font-size: .88rem;
-  font-style: italic;
-  margin: 0 0 1.4rem;
-}
-#influences-app section {
-  background: var(--bg-panel);
-  border: 1px solid var(--line);
-  border-radius: 3px;
-  padding: 1.5rem 1.6rem;
-  margin-bottom: 1.6rem;
-}
-#influences-app label {
-  display: block;
-  font-size: .78rem;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--ink-dim);
-  margin: .9rem 0 .3rem;
-}
-#influences-app input[type=text],
-#influences-app input[type=number],
-#influences-app input[type=password],
-#influences-app select,
-#influences-app textarea {
-  width: 100%;
-  background: var(--bg-deep);
-  border: 1px solid var(--line);
-  color: var(--ink);
-  padding: .55rem .7rem;
-  border-radius: 2px;
-  font-family: 'IBM Plex Mono', 'Courier New', monospace;
-  font-size: .92rem;
-}
-#influences-app textarea { min-height: 4.5rem; resize: vertical; }
-#influences-app .row { display: flex; gap: 1.2rem; flex-wrap: wrap; }
-#influences-app .row > div { flex: 1; min-width: 220px; }
-#influences-app .split {
-  display: grid;
-  grid-template-columns: 1fr 2px 1fr;
-  gap: 1.4rem;
-  align-items: start;
-}
-#influences-app .divider {
-  background: linear-gradient(to bottom, transparent, var(--line) 15%, var(--line) 85%, transparent);
-  width: 2px;
-  min-height: 100%;
-}
+#influences-app textarea { min-height: 4rem; resize: vertical; }
+#influences-app .row { display: flex; gap: 1.1rem; flex-wrap: wrap; }
+#influences-app .row > div { flex: 1; min-width: 190px; }
+#influences-app .split { display: grid; grid-template-columns: 1fr 2px 1fr; gap: 1.4rem; align-items: start; }
+#influences-app .divider { background: linear-gradient(to bottom, transparent, var(--line) 15%, var(--line) 85%, transparent); width: 2px; min-height: 100%; }
 #influences-app .col-gotha { border-left: 3px solid var(--gotha); padding-left: 1rem; }
 #influences-app .col-pegre { border-left: 3px solid var(--pegre); padding-left: 1rem; }
-#influences-app .col-gotha h3 { color: var(--gotha); font-size: 1.05rem; margin-bottom: .2rem;}
-#influences-app .col-pegre h3 { color: var(--pegre); font-size: 1.05rem; margin-bottom: .2rem;}
-#influences-app .spec-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: .3rem .8rem;
-  margin-top: .4rem;
-}
-#influences-app .spec-item {
-  display: flex; align-items: center; gap: .4rem;
-  font-size: .85rem; color: var(--ink-dim);
-}
+#influences-app .col-gotha h3 { color: var(--gotha); font-size: 1rem; margin-bottom: .2rem; }
+#influences-app .col-pegre h3 { color: var(--pegre); font-size: 1rem; margin-bottom: .2rem; }
+#influences-app .spec-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .3rem .8rem; margin-top: .4rem; }
+#influences-app .spec-item { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--ink-dim); }
 #influences-app .spec-item input { width: auto; }
 #influences-app .spec-item.active { color: var(--ink); }
-#influences-app .spec-count {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: .75rem;
-  margin-top: .3rem;
-}
+#influences-app .spec-count { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; margin-top: .3rem; }
 #influences-app .spec-count.over { color: var(--pegre); }
 #influences-app button {
-  font-family: 'IBM Plex Mono', monospace;
-  background: transparent;
-  border: 1px solid var(--ink-dim);
-  color: var(--ink);
-  padding: .6rem 1.1rem;
-  border-radius: 2px;
-  cursor: pointer;
-  font-size: .82rem;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  margin-top: 1rem;
-  margin-right: .6rem;
-  transition: border-color .15s, color .15s;
+  font-family: 'IBM Plex Mono', monospace; background: transparent; border: 1px solid var(--ink-dim);
+  color: var(--ink); padding: .55rem 1.05rem; border-radius: 2px; cursor: pointer; font-size: .8rem;
+  letter-spacing: .04em; text-transform: uppercase; margin-top: 1rem; transition: border-color .15s, color .15s;
 }
 #influences-app button:hover { border-color: var(--ink); }
 #influences-app button.primary { border-color: var(--gotha); color: var(--gotha); }
 #influences-app button.primary:hover { background: var(--gotha); color: var(--bg-deep); }
-#influences-app button.primary.pegre { border-color: var(--pegre); color: var(--pegre); }
-#influences-app button.primary.pegre:hover { background: var(--pegre); color: var(--bg-deep); }
-#influences-app .status-msg { font-size: .82rem; margin-top: .6rem; min-height: 1.2em; }
+#influences-app .status-msg { font-size: .8rem; margin-top: .6rem; min-height: 1.2em; }
 #influences-app .status-msg.ok { color: var(--ok); }
 #influences-app .status-msg.err { color: var(--pegre); }
-#influences-app .cost-preview {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: .85rem;
-  background: var(--bg-deep);
-  border: 1px dashed var(--line);
-  padding: .5rem .8rem;
-  margin-top: .8rem;
-  border-radius: 2px;
-  color: var(--warn);
-}
-#influences-app .action-desc {
-  font-size: .82rem;
-  color: var(--ink-dim);
-  font-style: italic;
-  margin-top: .4rem;
-  border-left: 2px solid var(--line);
-  padding-left: .6rem;
-}
-#influences-app .history-item {
-  border-bottom: 1px solid var(--line);
-  padding: .8rem 0;
-  font-size: .88rem;
-}
+#influences-app .cost-preview { font-family: 'IBM Plex Mono', monospace; font-size: .82rem; background: var(--bg-deep); border: 1px dashed var(--line); padding: .5rem .8rem; margin-top: .8rem; border-radius: 2px; color: var(--warn); }
+#influences-app .action-desc { font-size: .8rem; color: var(--ink-dim); font-style: italic; margin-top: .4rem; border-left: 2px solid var(--line); padding-left: .6rem; }
+#influences-app .history-item { border-bottom: 1px solid var(--line); padding: .75rem 0; font-size: .86rem; }
 #influences-app .history-item:last-child { border-bottom: none; }
-#influences-app .history-meta {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: .72rem;
-  color: var(--ink-dim);
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  margin-bottom: .3rem;
-}
-#influences-app .history-meta .tag {
-  padding: .1rem .4rem;
-  border-radius: 2px;
-  margin-right: .4rem;
-}
+#influences-app .history-meta { font-family: 'IBM Plex Mono', monospace; font-size: .7rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .3rem; }
+#influences-app .history-meta .tag { padding: .1rem .4rem; border-radius: 2px; margin-right: .4rem; }
 #influences-app .tag.gotha { background: var(--gotha-dim); color: var(--gotha); }
 #influences-app .tag.pegre { background: var(--pegre-dim); color: var(--pegre); }
-#influences-app .tag.attente { background: #3a3020; color: var(--warn); }
-#influences-app .tag.resolu { background: #223522; color: var(--ok); }
-#influences-app .history-result {
-  margin-top: .5rem;
-  padding: .6rem .7rem;
-  background: var(--bg-deep);
-  border-left: 2px solid var(--ok);
-  font-size: .85rem;
-}
-#influences-app .history-result.empty {
-  border-left-color: var(--line);
-  color: var(--ink-dim);
-  font-style: italic;
-}
-#influences-app .config-warning {
-  border-left: 3px solid var(--warn);
-  background: #2a2016;
-  color: var(--warn);
-  padding: .8rem 1rem;
-  font-size: .85rem;
-  margin-bottom: 1.4rem;
-  border-radius: 2px;
-}
+#influences-app .history-result { margin-top: .5rem; padding: .55rem .7rem; background: var(--bg-deep); border-left: 2px solid var(--ok); font-size: .84rem; }
+#influences-app .history-result.empty { border-left-color: var(--line); color: var(--ink-dim); font-style: italic; }
+#influences-app .config-warning { border-left: 3px solid var(--warn); background: #2a2016; color: var(--warn); padding: .8rem 1rem; font-size: .85rem; margin-bottom: 1.4rem; border-radius: 2px; }
+#influences-app .recap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: .5rem; }
+#influences-app .recap-card { background: var(--bg-deep); border: 1px solid var(--line); border-radius: 3px; padding: 1rem 1.2rem; }
+#influences-app .recap-card h4 { margin: 0 0 .6rem; font-family: 'Playfair Display', serif; }
+#influences-app .recap-card.gotha h4 { color: var(--gotha); }
+#influences-app .recap-card.pegre h4 { color: var(--pegre); }
+#influences-app .recap-line { display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: .85rem; padding: .25rem 0; border-bottom: 1px dashed var(--line); }
 </style>
 
 <div id="config-warning" class="config-warning" style="display:none;">
-  ⚠ L'URL du Web App Google Apps Script n'est pas configurée. Modifiez la constante
-  <code>API_URL</code> en haut du script de cette page.
+  ⚠ L'URL du Web App Google Apps Script n'est pas configurée. Modifiez la constante <code>API_URL</code> en bas de cette page.
 </div>
 
-<!-- ============ IDENTIFICATION ============ -->
-<section>
-  <h2>Identification</h2>
-  <p class="subtitle">Entrez le nom de votre personnage pour charger sa fiche, ou créez-en une nouvelle.</p>
-  <div class="row">
-    <div>
-      <label for="in-nom">Nom du personnage</label>
-      <input type="text" id="in-nom" placeholder="Ex : Sariah de Clermont">
-    </div>
-    <div>
-      <label for="in-code">Code joueur (protection légère)</label>
-      <input type="password" id="in-code" placeholder="Laissez vide si nouvelle fiche">
-    </div>
+<div class="id-bar">
+  <div>
+    <label for="in-nom">Personnage</label>
+    <input type="text" id="in-nom" list="dl-personnages" placeholder="Ex : Amarok">
+    <datalist id="dl-personnages"></datalist>
   </div>
-  <button id="btn-charger">Charger la fiche</button>
-  <div id="msg-identification" class="status-msg"></div>
-</section>
-
-<!-- ============ FICHE D'INFLUENCE ============ -->
-<section>
-  <h2>Fiche d'Influence</h2>
-  <p class="subtitle">Niveau, spécialisations (max = niveau) et district, pour chaque catégorie.</p>
-
-  <div class="row">
-    <div>
-      <label for="in-joueur">Joueur</label>
-      <input type="text" id="in-joueur" placeholder="Votre nom">
-    </div>
-    <div>
-      <label for="in-district">District</label>
-      <input type="text" id="in-district" placeholder="Zone gérée par une association (ex : Melun)">
-    </div>
+  <div>
+    <label for="in-code">Code joueur</label>
+    <input type="password" id="in-code" placeholder="Laissez vide si nouvelle fiche">
   </div>
+  <div><button id="btn-charger">Charger la fiche</button></div>
+</div>
+<div id="msg-identification" class="status-msg"></div>
 
+<div class="tabs">
+  <button class="tab-btn active" data-tab="fiche">Fiche Personnage</button>
+  <button class="tab-btn" data-tab="globale">Action Globale</button>
+  <button class="tab-btn" data-tab="ciblee">Action Ciblée</button>
+  <button class="tab-btn" data-tab="soutien">Soutien</button>
+  <button class="tab-btn" data-tab="aip">AIP</button>
+  <button class="tab-btn" data-tab="recap">Récap du Mois</button>
+  <button class="tab-btn" data-tab="resultats">Résultats des Influences</button>
+</div>
+
+<!-- ============ FICHE PERSONNAGE ============ -->
+<div class="tab-panel active" data-tab="fiche">
+  <h2>Fiche Personnage</h2>
+  <div class="row">
+    <div><label for="fp-joueur">Joueur</label><input type="text" id="fp-joueur"></div>
+    <div><label for="fp-ville">Ville</label><select id="fp-ville"></select></div>
+    <div><label for="fp-secte">Secte</label><select id="fp-secte"></select></div>
+  </div>
+  <div class="row">
+    <div><label for="fp-clan">Clan</label><select id="fp-clan"></select></div>
+    <div><label for="fp-rang">Rang</label><select id="fp-rang"></select></div>
+  </div>
   <div class="split">
     <div class="col-gotha">
       <h3>Gotha</h3>
@@ -257,403 +145,483 @@ toc: false
       <div class="spec-count" id="pegre-spec-count"></div>
     </div>
   </div>
-
   <button id="btn-enregistrer-fiche" class="primary">Enregistrer la fiche</button>
   <div id="msg-fiche" class="status-msg"></div>
-</section>
-
-<!-- ============ ACTION CIBLÉE ============ -->
-<section>
-  <h2>Nouvelle action ciblée</h2>
-  <p class="subtitle">Attaque, Défense, Obstruction ou Soutien — affecte des Influences (la vôtre ou celle d'autrui).</p>
-
-  <div class="row">
-    <div>
-      <label for="cible-mois">Mois</label>
-      <input type="text" id="cible-mois" placeholder="AAAA-MM">
-    </div>
-    <div>
-      <label for="cible-categorie">Catégorie source</label>
-      <select id="cible-categorie">
-        <option value="Gotha">Gotha</option>
-        <option value="Pègre">Pègre</option>
-      </select>
-    </div>
-    <div>
-      <label for="cible-type">Type d'action</label>
-      <select id="cible-type">
-        <option value="Attaque">Attaque</option>
-        <option value="Défense">Défense</option>
-        <option value="Obstruction">Obstruction</option>
-        <option value="Soutien">Soutien</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="row" id="cible-attaque-fields">
-    <div>
-      <label for="cible-cible">Personnage / Influence visé(e)</label>
-      <input type="text" id="cible-cible" placeholder="Nom de la cible">
-    </div>
-    <div>
-      <label for="cible-categorie-visee">Catégorie de la cible</label>
-      <select id="cible-categorie-visee">
-        <option value="Gotha">Gotha</option>
-        <option value="Pègre">Pègre</option>
-      </select>
-    </div>
-    <div>
-      <label for="cible-points">Points visés (niveaux à retirer / ajouter)</label>
-      <input type="number" id="cible-points" min="1" value="1">
-    </div>
-  </div>
-
-  <div class="cost-preview" id="cible-cost-preview"></div>
-
-  <label for="cible-details">Détails / justification (ce que vous avez observé, comment vous agissez)</label>
-  <textarea id="cible-details"></textarea>
-
-  <button id="btn-envoyer-ciblee" class="primary">Envoyer l'action ciblée</button>
-  <div id="msg-ciblee" class="status-msg"></div>
-</section>
+</div>
 
 <!-- ============ ACTION GLOBALE ============ -->
-<section>
-  <h2>Nouvelle action globale</h2>
-  <p class="subtitle">Coûte toujours 1 Action d'Influence ; le niveau requis dépend de la catégorie choisie.</p>
+<div class="tab-panel" data-tab="globale">
+  <h2>Nouvelle Action Globale</h2>
+  <p class="subtitle">Coûte 1 Action d'Influence. Le niveau requis dépend de la catégorie choisie.</p>
+  <div class="row">
+    <div><label for="glob-date">Date</label><input type="date" id="glob-date"></div>
+    <div><label for="glob-ville">Ville</label><select id="glob-ville"></select></div>
+    <div><label for="glob-zone">Zone (district)</label><select id="glob-zone"></select></div>
+  </div>
+  <div class="row">
+    <div><label for="glob-categorie">Catégorie</label><select id="glob-categorie"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
+    <div><label for="glob-spec">Spécialisation</label><select id="glob-spec"></select></div>
+  </div>
+  <label for="glob-raison">Raison sociale (cible / organisme)</label>
+  <input type="text" id="glob-raison" placeholder="Ex : Commissariat de Police La Bruyère">
+  <label for="glob-action">Action</label>
+  <select id="glob-action"></select>
+  <div class="action-desc" id="glob-desc"></div>
+  <div class="cost-preview" id="glob-cost"></div>
+  <label for="glob-points">Points d'action</label>
+  <select id="glob-points"></select>
+  <label for="glob-descriptif">Descriptif joueur</label>
+  <textarea id="glob-descriptif"></textarea>
+  <button id="btn-envoyer-globale" class="primary">Envoyer</button>
+  <div id="msg-globale" class="status-msg"></div>
+</div>
 
+<!-- ============ ACTION CIBLÉE ============ -->
+<div class="tab-panel" data-tab="ciblee">
+  <h2>Nouvelle Action Ciblée</h2>
+  <p class="subtitle">Attaque, Défense ou Obstruction — affecte l'Influence d'un autre personnage. La cible est renseignée dans "Raison sociale".</p>
+  <div class="row">
+    <div><label for="cib-date">Date</label><input type="date" id="cib-date"></div>
+    <div><label for="cib-ville">Ville</label><select id="cib-ville"></select></div>
+    <div><label for="cib-zone">Zone (district)</label><select id="cib-zone"></select></div>
+  </div>
+  <div class="row">
+    <div><label for="cib-categorie">Catégorie (source)</label><select id="cib-categorie"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
+    <div><label for="cib-action">Action</label><select id="cib-action"><option>Attaque</option><option>Défense</option><option>Obstruction</option></select></div>
+  </div>
+  <div class="row">
+    <div><label for="cib-raison">Cible (Raison sociale)</label><input type="text" id="cib-raison" list="dl-personnages" placeholder="Personnage ou Influence visée"></div>
+    <div><label for="cib-categorie-cible">Catégorie de la cible</label><select id="cib-categorie-cible"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
+    <div><label for="cib-points">Points visés</label><select id="cib-points"></select></div>
+  </div>
+  <div class="cost-preview" id="cib-cost"></div>
+  <label for="cib-descriptif">Descriptif joueur</label>
+  <textarea id="cib-descriptif"></textarea>
+  <button id="btn-envoyer-ciblee" class="primary">Envoyer</button>
+  <div id="msg-ciblee" class="status-msg"></div>
+</div>
+
+<!-- ============ SOUTIEN ============ -->
+<div class="tab-panel" data-tab="soutien">
+  <h2>Nouveau Soutien</h2>
+  <p class="subtitle">Prêtez vos Actions d'Influence pour augmenter temporairement le niveau d'un autre personnage. Le personnage soutenu est renseigné dans "Raison sociale".</p>
+  <div class="row">
+    <div><label for="sou-date">Date</label><input type="date" id="sou-date"></div>
+    <div><label for="sou-ville">Ville</label><select id="sou-ville"></select></div>
+    <div><label for="sou-zone">Zone (district)</label><select id="sou-zone"></select></div>
+  </div>
+  <div class="row">
+    <div><label for="sou-raison">Personnage soutenu (Raison sociale)</label><input type="text" id="sou-raison" list="dl-personnages"></div>
+    <div><label for="sou-categorie">Catégorie</label><select id="sou-categorie"><option>Influence Gotha</option><option>Influence Pègre</option></select></div>
+    <div><label for="sou-niveau">Niveau de la cible avant ce point</label><select id="sou-niveau"></select></div>
+  </div>
+  <div class="row">
+    <div><label for="sou-malus">Malus hors-praxis (0 à -3)</label><input type="number" id="sou-malus" min="-3" max="0" value="0"></div>
+  </div>
+  <div class="cost-preview" id="sou-cost"></div>
+  <label for="sou-descriptif">Descriptif joueur</label>
+  <textarea id="sou-descriptif"></textarea>
+  <button id="btn-envoyer-soutien" class="primary">Envoyer</button>
+  <div id="msg-soutien" class="status-msg"></div>
+</div>
+
+<!-- ============ AIP ============ -->
+<div class="tab-panel" data-tab="aip">
+  <h2>Nouvelle Action AIP</h2>
+  <p class="subtitle">Enquête, Patrouille, Mentorat, Chasse, Troupeau, Informatique, Artisanat, Science, Dépense d'XP…</p>
+  <div class="row">
+    <div><label for="aip-date">Date</label><input type="date" id="aip-date"></div>
+    <div><label for="aip-ville">Ville</label><select id="aip-ville"></select></div>
+    <div><label for="aip-zone">Zone (district)</label><select id="aip-zone"></select></div>
+  </div>
   <div class="row">
     <div>
-      <label for="globale-mois">Mois</label>
-      <input type="text" id="globale-mois" placeholder="AAAA-MM">
-    </div>
-    <div>
-      <label for="globale-categorie">Catégorie</label>
-      <select id="globale-categorie">
-        <option value="Gotha">Gotha</option>
-        <option value="Pègre">Pègre</option>
+      <label for="aip-categorie">Catégorie</label>
+      <select id="aip-categorie">
+        <option>AIP</option><option>AIP (Troupeau)</option><option>AIP (Informatique)</option>
+        <option>AIP (Artisanat)</option><option>AIP (Science)</option><option>Dépense d'XP</option>
       </select>
     </div>
-    <div>
-      <label for="globale-action">Action</label>
-      <select id="globale-action"></select>
-    </div>
+    <div><label for="aip-points">Points d'action</label><select id="aip-points"></select></div>
   </div>
+  <label for="aip-raison">Raison sociale (optionnel)</label>
+  <input type="text" id="aip-raison">
+  <label for="aip-action">Action</label>
+  <select id="aip-action"></select>
+  <label for="aip-descriptif">Descriptif joueur</label>
+  <textarea id="aip-descriptif"></textarea>
+  <button id="btn-envoyer-aip" class="primary">Envoyer</button>
+  <div id="msg-aip" class="status-msg"></div>
+</div>
 
-  <div class="action-desc" id="globale-desc"></div>
-  <div class="cost-preview" id="globale-cost-preview"></div>
+<!-- ============ RÉCAP DU MOIS ============ -->
+<div class="tab-panel" data-tab="recap">
+  <h2>Récap du Mois</h2>
+  <div class="row">
+    <div><label for="recap-mois">Mois</label><input type="month" id="recap-mois"></div>
+    <div style="display:flex;align-items:end;"><button id="btn-recap">Actualiser</button></div>
+  </div>
+  <div id="recap-contenu" class="recap-grid"></div>
+  <div id="msg-recap" class="status-msg"></div>
+</div>
 
-  <label for="globale-details">Détails (à qui / quoi cela s'applique-t-il ?)</label>
-  <textarea id="globale-details"></textarea>
-
-  <button id="btn-envoyer-globale" class="primary">Envoyer l'action globale</button>
-  <div id="msg-globale" class="status-msg"></div>
-</section>
-
-<!-- ============ HISTORIQUE ============ -->
-<section>
-  <h2>Historique &amp; résultats</h2>
-  <p class="subtitle">Vos actions passées et les résultats renseignés par le conteur.</p>
+<!-- ============ RÉSULTATS DES INFLUENCES ============ -->
+<div class="tab-panel" data-tab="resultats">
+  <h2>Résultats des Influences</h2>
+  <p class="subtitle">Toutes vos actions et les réponses du conteur.</p>
   <button id="btn-rafraichir-historique">Rafraîchir</button>
   <div id="historique-liste"></div>
-</section>
+</div>
 
 </div>
 
 <script>
 (function () {
   // ==========================================================
-  // CONFIGURATION — remplacez par l'URL de votre déploiement
-  // Google Apps Script (Déployer > Nouveau déploiement > App Web)
+  // CONFIGURATION — remplacez par l'URL /exec de votre déploiement
   // ==========================================================
-  const API_URL = "https://script.google.com/macros/s/AKfycbxWs0O8FWPoGSTpZQTBegoC6nHkXM9Kfd2cimPwVVFmHxak39OZ8d-le3vNGxthugrqiQ/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbzvQ9eGmFpoa-53YQwuCneMM6i9VA3vS2TAw1j8ImxYQpSZmL1Qaa2CZgGEfhCPf6J5xA/exec";
 
-  const SPECIALITES = [
-    'Bureaucratie', 'Crime', 'Education', 'Finances', 'Haute Société',
-    'Industrie', 'Loi', 'Média', 'Occulte', 'Police', 'Politique',
-    'Religion', 'Rue', 'Santé', 'Transport'
+  const VILLES = ["Grenoble","Angers","Annecy","Bordeaux","Châteauroux","Evry","Lille","Lyon",
+    "Melun","Montpellier","Orléans","Périgueux","Strasbourg","Ys","Autres"];
+  const ZONES = Array.from({length:24}, (_,i)=>String(i+1)).concat(["Extérieur"]);
+  const POINTS = [1,2,3,4,5];
+  const SPECIALISATIONS = ["Bureaucratie","Crime","Éducation","Finance","Haute Société","Industrie",
+    "Loi","Média","Occulte","Police","Politique","Religion","Rue","Santé","Transport"];
+  const SECTES = ["Camarilla","Sabbat","Anarch","Indépendant"];
+  const CLANS = ["Brujah","Gangrel","Malkavian","Nosferatu","Toreador","Tremere","Ventrue",
+    "Assamite","Follower of Set","Giovanni","Lasombra","Ravnos","Tzimisce","Caitiff","Autre"];
+  const RANGS = ["Nouveau-Né","Ancilla","Ancien","Méthuselah"];
+
+  const ACTIONS_GOTHA_GLOB = [
+    { nom: "Un ami dans le besoin (Gotha 1)", niveau: 1, desc: "Emprunter gratuitement des ressources (≈1000€ par niveau d'Influence Gotha)." },
+    { nom: "Potins et délit d'initié (Gotha 2)", niveau: 2, desc: "Découvrir les usages récents (3 mois) de l'Influence Gotha liés à vos spécialisations." },
+    { nom: "Erreurs administratives (Gotha 3)", niveau: 3, desc: "Faveurs légales onéreuses : paperasse, perquisition, arme enregistrée..." },
+    { nom: "Désamorcer les problèmes (Gotha 4)", niveau: 4, desc: "Faire disparaître un problème embarrassant (témoins, articles, alibis, Bris de Mascarade)." },
+    { nom: "Pas de pique-assiettes (Gotha 5)", niveau: 5, desc: "Sécuriser une zone (manoir / petit immeuble) 24h, obstruction niveau 5 incluse." },
+    { nom: "Tout a un prix (Gotha 6)", niveau: 5, desc: "Faveur importante non nécessairement légale (évasion, drogues, arme illégale...)." },
+    { nom: "Collection privée (Gotha 7)", niveau: 5, desc: "Accès temporaire à une œuvre rare (risque de perte = -2 niveaux pendant 2 mois)." },
+    { nom: "La débâcle d'une vedette (Gotha 8)", niveau: 5, desc: "Organiser un incident à l'échelle de la ville, détourner l'attention." },
+    { nom: "Le pouvoir derrière le Trône (Gotha 9)", niveau: 5, desc: "Effet significatif et à long terme sur la ville (élection, services d'urgence...)." },
+    { nom: "Influence Régionale (Gotha 10)", niveau: 5, desc: "Étend les actions globales à une région entière." }
   ];
-
-  const ACTIONS_GOTHA = [
-    { niveau: 1, nom: "Un ami dans le besoin", desc: "Emprunter gratuitement des ressources (≈1000€ par niveau d'Influence Gotha)." },
-    { niveau: 2, nom: "Potins et délit d'initié", desc: "Découvrir les usages récents (3 mois) de l'Influence Gotha liés à vos spécialisations." },
-    { niveau: 3, nom: "Erreurs Administratives", desc: "Obtenir des faveurs légales onéreuses : paperasse, perquisition, arme enregistrée..." },
-    { niveau: 4, nom: "Désamorcer les problèmes", desc: "Faire disparaître un problème embarrassant (témoins, articles, alibis, Bris de Mascarade)." },
-    { niveau: 5, nom: "Pas de pique-assiettes", desc: "Sécuriser une zone (manoir / petit immeuble) 24h, obstruction niveau 5 incluse." },
-    { niveau: 5, nom: "Tout a un prix", desc: "Faveur importante non nécessairement légale (évasion, drogues, arme illégale...)." },
-    { niveau: 5, nom: "Collection privée", desc: "Accès temporaire à une œuvre rare (risque de perte = -2 niveaux pendant 2 mois)." },
-    { niveau: 5, nom: "La débâcle d'une vedette", desc: "Organiser un incident à l'échelle de la ville, détourner l'attention." },
-    { niveau: 5, nom: "Le pouvoir derrière le Trône", desc: "Effet significatif et à long terme sur la ville (élection, services d'urgence...)." },
-    { niveau: 6, nom: "Influence Régionale", desc: "Étend les actions globales à une région entière (grand État / territoire / petit pays)." }
+  const ACTIONS_PEGRE_GLOB = [
+    { nom: "Course gratuite (Pègre 1)", niveau: 1, desc: "Traverser n'importe quel quartier sans encombre, forces de l'ordre discrètes." },
+    { nom: "La rumeur (Pègre 2)", niveau: 2, desc: "Découvrir les usages récents (3 mois) de l'Influence Pègre liés à vos spécialisations." },
+    { nom: "Faveurs illégales (Pègre 3)", niveau: 3, desc: "Faveur importante non nécessairement légale (évasion, drogues, arme illégale...)." },
+    { nom: "Déballer son linge sale en public (Pègre 4)", niveau: 4, desc: "Organiser un incident à l'échelle de la ville (guerre de gangs, incendies...)." },
+    { nom: "État d'urgence (Pègre 5)", niveau: 5, desc: "Sécuriser une zone (entrepôt / petit immeuble) 24h, obstruction niveau 5 incluse." },
+    { nom: "Tirer les ficelles (Pègre 6)", niveau: 5, desc: "Faveurs légales onéreuses : votes, perquisitions, armes enregistrées, événements..." },
+    { nom: "Détourner le regard (Pègre 7)", niveau: 5, desc: "Faire disparaître un problème embarrassant (témoins, articles, alibis, Bris de Mascarade)." },
+    { nom: "Ce dont tu t'empares est tien (Pègre 8)", niveau: 5, desc: "Accès temporaire à une œuvre rare (risque : attention des autorités)." },
+    { nom: "Une offre que vous ne pouvez refuser (Pègre 9)", niveau: 5, desc: "Effet significatif et à long terme (légalité, scandales, émeutes...)." },
+    { nom: "Influence Régionale (Pègre 10)", niveau: 5, desc: "Étend les actions globales à une région entière." }
   ];
+  const AIP_ACTIONS = {
+    "AIP": ["Enquête","Patrouille","Mentorat (Apprendre)","Au delà de vos moyens","Spéciale","Chasse"],
+    "AIP (Troupeau)": ["Se nourrir"],
+    "AIP (Informatique)": ["AIP classique","Observer une AIP","Annuler une AIP"],
+    "AIP (Artisanat)": ["Artisanat","Représentation"],
+    "AIP (Science)": ["Science"],
+    "Dépense d'XP": ["Dépense XP"]
+  };
 
-  const ACTIONS_PEGRE = [
-    { niveau: 1, nom: "Course gratuite", desc: "Traverser n'importe quel quartier sans encombre, forces de l'ordre discrètes." },
-    { niveau: 2, nom: "La rumeur", desc: "Découvrir les usages récents (3 mois) de l'Influence Pègre liés à vos spécialisations." },
-    { niveau: 3, nom: "Faveurs illégales", desc: "Faveur importante non nécessairement légale (évasion, drogues, arme illégale...)." },
-    { niveau: 4, nom: "Déballer son linge sale en public", desc: "Organiser un incident à l'échelle de la ville (guerre de gangs, incendies, assassinat PNJ rang ≤4...)." },
-    { niveau: 5, nom: "État d'urgence", desc: "Sécuriser une zone (entrepôt / petit immeuble) 24h, obstruction niveau 5 incluse." },
-    { niveau: 5, nom: "Tirer les ficelles", desc: "Faveurs légales onéreuses : votes, perquisitions, armes enregistrées, événements..." },
-    { niveau: 5, nom: "Détourner le regard", desc: "Faire disparaître un problème embarrassant (témoins, articles, alibis, Bris de Mascarade)." },
-    { niveau: 5, nom: "Ce dont tu t'empares est tien", desc: "Accès temporaire à une œuvre rare (risque : attention des autorités, pas de perte de niveau)." },
-    { niveau: 5, nom: "Une offre que vous ne pouvez refuser", desc: "Effet significatif et à long terme (légalité, scandales, émeutes, délocalisations...)." },
-    { niveau: 6, nom: "Influence Régionale", desc: "Étend les actions globales à une région entière (grand État / territoire / petit pays)." }
-  ];
-
-  // ---------- Références DOM ----------
   const $ = (id) => document.getElementById(id);
-  const nomInput = $('in-nom'), codeInput = $('in-code');
+  if (API_URL.indexOf('REMPLACER') !== -1) { $('config-warning').style.display = 'block'; }
 
-  if (API_URL.indexOf('REMPLACER') !== -1) {
-    $('config-warning').style.display = 'block';
+  // ---------- Onglets ----------
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelector(`.tab-panel[data-tab="${btn.dataset.tab}"]`).classList.add('active');
+    });
+  });
+
+  function fillSelect(id, items, withEmpty) {
+    const el = $(id); if (!el) return;
+    el.innerHTML = (withEmpty ? '<option value=""></option>' : '') + items.map(i => `<option value="${i}">${i}</option>`).join('');
   }
+  ['glob-ville','cib-ville','sou-ville','aip-ville'].forEach(id => fillSelect(id, VILLES));
+  ['glob-zone','cib-zone','sou-zone','aip-zone'].forEach(id => fillSelect(id, ZONES));
+  fillSelect('glob-points', POINTS); fillSelect('aip-points', POINTS);
+  fillSelect('cib-points', POINTS); fillSelect('sou-niveau', [1,2,3,4,5,6,7,8,9]);
+  fillSelect('glob-spec', SPECIALISATIONS, true);
+  fillSelect('fp-ville', VILLES); fillSelect('fp-secte', SECTES); fillSelect('fp-clan', CLANS); fillSelect('fp-rang', RANGS);
 
-  // ---------- Grilles de spécialisations ----------
-  function buildSpecGrid(containerId, prefix) {
+  const today = new Date().toISOString().slice(0,10);
+  ['glob-date','cib-date','sou-date','aip-date'].forEach(id => $(id).value = today);
+  const nowMonth = new Date().toISOString().slice(0,7);
+  $('recap-mois').value = nowMonth;
+
+  // ---------- Spécialisations ----------
+  function buildSpecGrid(containerId) {
     const el = $(containerId);
-    SPECIALITES.forEach((spec) => {
+    SPECIALISATIONS.forEach((spec) => {
       const wrap = document.createElement('label');
       wrap.className = 'spec-item';
-      wrap.innerHTML = `<input type="checkbox" value="${spec}" data-prefix="${prefix}"> ${spec}`;
+      wrap.innerHTML = `<input type="checkbox" value="${spec}"> ${spec}`;
       el.appendChild(wrap);
     });
   }
-  buildSpecGrid('gotha-specs', 'gotha');
-  buildSpecGrid('pegre-specs', 'pegre');
-
+  buildSpecGrid('gotha-specs'); buildSpecGrid('pegre-specs');
   function updateSpecCount(prefix) {
     const niveau = parseInt($(`${prefix}-niveau`).value || '0', 10);
     const checked = document.querySelectorAll(`#${prefix}-specs input:checked`);
     const countEl = $(`${prefix}-spec-count`);
-    countEl.textContent = `${checked.length} / ${niveau} spécialisation(s) sélectionnée(s)`;
+    countEl.textContent = `${checked.length} / ${niveau} spécialisation(s)`;
     countEl.classList.toggle('over', checked.length > niveau);
-    checked.forEach(c => c.closest('.spec-item').classList.add('active'));
-    document.querySelectorAll(`#${prefix}-specs input:not(:checked)`).forEach(c => c.closest('.spec-item').classList.remove('active'));
-    // Empêche de cocher au-delà du niveau
     document.querySelectorAll(`#${prefix}-specs input`).forEach((cb) => {
+      cb.closest('.spec-item').classList.toggle('active', cb.checked);
       cb.disabled = !cb.checked && checked.length >= niveau;
     });
   }
-  ['gotha', 'pegre'].forEach((prefix) => {
+  ['gotha','pegre'].forEach((prefix) => {
     $(`${prefix}-niveau`).addEventListener('input', () => updateSpecCount(prefix));
     $(`${prefix}-specs`).addEventListener('change', () => updateSpecCount(prefix));
     updateSpecCount(prefix);
   });
-
-  function getChecked(prefix) {
-    return Array.from(document.querySelectorAll(`#${prefix}-specs input:checked`)).map(c => c.value);
-  }
+  function getChecked(prefix) { return Array.from(document.querySelectorAll(`#${prefix}-specs input:checked`)).map(c => c.value); }
   function setChecked(prefix, values) {
     const set = new Set((values || []).map(v => v.trim()));
-    document.querySelectorAll(`#${prefix}-specs input`).forEach((cb) => {
-      cb.checked = set.has(cb.value);
-    });
+    document.querySelectorAll(`#${prefix}-specs input`).forEach(cb => cb.checked = set.has(cb.value));
     updateSpecCount(prefix);
   }
 
-  // ---------- Appels réseau ----------
-  function apiGet(params) {
-    const url = `${API_URL}?${new URLSearchParams(params).toString()}`;
-    return fetch(url).then(r => r.json());
-  }
+  // ---------- Réseau ----------
+  function apiGet(params) { return fetch(`${API_URL}?${new URLSearchParams(params)}`).then(r => r.json()); }
   function apiPost(body) {
-    return fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // évite le preflight CORS
-      body: JSON.stringify(body)
-    }).then(r => r.json());
+    return fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }).then(r => r.json());
   }
-  function setMsg(id, text, ok) {
-    const el = $(id);
-    el.textContent = text;
-    el.className = 'status-msg ' + (ok ? 'ok' : 'err');
-  }
+  function setMsg(id, text, ok) { const el = $(id); el.textContent = text; el.className = 'status-msg ' + (ok ? 'ok' : 'err'); }
 
-  // ---------- Charger la fiche ----------
+  apiGet({ action: 'personnages' }).then(res => {
+    if (!res.ok) return;
+    $('dl-personnages').innerHTML = res.personnages.map(n => `<option value="${n}">`).join('');
+  }).catch(() => {});
+
+  // ---------- Identification / Fiche ----------
+  const nomInput = $('in-nom'), codeInput = $('in-code');
   $('btn-charger').addEventListener('click', () => {
     const nom = nomInput.value.trim();
     if (!nom) { setMsg('msg-identification', 'Entrez un nom de personnage.', false); return; }
     setMsg('msg-identification', 'Chargement…', true);
     apiGet({ action: 'fiche', nom }).then((res) => {
-      if (!res.ok) { setMsg('msg-identification', res.error || 'Erreur.', false); return; }
-      if (!res.fiche) {
-        setMsg('msg-identification', 'Aucune fiche existante — vous pouvez en créer une.', true);
-        return;
-      }
+      if (!res.ok) { setMsg('msg-identification', res.error, false); return; }
+      if (!res.fiche) { setMsg('msg-identification', 'Aucune fiche existante — vous pouvez en créer une.', true); return; }
       const f = res.fiche;
-      $('in-joueur').value = f.Joueur || '';
-      $('in-district').value = f.District || '';
-      $('gotha-niveau').value = f.NiveauGotha || 0;
-      $('pegre-niveau').value = f.NiveauPegre || 0;
-      setChecked('gotha', String(f.SpecialitesGotha || '').split(',').map(s => s.trim()).filter(Boolean));
-      setChecked('pegre', String(f.SpecialitesPegre || '').split(',').map(s => s.trim()).filter(Boolean));
+      $('fp-joueur').value = f['JOUEUR'] || '';
+      $('fp-ville').value = f['VILLE'] || '';
+      $('fp-secte').value = f['SECTE'] || '';
+      $('fp-clan').value = f['CLAN'] || '';
+      $('fp-rang').value = f['RANG'] || '';
+      $('gotha-niveau').value = f['NIVEAU GOTHA'] || 0;
+      $('pegre-niveau').value = f['NIVEAU PEGRE'] || 0;
+      setChecked('gotha', String(f['SPECIALISATIONS GOTHA'] || '').split(',').map(s=>s.trim()).filter(Boolean));
+      setChecked('pegre', String(f['SPECIALISATIONS PEGRE'] || '').split(',').map(s=>s.trim()).filter(Boolean));
       setMsg('msg-identification', 'Fiche chargée.', true);
-      chargerHistorique();
+      chargerHistorique(); chargerRecap();
     }).catch(err => setMsg('msg-identification', 'Erreur réseau : ' + err, false));
   });
 
-  // ---------- Enregistrer la fiche ----------
   $('btn-enregistrer-fiche').addEventListener('click', () => {
     const nom = nomInput.value.trim();
-    if (!nom) { setMsg('msg-fiche', 'Entrez un nom de personnage dans la section Identification.', false); return; }
+    if (!nom) { setMsg('msg-fiche', 'Entrez un nom de personnage en haut de page.', false); return; }
     const gothaNiveau = parseInt($('gotha-niveau').value || '0', 10);
     const pegreNiveau = parseInt($('pegre-niveau').value || '0', 10);
-    const gothaSpecs = getChecked('gotha');
-    const pegreSpecs = getChecked('pegre');
+    const gothaSpecs = getChecked('gotha'), pegreSpecs = getChecked('pegre');
     if (gothaSpecs.length > gothaNiveau || pegreSpecs.length > pegreNiveau) {
-      setMsg('msg-fiche', 'Trop de spécialisations pour le niveau indiqué.', false);
-      return;
+      setMsg('msg-fiche', 'Trop de spécialisations pour le niveau indiqué.', false); return;
     }
     setMsg('msg-fiche', 'Enregistrement…', true);
     apiPost({
-      action: 'enregistrerFiche',
-      nom, joueur: $('in-joueur').value.trim(), codeJoueur: codeInput.value,
-      district: $('in-district').value.trim(),
-      niveauGotha: gothaNiveau, specialitesGotha: gothaSpecs,
-      niveauPegre: pegreNiveau, specialitesPegre: pegreSpecs
+      action: 'enregistrerFiche', nom, joueur: $('fp-joueur').value.trim(), codeJoueur: codeInput.value,
+      ville: $('fp-ville').value, secte: $('fp-secte').value, clan: $('fp-clan').value, rang: $('fp-rang').value,
+      niveauGotha: gothaNiveau, specialitesGotha: gothaSpecs, niveauPegre: pegreNiveau, specialitesPegre: pegreSpecs
     }).then((res) => {
-      if (!res.ok) { setMsg('msg-fiche', res.error || 'Erreur.', false); return; }
+      if (!res.ok) { setMsg('msg-fiche', res.error, false); return; }
       setMsg('msg-fiche', 'Fiche enregistrée.', true);
     }).catch(err => setMsg('msg-fiche', 'Erreur réseau : ' + err, false));
   });
 
-  // ---------- Action ciblée : coût dynamique ----------
-  function updateCibleCost() {
-    const type = $('cible-type').value;
-    const preview = $('cible-cost-preview');
-    $('cible-attaque-fields').style.display = (type === 'Défense' || type === 'Obstruction') ? 'none' : 'flex';
-    const points = parseInt($('cible-points').value || '1', 10);
-    const catSource = $('cible-categorie').value;
-    const catCible = $('cible-categorie-visee').value;
-
-    if (type === 'Attaque') {
-      const cout = (catSource === catCible ? 2 : 3) * points;
-      preview.textContent = `Coût estimé : ${cout} Action(s) d'Influence (${catSource === catCible ? '2' : '3'} par point, catégorie ${catSource === catCible ? 'identique' : 'opposée'}).`;
-    } else if (type === 'Défense') {
-      preview.textContent = `Coût : 1 Action = -1 niveau absorbé sur toute attaque de la catégorie ${catSource}, pour le mois entier.`;
-    } else if (type === 'Obstruction') {
-      preview.textContent = `Coût : chaque Action dépensée ajoute +1 au seuil à dépasser pour l'activité obstruée.`;
-    } else if (type === 'Soutien') {
-      preview.textContent = `Coût : nombre d'Actions = niveau actuel de la cible avant ce point de soutien (ex. 5→6 coûte 5 Actions). Pensez au malus de soutien hors-praxis (0 à -3) si applicable.`;
-    }
-  }
-  ['cible-type', 'cible-categorie', 'cible-categorie-visee', 'cible-points'].forEach(id => {
-    $(id).addEventListener('input', updateCibleCost);
-    $(id).addEventListener('change', updateCibleCost);
-  });
-  updateCibleCost();
-
-  $('btn-envoyer-ciblee').addEventListener('click', () => {
-    const nom = nomInput.value.trim();
-    if (!nom) { setMsg('msg-ciblee', 'Chargez ou créez d\'abord votre fiche.', false); return; }
-    const type = $('cible-type').value;
-    setMsg('msg-ciblee', 'Envoi…', true);
-    apiPost({
-      action: 'nouvelleAction',
-      nom, codeJoueur: codeInput.value,
-      mois: $('cible-mois').value.trim(),
-      categorie: $('cible-categorie').value,
-      typeAction: 'Ciblée',
-      sousType: type,
-      cible: (type === 'Attaque' || type === 'Soutien') ? $('cible-cible').value.trim() : '',
-      details: $('cible-details').value.trim(),
-      actionsDepensees: (type === 'Attaque')
-        ? ($('cible-categorie').value === $('cible-categorie-visee').value ? 2 : 3) * parseInt($('cible-points').value || '1', 10)
-        : parseInt($('cible-points').value || '1', 10)
-    }).then((res) => {
-      if (!res.ok) { setMsg('msg-ciblee', res.error || 'Erreur.', false); return; }
-      setMsg('msg-ciblee', 'Action ciblée envoyée au conteur.', true);
-      chargerHistorique();
-    }).catch(err => setMsg('msg-ciblee', 'Erreur réseau : ' + err, false));
-  });
-
-  // ---------- Action globale ----------
+  // ---------- Action Globale ----------
   function buildGlobaleOptions() {
-    const cat = $('globale-categorie').value;
-    const list = cat === 'Gotha' ? ACTIONS_GOTHA : ACTIONS_PEGRE;
-    const select = $('globale-action');
-    select.innerHTML = '';
-    list.forEach((a, idx) => {
-      const opt = document.createElement('option');
-      opt.value = idx;
-      opt.textContent = `Niveau ${a.niveau} — ${a.nom}`;
-      select.appendChild(opt);
-    });
+    const cat = $('glob-categorie').value;
+    const list = cat === 'Influence Gotha' ? ACTIONS_GOTHA_GLOB : ACTIONS_PEGRE_GLOB;
+    $('glob-action').innerHTML = list.map((a,i) => `<option value="${i}">${a.nom}</option>`).join('');
     updateGlobaleDesc();
   }
   function updateGlobaleDesc() {
-    const cat = $('globale-categorie').value;
-    const list = cat === 'Gotha' ? ACTIONS_GOTHA : ACTIONS_PEGRE;
-    const a = list[parseInt($('globale-action').value || '0', 10)];
+    const cat = $('glob-categorie').value;
+    const list = cat === 'Influence Gotha' ? ACTIONS_GOTHA_GLOB : ACTIONS_PEGRE_GLOB;
+    const a = list[parseInt($('glob-action').value || '0', 10)];
     if (!a) return;
-    $('globale-desc').textContent = a.desc;
-    const prefix = cat === 'Gotha' ? 'gotha' : 'pegre';
-    const niveauActuel = parseInt($(`${prefix}-niveau`).value || '0', 10);
-    const suffisant = niveauActuel >= a.niveau;
-    $('globale-cost-preview').textContent = suffisant
-      ? `Coût : 1 Action d'Influence. Votre niveau ${cat} (${niveauActuel}) suffit (requis : ${a.niveau}).`
-      : `Coût : 1 Action d'Influence — ⚠ votre niveau ${cat} (${niveauActuel}) est inférieur au niveau requis (${a.niveau}), sauf soutien temporaire.`;
+    $('glob-desc').textContent = a.desc;
+    const niveauActuel = parseInt($(cat === 'Influence Gotha' ? 'gotha-niveau' : 'pegre-niveau').value || '0', 10);
+    $('glob-cost').textContent = niveauActuel >= a.niveau
+      ? `Coût : 1 Action d'Influence. Niveau requis ${a.niveau}, vous avez ${niveauActuel}.`
+      : `Coût : 1 Action d'Influence — ⚠ niveau requis ${a.niveau}, vous n'avez que ${niveauActuel} (sauf soutien).`;
   }
-  $('globale-categorie').addEventListener('change', buildGlobaleOptions);
-  $('globale-action').addEventListener('change', updateGlobaleDesc);
+  $('glob-categorie').addEventListener('change', buildGlobaleOptions);
+  $('glob-action').addEventListener('change', updateGlobaleDesc);
   buildGlobaleOptions();
 
   $('btn-envoyer-globale').addEventListener('click', () => {
     const nom = nomInput.value.trim();
-    if (!nom) { setMsg('msg-globale', 'Chargez ou créez d\'abord votre fiche.', false); return; }
-    const cat = $('globale-categorie').value;
-    const list = cat === 'Gotha' ? ACTIONS_GOTHA : ACTIONS_PEGRE;
-    const a = list[parseInt($('globale-action').value || '0', 10)];
+    if (!nom) { setMsg('msg-globale', "Chargez d'abord votre fiche.", false); return; }
+    const cat = $('glob-categorie').value;
+    const list = cat === 'Influence Gotha' ? ACTIONS_GOTHA_GLOB : ACTIONS_PEGRE_GLOB;
+    const a = list[parseInt($('glob-action').value || '0', 10)];
     setMsg('msg-globale', 'Envoi…', true);
     apiPost({
-      action: 'nouvelleAction',
-      nom, codeJoueur: codeInput.value,
-      mois: $('globale-mois').value.trim(),
-      categorie: cat,
-      typeAction: 'Globale',
-      sousType: `Niveau ${a.niveau} — ${a.nom}`,
-      cible: '',
-      details: $('globale-details').value.trim(),
-      actionsDepensees: 1
+      action: 'nouvelleAction', nom, codeJoueur: codeInput.value, date: $('glob-date').value,
+      ville: $('glob-ville').value, zone: $('glob-zone').value, categorie: cat,
+      niveau: a.niveau, specialisation: $('glob-spec').value, raisonSociale: $('glob-raison').value.trim(),
+      action: a.nom, pointsAction: parseInt($('glob-points').value || '1', 10), descriptif: $('glob-descriptif').value.trim()
     }).then((res) => {
-      if (!res.ok) { setMsg('msg-globale', res.error || 'Erreur.', false); return; }
-      setMsg('msg-globale', 'Action globale envoyée au conteur.', true);
+      if (!res.ok) { setMsg('msg-globale', res.error, false); return; }
+      setMsg('msg-globale', 'Action globale envoyée.', true);
       chargerHistorique();
     }).catch(err => setMsg('msg-globale', 'Erreur réseau : ' + err, false));
   });
 
-  // ---------- Historique ----------
+  // ---------- Action Ciblée ----------
+  function updateCibleCost() {
+    const type = $('cib-action').value;
+    const points = parseInt($('cib-points').value || '1', 10);
+    const catSource = $('cib-categorie').value, catCible = $('cib-categorie-cible').value;
+    if (type === 'Attaque') {
+      const cout = (catSource === catCible ? 2 : 3) * points;
+      $('cib-cost').textContent = `Coût estimé : ${cout} Action(s) d'Influence (${catSource === catCible ? '2' : '3'} par point). Entrez ce total dans "Points visés" si vous voulez l'enregistrer comme coût final.`;
+    } else if (type === 'Défense') {
+      $('cib-cost').textContent = `Coût : ${points} Action(s) = -${points} niveau(x) absorbé(s) sur toute attaque de cette catégorie, pour le mois.`;
+    } else {
+      $('cib-cost').textContent = `Coût : ${points} Action(s) d'obstruction = seuil +${points} à surmonter pour l'activité visée.`;
+    }
+  }
+  ['cib-action','cib-categorie','cib-categorie-cible','cib-points'].forEach(id => { $(id).addEventListener('input', updateCibleCost); $(id).addEventListener('change', updateCibleCost); });
+  updateCibleCost();
+
+  $('btn-envoyer-ciblee').addEventListener('click', () => {
+    const nom = nomInput.value.trim();
+    if (!nom) { setMsg('msg-ciblee', "Chargez d'abord votre fiche.", false); return; }
+    setMsg('msg-ciblee', 'Envoi…', true);
+    apiPost({
+      action: 'nouvelleAction', nom, codeJoueur: codeInput.value, date: $('cib-date').value,
+      ville: $('cib-ville').value, zone: $('cib-zone').value, categorie: $('cib-categorie').value,
+      action: $('cib-action').value, raisonSociale: $('cib-raison').value.trim(),
+      pointsAction: parseInt($('cib-points').value || '1', 10), descriptif: $('cib-descriptif').value.trim()
+    }).then((res) => {
+      if (!res.ok) { setMsg('msg-ciblee', res.error, false); return; }
+      setMsg('msg-ciblee', 'Action ciblée envoyée.', true);
+      chargerHistorique();
+    }).catch(err => setMsg('msg-ciblee', 'Erreur réseau : ' + err, false));
+  });
+
+  // ---------- Soutien ----------
+  function updateSoutienCost() {
+    const niveauAvant = parseInt($('sou-niveau').value || '0', 10);
+    const malus = parseInt($('sou-malus').value || '0', 10);
+    $('sou-cost').textContent = `Coût : ${niveauAvant} Action(s) d'Influence pour faire passer la cible de ${niveauAvant} à ${niveauAvant+1}` +
+      (malus < 0 ? ` — malus hors-praxis : ${malus} niveau(x) reçu(s) en moins.` : '.');
+  }
+  ['sou-niveau','sou-malus'].forEach(id => { $(id).addEventListener('input', updateSoutienCost); $(id).addEventListener('change', updateSoutienCost); });
+  updateSoutienCost();
+
+  $('btn-envoyer-soutien').addEventListener('click', () => {
+    const nom = nomInput.value.trim();
+    if (!nom) { setMsg('msg-soutien', "Chargez d'abord votre fiche.", false); return; }
+    setMsg('msg-soutien', 'Envoi…', true);
+    apiPost({
+      action: 'nouvelleAction', nom, codeJoueur: codeInput.value, date: $('sou-date').value,
+      ville: $('sou-ville').value, zone: $('sou-zone').value, categorie: $('sou-categorie').value,
+      niveau: parseInt($('sou-niveau').value || '0', 10), raisonSociale: $('sou-raison').value.trim(),
+      action: 'Soutien', pointsAction: parseInt($('sou-niveau').value || '0', 10) + parseInt($('sou-malus').value || '0', 10),
+      descriptif: $('sou-descriptif').value.trim()
+    }).then((res) => {
+      if (!res.ok) { setMsg('msg-soutien', res.error, false); return; }
+      setMsg('msg-soutien', 'Soutien envoyé.', true);
+      chargerHistorique();
+    }).catch(err => setMsg('msg-soutien', 'Erreur réseau : ' + err, false));
+  });
+
+  // ---------- AIP ----------
+  function buildAipOptions() { fillSelect('aip-action', AIP_ACTIONS[$('aip-categorie').value] || []); }
+  $('aip-categorie').addEventListener('change', buildAipOptions);
+  buildAipOptions();
+
+  $('btn-envoyer-aip').addEventListener('click', () => {
+    const nom = nomInput.value.trim();
+    if (!nom) { setMsg('msg-aip', "Chargez d'abord votre fiche.", false); return; }
+    setMsg('msg-aip', 'Envoi…', true);
+    apiPost({
+      action: 'nouvelleAction', nom, codeJoueur: codeInput.value, date: $('aip-date').value,
+      ville: $('aip-ville').value, zone: $('aip-zone').value, categorie: $('aip-categorie').value,
+      raisonSociale: $('aip-raison').value.trim(), action: $('aip-action').value,
+      pointsAction: parseInt($('aip-points').value || '1', 10), descriptif: $('aip-descriptif').value.trim()
+    }).then((res) => {
+      if (!res.ok) { setMsg('msg-aip', res.error, false); return; }
+      setMsg('msg-aip', 'Action AIP envoyée.', true);
+      chargerHistorique();
+    }).catch(err => setMsg('msg-aip', 'Erreur réseau : ' + err, false));
+  });
+
+  // ---------- Récap du Mois ----------
+  function chargerRecap() {
+    const nom = nomInput.value.trim();
+    if (!nom) { $('recap-contenu').innerHTML = ''; return; }
+    setMsg('msg-recap', 'Chargement…', true);
+    apiGet({ action: 'recap', nom, mois: $('recap-mois').value }).then((res) => {
+      if (!res.ok) { setMsg('msg-recap', res.error, false); return; }
+      setMsg('msg-recap', '', true);
+      $('recap-contenu').innerHTML = `
+        <div class="recap-card gotha"><h4>Gotha</h4>
+          <div class="recap-line"><span>Niveau</span><span>${res.gotha.niveau}</span></div>
+          <div class="recap-line"><span>Points utilisés</span><span>${res.gotha.utilises}</span></div>
+          <div class="recap-line"><span>Points restants</span><span>${res.gotha.restants}</span></div>
+        </div>
+        <div class="recap-card pegre"><h4>Pègre</h4>
+          <div class="recap-line"><span>Niveau</span><span>${res.pegre.niveau}</span></div>
+          <div class="recap-line"><span>Points utilisés</span><span>${res.pegre.utilises}</span></div>
+          <div class="recap-line"><span>Points restants</span><span>${res.pegre.restants}</span></div>
+        </div>
+        <div class="recap-card" style="grid-column:1/-1;"><h4>AIP</h4>
+          <div class="recap-line"><span>Actions AIP ce mois</span><span>${res.nbActionsAIP}</span></div>
+        </div>`;
+    }).catch(err => setMsg('msg-recap', 'Erreur réseau : ' + err, false));
+  }
+  $('btn-recap').addEventListener('click', chargerRecap);
+
+  // ---------- Résultats des Influences ----------
   function chargerHistorique() {
     const nom = nomInput.value.trim();
     const list = $('historique-liste');
-    if (!nom) { list.innerHTML = '<p class="subtitle">Chargez une fiche pour voir l\'historique.</p>'; return; }
+    if (!nom) { list.innerHTML = '<p class="subtitle">Chargez une fiche pour voir les résultats.</p>'; return; }
     list.innerHTML = '<p class="subtitle">Chargement…</p>';
-    apiGet({ action: 'actions', nom }).then((res) => {
+    apiGet({ action: 'historique', nom }).then((res) => {
       if (!res.ok) { list.innerHTML = `<p class="status-msg err">${res.error}</p>`; return; }
       if (!res.actions.length) { list.innerHTML = '<p class="subtitle">Aucune action enregistrée pour le moment.</p>'; return; }
       list.innerHTML = '';
       res.actions.forEach((a) => {
+        const cat = a['CATEGORIE'] || '';
+        const catClass = cat.indexOf('Gotha') !== -1 ? 'gotha' : (cat.indexOf('Pègre') !== -1 ? 'pegre' : '');
+        const reponse = a['REPONSE CONTEUR'];
+        const date = a['DATE'] ? new Date(a['DATE']).toLocaleDateString('fr-FR') : '';
         const div = document.createElement('div');
         div.className = 'history-item';
-        const catClass = a.Categorie === 'Gotha' ? 'gotha' : 'pegre';
-        const statutClass = a.Statut === 'Résolu' ? 'resolu' : 'attente';
         div.innerHTML = `
           <div class="history-meta">
-            <span class="tag ${catClass}">${a.Categorie}</span>
-            <span class="tag ${statutClass}">${a.Statut}</span>
-            ${a.Mois || ''} — ${a.TypeAction} : ${a.SousType}
+            ${catClass ? `<span class="tag ${catClass}">${cat}</span>` : (cat ? `<span class="tag">${cat}</span>` : '')}
+            ${date} — ${a['ACTION'] || ''}
           </div>
-          <div>${a.Cible ? `<strong>Cible :</strong> ${a.Cible}<br>` : ''}${a.Details || ''}</div>
-          <div class="history-result ${a.ResultatConteur ? '' : 'empty'}">
-            ${a.ResultatConteur ? `<strong>Résultat du conteur :</strong> ${a.ResultatConteur}` : 'En attente du résultat du conteur…'}
-          </div>
+          <div>${a['RAISON SOCIALE'] ? `<strong>Raison sociale :</strong> ${a['RAISON SOCIALE']}<br>` : ''}${a['DESCRIPTIF JOUEUR'] || ''}</div>
+          <div class="history-result ${reponse ? '' : 'empty'}">${reponse ? `<strong>Résultat du conteur :</strong> ${reponse}` : 'En attente du résultat du conteur…'}</div>
         `;
         list.appendChild(div);
       });
     }).catch(err => { list.innerHTML = `<p class="status-msg err">Erreur réseau : ${err}</p>`; });
   }
   $('btn-rafraichir-historique').addEventListener('click', chargerHistorique);
-
 })();
 </script>
-</div>
