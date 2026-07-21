@@ -401,7 +401,7 @@ toc: false
   // ==========================================================
   // CONFIGURATION — remplacez par l'URL /exec de votre déploiement
   // ==========================================================
-  const API_URL = "https://script.google.com/macros/s/AKfycbzvQ9eGmFpoa-53YQwuCneMM6i9VA3vS2TAw1j8ImxYQpSZmL1Qaa2CZgGEfhCPf6J5xA/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbyYuFI95i4ck6xVyQnU8KhXc781ZRelBoi1erz_3Tb421QjdJDZT7Neca1AXKiWxKrX4g/exec";
 
   const VILLES = ["Grenoble","Angers","Annecy","Bordeaux","Châteauroux","Evry","Lille","Lyon",
     "Melun","Montpellier","Orléans","Périgueux","Strasbourg","Ys","Autres"];
