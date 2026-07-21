@@ -41,7 +41,20 @@ toc: false
 #admin-app .tab-panel.active { display: block; }
 #admin-app .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 1.4rem 1.6rem; }
 #admin-app table { width: 100%; border-collapse: collapse; margin-top: .5rem; font-size: .86rem; }
-#admin-app th, #admin-app td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); }
+#admin-app th, #admin-app td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+#admin-app td select, #admin-app td textarea, #admin-app td input[type=text] {
+  width: 100%; background: #fff; border: 1px solid #c9c3b8; color: var(--ink);
+  padding: .35rem .5rem; border-radius: 4px; font-size: .82rem;
+}
+#admin-app td textarea { min-height: 3.2rem; resize: vertical; }
+#admin-app td button.save-btn {
+  background: transparent; border: 1px solid var(--ok); color: var(--ok);
+  padding: .35rem .7rem; font-size: .76rem; font-weight: 600;
+}
+#admin-app td button.save-btn:hover { background: var(--ok); color: #fff; }
+#admin-app .row-msg { font-size: .74rem; margin-top: .3rem; }
+#admin-app .row-msg.ok { color: var(--ok); }
+#admin-app .row-msg.err { color: var(--accent); }
 #admin-app th { text-transform: uppercase; font-size: .7rem; letter-spacing: .04em; color: var(--ink-dim); }
 #admin-app tr.fait td:first-child { color: var(--ok); font-weight: 600; }
 #admin-app tr.attente td:first-child { color: var(--warn); font-weight: 600; }
@@ -64,6 +77,8 @@ toc: false
   <button class="tab-btn" data-tab="districts">Districts</button>
   <button class="tab-btn" data-tab="ciblees">Actions Ciblées</button>
   <button class="tab-btn" data-tab="soutiens">Soutiens</button>
+  <button class="tab-btn" data-tab="raisons">Raisons Sociales</button>
+  <button class="tab-btn" data-tab="tickets">Tickets</button>
 </div>
 
 <div class="tab-panel active" data-tab="joueurs">
@@ -94,6 +109,35 @@ toc: false
     <h2>Soutiens</h2>
     <p class="subtitle">Lignes de l'onglet AIP où Action = Soutien.</p>
     <table id="table-soutiens"><thead><tr><th>Date</th><th>Personnage</th><th>Raison sociale (soutenu)</th><th>Catégorie</th><th>Points</th><th>Réponse</th></tr></thead><tbody></tbody></table>
+  </div>
+</div>
+
+<div class="tab-panel" data-tab="raisons">
+  <div class="card">
+    <h2>Raisons Sociales</h2>
+    <p class="subtitle">Registre complet, tous personnages confondus — alimenté automatiquement à chaque action et par l'onglet "Raisons Sociales" côté joueur.</p>
+    <table id="table-raisons"><thead><tr><th>Nom</th><th>Personnage lié</th><th>Ville</th><th>Zone</th><th>Catégorie</th><th>Description</th></tr></thead><tbody></tbody></table>
+  </div>
+</div>
+
+<div class="tab-panel" data-tab="tickets">
+  <div class="card">
+    <h2>Tickets</h2>
+    <p class="subtitle">Demandes des joueurs. Changez le statut et/ou ajoutez un résultat puis cliquez "Enregistrer" sur la ligne concernée.</p>
+    <div class="row" style="align-items:end;">
+      <div><label for="tk-filtre-statut">Filtrer par statut</label>
+        <select id="tk-filtre-statut">
+          <option value="">Tous</option>
+          <option>En attente</option><option>En cours</option><option>Informations demandées</option>
+          <option>Complété</option><option>Refusé</option><option>Annulé</option>
+        </select>
+      </div>
+      <div><button id="btn-filtrer-tickets">Filtrer</button></div>
+    </div>
+    <table id="table-tickets">
+      <thead><tr><th>Date</th><th>Personnage</th><th>Catégorie</th><th>Sujet / Description</th><th>Statut</th><th>Résultat</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
   </div>
 </div>
 
@@ -133,8 +177,9 @@ toc: false
       apiGet({ action: 'joueurs', cle, mois }),
       apiGet({ action: 'districts', cle, mois }),
       apiGet({ action: 'actionsCiblees', cle }),
-      apiGet({ action: 'soutiens', cle })
-    ]).then(([joueurs, districts, ciblees, soutiens]) => {
+      apiGet({ action: 'soutiens', cle }),
+      apiGet({ action: 'raisonsSociales' })
+    ]).then(([joueurs, districts, ciblees, soutiens, raisons]) => {
       if (!joueurs.ok) { setMsg(joueurs.error, true); return; }
       setMsg(`Tableau de bord chargé pour ${mois}.`, false);
 
@@ -166,7 +211,58 @@ toc: false
         tr.innerHTML = `<td>${date}</td><td>${a['PERSONNAGE']||''}</td><td>${a['RAISON SOCIALE']||''}</td><td>${a['CATEGORIE']||''}</td><td>${a["POINTS D'ACTION"]||''}</td><td>${a['REPONSE CONTEUR']||'—'}</td>`;
         return tr;
       });
+
+      fillTable('#table-raisons', raisons.raisonsSociales || [], (r) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r['NOM']||''}</td><td>${r['PERSONNAGE LIE']||''}</td><td>${r['VILLE']||''}</td><td>${r['ZONE']||''}</td><td>${r['CATEGORIE']||''}</td><td>${r['DESCRIPTION']||''}</td>`;
+        return tr;
+      });
+
+      chargerTickets();
     }).catch(err => setMsg('Erreur réseau : ' + err, true));
   });
+
+  // ---------- Tickets ----------
+  const STATUTS = ['En attente', 'En cours', 'Informations demandées', 'Complété', 'Refusé', 'Annulé'];
+
+  function apiPost(body) {
+    return fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }).then(r => r.json());
+  }
+
+  function chargerTickets() {
+    const cle = $('admin-cle').value;
+    if (!cle) return;
+    const statut = $('tk-filtre-statut').value;
+    apiGet({ action: 'tickets', cle, statut }).then((res) => {
+      if (!res.ok) { setMsg(res.error, true); return; }
+      fillTable('#table-tickets', res.tickets, (t) => {
+        const tr = document.createElement('tr');
+        const date = t['DATE CREATION'] ? new Date(t['DATE CREATION']).toLocaleDateString('fr-FR') : '';
+        const statutOptions = STATUTS.map(s => `<option value="${s}"${s === t['STATUT'] ? ' selected' : ''}>${s}</option>`).join('');
+        tr.innerHTML = `
+          <td>${date}</td>
+          <td>${t['PERSONNAGE']||''}</td>
+          <td>${t['CATEGORIE']||''}</td>
+          <td><strong>${t['SUJET']||''}</strong><br>${t['DESCRIPTION']||''}</td>
+          <td><select class="tk-statut">${statutOptions}</select></td>
+          <td><textarea class="tk-resultat">${t['RESULTAT']||''}</textarea></td>
+          <td><button class="save-btn">Enregistrer</button><div class="row-msg"></div></td>
+        `;
+        tr.querySelector('.save-btn').addEventListener('click', () => {
+          const msgEl = tr.querySelector('.row-msg');
+          msgEl.textContent = 'Enregistrement…'; msgEl.className = 'row-msg';
+          apiPost({
+            action: 'majTicket', cle: $('admin-cle').value, ticketId: t['TICKET ID'],
+            statut: tr.querySelector('.tk-statut').value, resultat: tr.querySelector('.tk-resultat').value
+          }).then((res2) => {
+            if (!res2.ok) { msgEl.textContent = res2.error; msgEl.className = 'row-msg err'; return; }
+            msgEl.textContent = 'Enregistré.'; msgEl.className = 'row-msg ok';
+          }).catch(err => { msgEl.textContent = 'Erreur réseau : ' + err; msgEl.className = 'row-msg err'; });
+        });
+        return tr;
+      });
+    }).catch(err => setMsg('Erreur réseau (tickets) : ' + err, true));
+  }
+  $('btn-filtrer-tickets').addEventListener('click', chargerTickets);
 })();
 </script>
