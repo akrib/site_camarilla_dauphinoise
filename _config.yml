@@ -21,6 +21,7 @@ baseurl: /site_camarilla_dauphinoise/ # the subpath of your site, e.g. /blog
 url: "https://akrib.github.io"
 github_username:  akrib
 minimal_mistakes_skin: default
+site_theme: camarilla 
 search: true
 logo: /assets/images/masthead-logo.png
 # Build settings

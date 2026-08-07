@@ -1,0 +1,30 @@
+{%- comment -%}
+  ============================================================
+  Interrupteur de thème du site.
+
+  Le thème se choisit dans _config.yml :
+
+      site_theme: camarilla     # habillage Camarilla Dauphinoise
+      site_theme: default       # Minimal Mistakes d'origine
+
+  Une page peut passer outre avec `page_theme:` dans son front matter :
+
+      ---
+      page_theme: default
+      ---
+
+  Pour ajouter un thème : dépose son fichier dans assets/css/theme/
+  et ajoute une branche ci-dessous.
+  ============================================================
+{%- endcomment -%}
+
+{%- assign theme = page.page_theme | default: site.site_theme | default: 'default' -%}
+
+{%- case theme -%}
+  {%- when 'camarilla' -%}
+    <link rel="stylesheet" href="{{ '/assets/css/theme/camarilla.css' | relative_url }}">
+  {%- when 'default' -%}
+    {%- comment -%} Rien à charger : Minimal Mistakes tel quel. {%- endcomment -%}
+  {%- else -%}
+    <link rel="stylesheet" href="{{ '/assets/css/theme/' | append: theme | append: '.css' | relative_url }}">
+{%- endcase -%}

@@ -1,0 +1,248 @@
+---
+layout: default
+---
+
+{%- comment -%}
+  ============================================================
+  clan_v3 — page de clan cinématique (style fiche de personnage)
+  Camarilla Dauphinoise
+
+  Front matter attendu : voir _pages/clan-ventrue_v3.md
+  ============================================================
+{%- endcomment -%}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="{{ '/assets/css/module/clan-v3.css' | relative_url }}">
+
+{%- assign accent   = page.accent | default: '#b39861' -%}
+{%- assign sealurl  = page.header.overlay_icon | relative_url -%}
+{%- assign clanname = page.clan_name | default: page.title -%}
+{%- assign romans   = "I,II,III,IV,V,VI,VII,VIII,IX,X" | split: "," -%}
+
+<article class="clan-v3"
+         style="--v3-accent: {{ accent }};{% if page.header.overlay_icon %} --v3-seal: url('{{ sealurl }}');{% endif %}">
+
+  <!-- ============ 1. HÉROS ============ -->
+  <header class="v3-hero">
+    <div class="v3-hero__bg" style="background-image: url('{{ page.header.overlay_image | relative_url }}');"></div>
+    <div class="v3-hero__veil"></div>
+    {% if page.header.overlay_icon %}<div class="v3-hero__sigil v3-seal" aria-hidden="true"></div>{% endif %}
+
+    <div class="v3-hero__inner v3-wrap">
+      <p class="v3-hero__eyebrow v3-intro">{{ page.eyebrow | default: "Les Treize Clans" }}</p>
+
+      <h1 class="v3-hero__name v3-intro">{{ clanname }}</h1>
+
+      {% if page.header.caption %}
+        <p class="v3-hero__caption v3-intro">{{ page.header.caption }}</p>
+      {% endif %}
+
+      <hr class="v3-hero__rule v3-intro">
+
+      {% assign devise = page.devise | default: page.excerpt %}
+      {% if devise %}
+        <p class="v3-hero__devise v3-intro">{{ devise | strip_html | strip_newlines | strip }}</p>
+      {% endif %}
+
+      {% if page.traits %}
+      <div class="v3-traits v3-intro">
+        {% for t in page.traits %}
+        <div class="v3-trait">
+          <p class="v3-trait__label">{{ t.label }}</p>
+          <div class="v3-trait__pips" role="img" aria-label="{{ t.label }} : {{ t.value }} sur 5">
+            {% for i in (1..5) %}
+              <span class="v3-trait__pip{% if i <= t.value %} is-on{% endif %}"></span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <p class="v3-scrollcue" aria-hidden="true"><span>Descendre</span></p>
+  </header>
+
+  <!-- ============ 2. NAVIGATION COLLANTE ============ -->
+  <nav class="v3-subnav" aria-label="Sections de la page">
+    <div class="v3-subnav__inner">
+      {% if page.header.overlay_icon %}
+      <div class="v3-gauge" aria-hidden="true" title="Progression de lecture">
+        <div class="v3-gauge__base v3-seal"></div>
+        <div class="v3-gauge__fill v3-seal"></div>
+      </div>
+      {% endif %}
+      <ul class="v3-subnav__links">
+        <li><a href="#nature">Nature</a></li>
+        {% if page.disciplines %}<li><a href="#disciplines">Disciplines</a></li>{% endif %}
+        {% if page.hierarchy %}<li><a href="#hierarchie">Hiérarchie</a></li>{% endif %}
+        {% if page.chroniques %}<li><a href="#chroniques">Chroniques</a></li>{% endif %}
+        {% if page.gallery %}<li><a href="#galerie">Galerie</a></li>{% endif %}
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ============ 3. NATURE ============ -->
+  <section class="v3-section" id="nature">
+    <div class="v3-wrap v3-lore v3-reveal">
+      <div class="v3-lore__body">
+        <p class="v3-eyebrow">Nature du sang</p>
+        {{ content }}
+      </div>
+
+      <aside class="v3-aside">
+        {% if page.secte %}
+          <p class="v3-aside__label">Allégeance</p>
+          <p class="v3-aside__value">{{ page.secte }}</p>
+        {% endif %}
+        {% if page.surnom %}
+          <p class="v3-aside__label">Surnom</p>
+          <p class="v3-aside__value">{{ page.surnom }}</p>
+        {% endif %}
+        {% if page.faiblesse %}
+          <p class="v3-aside__label">Malédiction</p>
+          <p class="v3-aside__value">{{ page.faiblesse }}</p>
+        {% endif %}
+        {% if page.archetypes %}
+          <p class="v3-aside__label">Rôles de jeu</p>
+          <p class="v3-aside__value">{{ page.archetypes }}</p>
+        {% endif %}
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ 4. DISCIPLINES ============ -->
+  {% if page.disciplines %}
+  <section class="v3-section v3-section--alt" id="disciplines">
+    <div class="v3-wrap v3-reveal">
+      <p class="v3-eyebrow">Dons du sang</p>
+      <h2 class="v3-h2">Disciplines</h2>
+
+      <div class="v3-disc" data-disc>
+        <div class="v3-disc__list" role="tablist" aria-label="Disciplines du clan">
+          {% for d in page.disciplines %}
+          <button class="v3-disc__tab"
+                  role="tab"
+                  id="disc-tab-{{ forloop.index }}"
+                  aria-controls="disc-pane-{{ forloop.index }}"
+                  aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                  tabindex="{% if forloop.first %}0{% else %}-1{% endif %}">
+            <span class="v3-disc__icon v3-seal"
+                  style="--v3-seal: url('{{ d.icon | relative_url }}');"
+                  aria-hidden="true"></span>
+            <span class="v3-disc__tabname">{{ d.name }}</span>
+          </button>
+          {% endfor %}
+        </div>
+
+        <div class="v3-disc__panel">
+          {% for d in page.disciplines %}
+          <div class="v3-disc__pane{% if forloop.first %} is-active{% endif %}"
+               role="tabpanel"
+               id="disc-pane-{{ forloop.index }}"
+               aria-labelledby="disc-tab-{{ forloop.index }}"
+               {% unless forloop.first %}hidden{% endunless %}>
+
+            {% assign media = d.media | default: d.image | default: page.header.overlay_image %}
+            <div class="v3-disc__media">
+              {% if media contains '.mp4' or media contains '.webm' %}
+                <video src="{{ media | relative_url }}" autoplay muted loop playsinline></video>
+              {% else %}
+                <img src="{{ media | relative_url }}" alt="" loading="lazy">
+              {% endif %}
+            </div>
+
+            <div class="v3-disc__text">
+              <h3 class="v3-disc__name">{{ d.name }}</h3>
+              <p class="v3-disc__desc">{{ d.desc }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ============ 5. HIÉRARCHIE ============ -->
+  {% if page.hierarchy %}
+  <section class="v3-section" id="hierarchie">
+    <div class="v3-wrap v3-reveal">
+      <p class="v3-eyebrow">De l'ancien au nouveau-né</p>
+      <h2 class="v3-h2">Hiérarchie</h2>
+      <div class="v3-ranks">
+        {% for role in page.hierarchy %}
+        <div class="v3-rank">
+          <p class="v3-rank__num">{{ romans[forloop.index0] }}</p>
+          <h3 class="v3-rank__title">{{ role.rank }}</h3>
+          <p class="v3-rank__desc">{{ role.desc }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ============ 6. CHRONIQUES ============ -->
+  {% if page.chroniques %}
+  <section class="v3-section v3-section--alt" id="chroniques">
+    <div class="v3-wrap v3-reveal">
+      <p class="v3-eyebrow">Ce que la nuit se rappelle</p>
+      <h2 class="v3-h2">Chroniques</h2>
+      <ul class="v3-timeline">
+        {% for item in page.chroniques %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ============ 7. GALERIE ============ -->
+  {% if page.gallery %}
+  <section class="v3-section" id="galerie">
+    <div class="v3-wrap v3-reveal">
+      <p class="v3-eyebrow">Visages du clan</p>
+      <h2 class="v3-h2">Galerie</h2>
+      <div class="v3-gallery" data-gallery>
+        {% for img in page.gallery %}
+        <button type="button" data-full="{{ img | relative_url }}" aria-label="Agrandir l'image {{ forloop.index }}">
+          <img src="{{ img | relative_url }}" alt="{{ clanname }} — illustration {{ forloop.index }}" loading="lazy">
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ============ 8. PIED DE PAGE ============ -->
+  <footer class="v3-foot">
+    <div class="v3-foot__inner">
+      {% if page.prev %}
+        <a class="v3-foot__link" href="{{ page.prev.url | relative_url }}">
+          {% if page.prev.icon %}<span class="v3-seal" style="--v3-seal: url('{{ page.prev.icon | relative_url }}');"></span>{% endif %}
+          ← {{ page.prev.name }}
+        </a>
+      {% else %}<span></span>{% endif %}
+
+      <a class="v3-foot__link" href="{{ '/univers/clans/' | relative_url }}">Tous les clans</a>
+
+      {% if page.next %}
+        <a class="v3-foot__link" href="{{ page.next.url | relative_url }}">
+          {{ page.next.name }} →
+          {% if page.next.icon %}<span class="v3-seal" style="--v3-seal: url('{{ page.next.icon | relative_url }}');"></span>{% endif %}
+        </a>
+      {% else %}<span></span>{% endif %}
+    </div>
+  </footer>
+
+  <!-- Visionneuse -->
+  <div class="v3-lightbox" data-lightbox role="dialog" aria-modal="true" aria-label="Image agrandie">
+    <button class="v3-lightbox__close" type="button" data-lightbox-close>Fermer</button>
+    <img src="" alt="">
+  </div>
+</article>
+
+<script src="{{ '/assets/js/clan-v3.js' | relative_url }}" defer></script>
