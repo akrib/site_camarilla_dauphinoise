@@ -28,15 +28,15 @@ faiblesse: "Ne peut se nourrir que d'un seul type de proie, choisi par le sang."
 archetypes: "Prince, primogène, mécène, patron d'industrie"
 
 # Barres du héros — valeurs de 1 à 5
-traits:
-  - label: "Influence"
-    value: 5
-  - label: "Force brute"
-    value: 3
-  - label: "Discrétion"
-    value: 2
-  - label: "Occulte"
-    value: 2
+#traits:
+#  - label: "Influence"
+#    value: 5
+#  - label: "Force brute"
+#    value: 3
+#  - label: "Discrétion"
+#    value: 2
+#  - label: "Occulte"
+#    value: 2
 
 disciplines:
   - name: "Domination"
@@ -61,9 +61,9 @@ hierarchy:
     desc: "Sélectionné, éduqué, surveillé. On lui prête un pouvoir qu'il devra mériter."
 
 chroniques:
-  - "Le siège de Grenoble, où trois Ventrue se disputèrent une principauté en une seule nuit."
-  - "Les banques dauphinoises, fondées par un ancien qui n'a jamais signé de son vrai nom."
-  - "La purge de 1793, quand le clan préféra sacrifier les siens plutôt que la Mascarade."
+  - "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+  - "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+  - "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
 gallery:
   - /assets/images/clans/ventrue_001.png
