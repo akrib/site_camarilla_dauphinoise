@@ -182,17 +182,54 @@ hr {
   border-top: 0;
   margin: 0;
 }
+/* Etat courant : il se signale, il ne crie pas.
+   Ni aplat ni barre pleine — un losange dans la marge (le meme marqueur
+   que les chroniques des pages de clan) et le texte qui remonte en clair. */
 .nav__list .nav__items a {
+  position: relative;
+  display: block;
+  padding: .42em 0 .42em 1.15em;
   color: var(--cd-paper-dim);
   font-family: var(--cd-body);
+  font-weight: 300;
   letter-spacing: .04em;
+  transition: color .22s ease, letter-spacing .22s ease;
 }
-.nav__list .nav__items a:hover { color: var(--cd-gold-lit); }
-.nav__list .nav__items .active {
+
+.nav__list .nav__items a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: .92em;
+  width: 5px;
+  height: 5px;
+  background: var(--cd-gold);
+  rotate: 45deg;
+  translate: -4px 0;
+  opacity: 0;
+  transition: opacity .25s ease, translate .25s ease;
+}
+
+.nav__list .nav__items a:hover {
   color: var(--cd-paper);
-  background: var(--cd-dark-2);
-  border-left: 2px solid var(--cd-gold);
+  background: transparent;
 }
+.nav__list .nav__items a:hover::before { opacity: .4; translate: 0 0; }
+
+.nav__list .nav__items a.active,
+.nav__list .nav__items .active {
+  background: transparent;
+  border-left: 0;
+  color: var(--cd-paper);
+  font-weight: 500;
+  letter-spacing: .09em;
+}
+.nav__list .nav__items a.active::before,
+.nav__list .nav__items .active::before { opacity: 1; translate: 0 0; }
+
+/* Sous-niveaux : on decale le texte, pas le marqueur */
+.nav__list .nav__items .nav__items a { padding-left: 2.2em; }
+.nav__list .nav__items .nav__items a::before { left: 1.05em; }
 
 .author__avatar img { border: 1px solid var(--cd-gold); }
 .author__name { font-family: var(--cd-display); color: var(--cd-paper); }
@@ -376,8 +413,12 @@ pre code { background: transparent; color: inherit; }
 }
 .toc .nav__title { background: var(--cd-red); }
 .toc__menu a { color: var(--cd-paper-dim); font-size: .78em; border-bottom: 1px solid var(--cd-line); }
-.toc__menu a:hover { background: var(--cd-dark-2); color: var(--cd-gold-lit); }
-.toc__menu .active a { background: var(--cd-dark-2); color: var(--cd-gold); }
+.toc__menu a:hover { background: transparent; color: var(--cd-paper); }
+.toc__menu .active a {
+  background: transparent;
+  color: var(--cd-paper);
+  box-shadow: inset 2px 0 0 var(--cd-gold);
+}
 
 .pagination a {
   border: 1px solid var(--cd-line);
