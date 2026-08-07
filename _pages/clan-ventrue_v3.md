@@ -40,15 +40,15 @@ archetypes: "Prince, primogène, mécène, patron d'industrie"
 
 disciplines:
   - name: "Domination"
-    icon: /assets/images/discipline/330px-Dominate_symbol.png
+    icon: /assets/discipline/Dominate-rombo.png
     desc: "Le pouvoir d'asservir l'esprit, de plier les volontés et d'éteindre la rébellion dans les regards."
     media: /assets/images/clans/ventrue_001.png
   - name: "Présence"
-    icon: /assets/images/discipline/330px-Presence_symbol.png
+    icon: /assets/discipline/Presence-rombo.png
     desc: "L'aura souveraine des rois damnés, le charisme des meneurs : cette force irrésistible qui attire, soumet ou inspire la dévotion la plus aveugle."
     media: /assets/images/clans/ventrue_002.png
   - name: "Force d'âme"
-    icon: /assets/images/discipline/330px-Fortitude_symbol.png
+    icon: /assets/discipline/Fortitude-rombo.png
     desc: "La résilience des maîtres, un rempart contre la douleur, les blessures et la mort elle-même."
     media: /assets/images/clans/ventrue_003.png
 
