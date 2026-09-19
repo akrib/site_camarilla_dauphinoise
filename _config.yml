@@ -16,9 +16,9 @@
 title: "Camarilla Dauphinoise"
 email: "CA.gratianopolis@gmail.com"
 description: "Camarilla Dauphinoise"
-domain: akrib.github.io
+domain: www.camarilla-dauphinoise.fr
 baseurl: /site_camarilla_dauphinoise/ # the subpath of your site, e.g. /blog
-url: "https://akrib.github.io"
+url: "https://www.camarilla-dauphinoise.fr"
 github_username:  akrib
 minimal_mistakes_skin: default
 site_theme: camarilla 
