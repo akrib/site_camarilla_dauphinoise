@@ -3,11 +3,6 @@ title: "Génerateur de challenge"
 permalink: /utils/challenge
 ---
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Générateur de challenge de la camarilla dauphinoise</title>
 <style>
   *{box-sizing:border-box}
@@ -402,7 +397,6 @@ permalink: /utils/challenge
     .btn{padding:10px 14px;font-size:.68rem;letter-spacing:.12em}
   }
 </style>
-</head>
 <body>
 <div class="grain"></div>
 <div class="vignette"></div>
