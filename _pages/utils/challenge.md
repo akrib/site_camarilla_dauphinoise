@@ -412,7 +412,7 @@ permalink: /utils/challenge
   <section class="panel">
     <div class="panelHead">
       <h2>Commandes</h2>
-      <span class="hint">Préparation du terrain</span>
+      <span class="hint"></span>
     </div>
 
     <div class="ctrl-row">
@@ -446,7 +446,7 @@ permalink: /utils/challenge
   <section class="panel">
     <div class="panelHead">
       <h2>Registre</h2>
-      <span class="hint">Cumul des affaires résolues</span>
+      <span class="hint">Cumul des challenges résolues</span>
     </div>
     <div class="statsGrid">
       <div class="statBox win"><span class="k">Victoires</span><span class="v" id="sWin">0</span></div>
