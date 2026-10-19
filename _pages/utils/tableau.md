@@ -1,4 +1,5 @@
 ---
+layout: page
 title: "Tableau d'Enquête"
 permalink: /utils/tableau
 ---
