@@ -1,3 +1,4 @@
+---
 layout: page
 title: "Génerateur de challenge"
 permalink: /utils/challenge
