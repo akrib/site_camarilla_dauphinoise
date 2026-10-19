@@ -431,7 +431,6 @@ textarea.json:focus{outline:none;border-color:#7a7a7a;}
 .chk-list input[type="checkbox"]{width:14px;height:14px;accent-color:#e8e8e8;flex:none;}
 .chk-list .muted{color:#555;font-size:10px;}
 </style>
-</head>
 <body>
 
 <div class="grain"></div>
@@ -442,7 +441,6 @@ textarea.json:focus{outline:none;border-color:#7a7a7a;}
     <div class="badge">★</div>
     <div>
       <h1>TABLEAU D'ENQUÊTE</h1>
-      <small>Bureau des affaires non classées — Dossier 1947</small>
     </div>
   </div>
 
