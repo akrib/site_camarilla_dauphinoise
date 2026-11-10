@@ -59,6 +59,9 @@ body{
 .brand small{display:block;font-size:9px;letter-spacing:.2em;color:#767676;text-transform:uppercase;margin-top:2px;}
 
 .tools{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.cloud-status{font-size:10px;letter-spacing:.08em;color:#9a9a9a;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cloud-status.modifie{color:#e0b44a;}
+.cloud-status.lecture{color:#7fa7d6;}
 button{
   font-family:inherit;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
   background:#1c1c1c;color:#cfcfcf;border:1px solid #3d3d3d;
@@ -458,6 +461,9 @@ textarea.json:focus{outline:none;border-color:#7a7a7a;}
       <button id="btnZoomIn" title="Zoomer (molette avec Ctrl)">＋</button>
       <button id="btnZoomReset" title="Réinitialiser le zoom">⟲</button>
     </div>
+    <div class="sep"></div>
+    <button id="btnCloud" title="Enregistrer, ouvrir et partager vos tableaux en ligne (Ctrl+S pour enregistrer)">☁ En ligne</button>
+    <span id="cloudStatus" class="cloud-status"></span>
     <div class="sep"></div>
     <button id="btnExport">⇩ Export JSON</button>
     <button id="btnImport">⇧ Import JSON</button>
@@ -1956,7 +1962,24 @@ if (typeof ResizeObserver !== 'undefined') {
     for (let i = 0; i < 3; i++) updateOverlaysFor(views[i]);
   }).observe(stage);
 }
-setTimeout(seed, 80);
+/* ============================================================
+   PONT AVEC L'ENREGISTREMENT EN LIGNE (assets/js/camarilla/pages/tableau-en-ligne.js)
+   ============================================================ */
+window.TableauEnquete = {
+  charge: false,
+  exporter: () => buildExportData([0, 1, 2]),
+  charger: (data) => { window.TableauEnquete.charge = true; loadState(data); },
+  vider: () => {
+    boards.forEach(b => { b.items = []; b.threads = []; });
+    disarmCurrent(); renderAll(); updateSlotStates(); updateMiniSelection(); updateNavArrows();
+  }
+};
+
+setTimeout(() => {
+  if (!window.TableauEnquete.charge && !new URLSearchParams(location.search).has('tableau')) seed();
+}, 80);
 
 })();
 </script>
+<link rel="stylesheet" href="/assets/css/membres.css">
+<script type="module" src="/assets/js/camarilla/pages/tableau-en-ligne.js"></script>

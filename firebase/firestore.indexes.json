@@ -1,0 +1,8 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    { "collectionGroup": "personnages", "fieldPath": "fiche", "indexes": [] },
+    { "collectionGroup": "personnages", "fieldPath": "contenuJson", "indexes": [] },
+    { "collectionGroup": "referentiel", "fieldPath": "entrees", "indexes": [] }
+  ]
+}

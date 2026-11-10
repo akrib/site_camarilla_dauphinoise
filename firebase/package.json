@@ -1,0 +1,14 @@
+{
+  "name": "camarilla-firebase",
+  "private": true,
+  "description": "Règles Firestore de la Camarilla Dauphinoise et leurs tests",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project demo-camarilla \"node --test tests/regles.test.mjs\"",
+    "emulateurs": "firebase emulators:start --only firestore,auth --project demo-camarilla"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "firebase": "13.2.0",
+    "firebase-tools": "15.35.0"
+  }
+}

@@ -1,0 +1,153 @@
+/* ===================================================================
+   Espace membres — Camarilla Dauphinoise
+   Palette reprise des pages « Influences ».
+   =================================================================== */
+.cam-app {
+  --accent: #7a1f2b; --accent-clair: #a9455a; --gotha: #a3762a; --gotha-bg: #fbf3e4;
+  --pegre: #7a1f2b; --pegre-bg: #f7e9ea; --ligne: #e2ddd6; --panneau: #fafaf8;
+  --encre: #2b2b2b; --encre-pale: #767267; --ok: #3f7a4d; --alerte: #a3641a; --info: #2c5f8a;
+  color: var(--encre); line-height: 1.55; font-size: .95rem;
+}
+.cam-app * { box-sizing: border-box; }
+.cam-app h2 { font-size: 1.2rem; margin: 0 0 .8rem; color: var(--accent); }
+.cam-app h3 { font-size: 1rem; margin: 1rem 0 .4rem; }
+.cam-app p { margin: .3rem 0 .8rem; }
+.cam-app .sous-titre { color: var(--encre-pale); font-size: .85rem; font-style: italic; margin: 0 0 1rem; }
+.cam-app a { color: var(--accent); }
+
+/* Barre « connecté en tant que » */
+.cam-barre {
+  display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; align-items: center; justify-content: flex-end;
+  font-size: .82rem; color: var(--encre-pale); padding: .4rem 0 .8rem; border-bottom: 1px solid var(--ligne);
+  margin-bottom: 1.2rem;
+}
+.cam-barre span { margin-right: auto; }
+
+/* Blocs */
+.cam-bloc, .cam-carte {
+  background: var(--panneau); border: 1px solid var(--ligne); border-radius: 6px;
+  padding: 1.2rem 1.4rem; margin-bottom: 1.2rem;
+}
+.cam-acces { text-align: center; padding: 2rem 1.4rem; }
+.cam-acces .cam-btn { margin-top: .6rem; }
+.cam-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; margin-bottom: 1.2rem; }
+.cam-tuile {
+  display: block; background: #fff; border: 1px solid var(--ligne); border-radius: 6px; padding: 1rem 1.1rem;
+  text-decoration: none !important; color: var(--encre) !important; transition: border-color .15s, transform .15s;
+}
+.cam-tuile:hover { border-color: var(--accent); transform: translateY(-1px); }
+.cam-tuile strong { display: block; color: var(--accent); margin-bottom: .2rem; }
+.cam-tuile span { font-size: .85rem; color: var(--encre-pale); }
+.cam-ligne { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0 1rem; }
+
+/* Formulaires */
+.cam-app label { display: block; font-size: .74rem; text-transform: uppercase; letter-spacing: .04em; color: var(--encre-pale); margin: .7rem 0 .25rem; }
+.cam-app input[type=text], .cam-app input[type=email], .cam-app input[type=password], .cam-app input[type=number],
+.cam-app input[type=date], .cam-app input[type=month], .cam-app input[type=search], .cam-app select, .cam-app textarea {
+  width: 100%; background: #fff; border: 1px solid #c9c3b8; color: var(--encre); padding: .5rem .65rem;
+  border-radius: 4px; font-size: .9rem; font-family: inherit;
+}
+.cam-app textarea { min-height: 5rem; resize: vertical; }
+.cam-app textarea.code { font-family: Consolas, "Courier New", monospace; font-size: .8rem; min-height: 10rem; }
+.cam-app input:focus, .cam-app select:focus, .cam-app textarea:focus { outline: 2px solid var(--accent-clair); outline-offset: -1px; }
+.cam-app input:disabled, .cam-app select:disabled, .cam-app textarea:disabled, .cam-app textarea[readonly] { background: #f2f0ec; color: #555; }
+.cam-coche { display: flex !important; align-items: center; gap: .4rem; text-transform: none !important; letter-spacing: 0 !important; font-size: .85rem !important; color: var(--encre) !important; }
+
+/* Boutons */
+.cam-btn, .cam-app button {
+  display: inline-block; background: var(--accent); border: 1px solid var(--accent); color: #fff !important;
+  padding: .5rem 1rem; border-radius: 4px; cursor: pointer; font-size: .85rem; font-weight: 600;
+  text-decoration: none !important; margin: .6rem .4rem 0 0; font-family: inherit; line-height: 1.3;
+}
+.cam-btn:hover, .cam-app button:hover { background: var(--accent-clair); border-color: var(--accent-clair); }
+.cam-app button.secondaire, .cam-btn.secondaire { background: #fff; color: var(--accent) !important; }
+.cam-app button.secondaire:hover, .cam-btn.secondaire:hover { background: var(--accent); color: #fff !important; }
+.cam-app button.danger { background: #fff; border-color: #a33; color: #a33 !important; }
+.cam-app button.danger:hover { background: #a33; color: #fff !important; }
+.cam-app button.ok { background: var(--ok); border-color: var(--ok); }
+.cam-app button.petit { padding: .3rem .65rem; font-size: .76rem; margin-top: .3rem; }
+.cam-app button:disabled { opacity: .5; cursor: not-allowed; }
+.cam-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0 .2rem; }
+
+/* Messages */
+.cam-msg { font-size: .85rem; margin-top: .6rem; min-height: 0; }
+.cam-msg.ok { color: var(--ok); }
+.cam-msg.err { color: #a33; font-weight: 600; }
+.cam-msg.info { color: var(--info); }
+.cam-encart { border-left: 4px solid var(--info); background: #eef4f9; padding: .7rem 1rem; border-radius: 0 4px 4px 0; margin: .8rem 0; font-size: .88rem; }
+.cam-encart.alerte { border-color: var(--alerte); background: #fbf3e8; }
+.cam-encart.erreur { border-color: #a33; background: #f9ecec; }
+
+/* Onglets */
+.cam-onglets { display: flex; gap: .2rem; flex-wrap: wrap; border-bottom: 2px solid var(--ligne); margin-bottom: 1.3rem; }
+.cam-onglets > button {
+  background: transparent !important; border: none; border-bottom: 3px solid transparent; margin: 0 0 -2px;
+  color: var(--encre-pale) !important; padding: .6rem 1rem; border-radius: 0; font-size: .88rem;
+}
+.cam-onglets > button:hover { color: var(--accent) !important; }
+.cam-onglets > button.actif { color: var(--accent) !important; border-bottom-color: var(--accent); }
+.cam-app [data-panneau] { display: none; }
+.cam-app [data-panneau].actif { display: block; }
+
+/* Étiquettes */
+.cam-tag { display: inline-block; font-size: .7rem; font-weight: 700; padding: .12rem .5rem; border-radius: 999px; background: #eee; color: #555; margin-right: .3rem; vertical-align: middle; text-transform: uppercase; letter-spacing: .03em; }
+.cam-tag.gotha { background: var(--gotha-bg); color: var(--gotha); }
+.cam-tag.pegre { background: var(--pegre-bg); color: var(--pegre); }
+.cam-tag.brouillon, .cam-tag.en_attente, .cam-tag.attente { background: #f1efe9; color: #6b6558; }
+.cam-tag.soumise, .cam-tag.encours { background: #e6eef6; color: var(--info); }
+.cam-tag.refusee, .cam-tag.suspendu, .cam-tag.refuse { background: #f7e3e3; color: #a33; }
+.cam-tag.validee, .cam-tag.infos { background: #fbf0dc; color: var(--alerte); }
+.cam-tag.active, .cam-tag.actif, .cam-tag.complete, .cam-tag.traitee { background: #e3f0e6; color: var(--ok); }
+.cam-tag.archivee, .cam-tag.annule { background: #ececec; color: #888; }
+.cam-tag.conteur, .cam-tag.admin, .cam-tag.annonce { background: var(--accent); color: #fff; }
+
+/* Tableaux */
+.cam-table-defil { overflow-x: auto; }
+table.cam-table { width: 100%; border-collapse: collapse; font-size: .85rem; margin: .5rem 0; display: table; }
+table.cam-table th, table.cam-table td { text-align: left; padding: .5rem .55rem; border-bottom: 1px solid var(--ligne); vertical-align: top; }
+table.cam-table th { text-transform: uppercase; font-size: .68rem; letter-spacing: .04em; color: var(--encre-pale); background: transparent; }
+table.cam-table td textarea { min-height: 3rem; font-size: .82rem; }
+.cam-barre-progression { display: flex; align-items: center; gap: .5rem; }
+.cam-barre-progression > div { flex: 1; height: 8px; background: #fff; border: 1px solid var(--ligne); border-radius: 4px; overflow: hidden; }
+.cam-barre-progression > div > div { height: 100%; background: var(--accent); }
+
+/* Listes d'éléments (historique, messages, fiches) */
+.cam-element { background: #fff; border: 1px solid var(--ligne); border-radius: 6px; padding: .9rem 1.1rem; margin-bottom: .8rem; }
+.cam-element .meta { font-size: .76rem; color: var(--encre-pale); margin-bottom: .35rem; }
+.cam-element .texte { white-space: pre-wrap; word-wrap: break-word; }
+.cam-element .reponse { margin-top: .6rem; padding: .6rem .8rem; background: var(--panneau); border-left: 3px solid var(--ok); border-radius: 0 4px 4px 0; font-size: .88rem; white-space: pre-wrap; }
+.cam-element .reponse.vide { border-left-color: var(--alerte); color: var(--encre-pale); font-style: italic; }
+.cam-element.epingle { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.cam-element img.illustration { max-width: 100%; max-height: 420px; border-radius: 4px; margin-top: .6rem; display: block; cursor: zoom-in; }
+.cam-reponses { margin-top: .7rem; border-top: 1px dashed var(--ligne); padding-top: .5rem; }
+.cam-reponses .rep { font-size: .86rem; padding: .35rem 0; border-bottom: 1px dotted var(--ligne); white-space: pre-wrap; }
+
+/* Fiches */
+.cam-fiches { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
+.cam-fiche-carte { background: #fff; border: 1px solid var(--ligne); border-radius: 6px; padding: .9rem; display: flex; gap: .8rem; cursor: pointer; transition: border-color .15s; }
+.cam-fiche-carte:hover { border-color: var(--accent); }
+.cam-fiche-carte .vignette { width: 64px; height: 80px; flex: none; border-radius: 4px; background: #e8e4dc center/cover no-repeat; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #b3ab9c; font-size: 1.6rem; }
+.cam-fiche-carte .vignette img { width: 100%; height: 100%; object-fit: cover; }
+.cam-fiche-carte strong { display: block; color: var(--accent); }
+.cam-fiche-carte small { color: var(--encre-pale); display: block; }
+.cam-portrait { width: 160px; height: 200px; border-radius: 6px; border: 1px solid var(--ligne); background: #e8e4dc; display: flex; align-items: center; justify-content: center; overflow: hidden; color: #9f9788; font-size: .8rem; text-align: center; }
+.cam-portrait img { width: 100%; height: 100%; object-fit: cover; }
+.cam-entete-fiche { display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: flex-start; }
+.cam-entete-fiche > .champs { flex: 1; min-width: 260px; }
+.cam-split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.cam-specs { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .2rem .6rem; }
+.cam-specs label { margin: .15rem 0; }
+.cam-recap { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+.cam-recap .ligne { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--ligne); padding: .3rem 0; font-size: .88rem; }
+
+/* Fenêtre modale */
+.cam-modal-fond { position: fixed; inset: 0; background: rgba(20, 16, 14, .55); z-index: 10000; display: flex; align-items: flex-start; justify-content: center; padding: 5vh 1rem; overflow-y: auto; }
+.cam-modal { background: #fff; border-radius: 8px; max-width: 640px; width: 100%; padding: 1.3rem 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+.cam-modal h2 { margin-top: 0; }
+.cam-img-absente { display: none !important; }
+
+@media (max-width: 700px) {
+  .cam-split { grid-template-columns: 1fr; }
+  .cam-barre span { width: 100%; }
+}
+.cam-app button { text-transform: none; letter-spacing: normal; }

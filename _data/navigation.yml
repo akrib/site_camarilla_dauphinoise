@@ -8,3 +8,5 @@ main:
   - title: "Contact & réseaux"
     url: /contact/
     target: _blank
+  - title: "Espace membres"
+    url: /membres/

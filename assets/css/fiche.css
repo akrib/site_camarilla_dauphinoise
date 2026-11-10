@@ -1,0 +1,193 @@
+/* ===================================================================
+   Éditeur de fiche de personnage MET — complète membres.css
+   Ordinateur : onglets proches du fichier Excel.
+   Mobile (≤ 760 px) : sections courtes, navigation par pastilles.
+   =================================================================== */
+.fiche-editeur { --case: #f2efe9; margin-top: .4rem; }
+.fiche-editeur [hidden], .fiche-desc [hidden] { display: none !important; }
+.fiche-xp-detail .sous-titre .fiche-calc { display: inline; background: none; padding: 0; min-height: 0; }
+
+/* Barre d'expérience collante + navigation mobile */
+.fiche-entete-collante { position: sticky; top: 0; z-index: 30; background: #fff; border-bottom: 1px solid var(--ligne); padding: .45rem 0 .35rem; margin-bottom: .8rem; }
+.fiche-barre { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem 1.2rem; }
+.fiche-px { display: inline-flex; align-items: baseline; gap: .35rem; }
+.fiche-px small { font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; color: var(--encre-pale); }
+.fiche-px b { font-size: 1.15rem; }
+.fiche-px.neg b { color: #a33; }
+.fiche-px.pos b { color: var(--ok); }
+.fiche-ok { color: var(--ok); font-weight: 700; }
+.fiche-barre button { margin: 0 0 0 auto !important; }
+.fiche-alertes { list-style: none; margin: .5rem 0 0; padding: 0; font-size: .82rem; max-height: 40vh; overflow: auto; }
+.fiche-alertes li { padding: .25rem .6rem; border-left: 3px solid var(--info); background: #eef4f9; margin-bottom: .2rem; }
+.fiche-alertes li.alerte { border-color: var(--alerte); background: #fbf3e8; }
+.fiche-alertes li.erreur { border-color: #a33; background: #f9ecec; }
+.fiche-nav-mobile { display: none; }
+
+/* Sections */
+.fiche-section { background: var(--panneau); border: 1px solid var(--ligne); border-radius: 6px; padding: 1rem 1.2rem; margin-bottom: 1rem; }
+.fiche-section-titre { margin: 0 0 .6rem !important; color: var(--accent); font-size: 1.05rem !important; }
+.fiche-suivant { display: none; }
+.fiche-editeur h4 { font-size: .9rem; margin: .8rem 0 .35rem; color: var(--encre); display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; }
+.fiche-editeur h4:first-child { margin-top: 0; }
+
+/* Grilles */
+.fiche-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 0 .9rem; margin-bottom: .4rem; }
+.fiche-grille.serree { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0 .6rem; }
+.fiche-champ.large { grid-column: span 2; }
+.fiche-champ.pleine { grid-column: 1 / -1; }
+.fiche-colonnes { display: grid; gap: 1rem; align-items: start; margin-bottom: .6rem; }
+.fiche-colonnes.trois { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fiche-colonnes.deux { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.fiche-carte { background: #fff; border: 1px solid var(--ligne); border-radius: 6px; padding: .8rem .9rem; margin-bottom: .8rem; min-width: 0; }
+.fiche-colonnes > div > .fiche-carte:last-child { margin-bottom: 0; }
+.fiche-sous-carte { border-top: 1px dashed var(--ligne); padding-top: .3rem; margin-top: .3rem; }
+.fiche-carte.gotha { border-top: 3px solid var(--gotha); }
+.fiche-carte.pegre { border-top: 3px solid var(--pegre); }
+.fiche-editeur .fiche-champ label { display: flex; align-items: center; gap: .25rem; }
+
+/* Lignes */
+.fiche-lignes > * + * { margin-top: .3rem; }
+.fiche-lignes.fiche-colonnes > * + * { margin-top: 0; }
+.fiche-ligne { display: flex; align-items: center; gap: .4rem; min-width: 0; }
+.fiche-ligne > select, .fiche-ligne > input[type=text] { flex: 1; min-width: 0; }
+.fiche-ligne + .fiche-ligne { margin-top: .3rem; }
+.fiche-ligne.comp { padding: .1rem 0; border-bottom: 1px dotted var(--ligne); }
+.fiche-ligne.comp + .fiche-ligne.comp { margin-top: 0; }
+.fiche-ligne .nom { flex: 1; min-width: 0; display: flex; align-items: center; gap: .2rem; font-size: .88rem; }
+.fiche-ligne .nom.auto { color: var(--encre-pale); font-style: italic; }
+.cam-app select.court, .cam-app input.court { width: 5.6rem; flex: none; padding-left: .4rem; padding-right: .3rem; }
+.cam-app .fiche-ligne.comp select.court:not([title]) { width: 4.4rem; }
+.fiche-editeur select, .fiche-editeur input, .fiche-editeur textarea { font-size: .86rem; padding: .38rem .5rem; }
+.cam-app button.fiche-plus { margin-top: .4rem; }
+
+/* Valeurs calculées */
+.fiche-calc { display: block; background: var(--case); border-radius: 4px; padding: .42rem .6rem; font-weight: 700; min-height: 2.1rem; }
+.fiche-calc.mini { display: inline; background: none; padding: 0 .2rem; font-weight: 400; font-size: .78rem; color: var(--encre-pale); min-height: 0; white-space: nowrap; }
+.fiche-faiblesse { background: #fff; border: 1px dashed var(--ligne); border-radius: 4px; padding: .5rem .7rem; font-size: .85rem; font-style: italic; white-space: pre-wrap; margin-bottom: .6rem; }
+
+/* Bouton ⓘ */
+.cam-app button.fiche-info {
+  background: none !important; border: none; color: var(--accent) !important; padding: 0 .15rem; margin: 0; font-size: .95rem;
+  line-height: 1; font-weight: 400; cursor: pointer; flex: none; text-transform: none;
+}
+.cam-app button.fiche-info:hover { color: var(--accent-clair) !important; transform: scale(1.15); }
+.fiche-editeur.lecture .fiche-plus { display: none; }
+
+/* Expérience */
+.fiche-xp-detail { margin-top: .8rem; background: #fff; border: 1px solid var(--ligne); border-radius: 6px; padding: .6rem .9rem; }
+.fiche-xp-detail summary, .fiche-sous summary { cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: .3rem; }
+.fiche-xp-table { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0 1.5rem; margin: .5rem 0; }
+.fiche-xp-table .ligne { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--ligne); padding: .2rem 0; font-size: .86rem; }
+.fiche-xp-table .ligne .fiche-calc { background: none; padding: 0; min-height: 0; }
+.fiche-xp-table .ligne.total { font-weight: 700; border-bottom-style: solid; }
+.fiche-ecarts { font-size: .8rem; color: var(--encre-pale); }
+.fiche-ecarts summary { cursor: pointer; }
+.fiche-sous { margin-top: .8rem; }
+
+/* Tableaux simples (liens de sang, mentorats) */
+.fiche-table-tete, .fiche-table-ligne { display: grid; gap: .4rem; align-items: center; }
+.fiche-table-tete { font-size: .68rem; text-transform: uppercase; letter-spacing: .04em; color: var(--encre-pale); margin: .5rem 0 .2rem; }
+.fiche-table-tete.quatre, .fiche-table-ligne.quatre { grid-template-columns: 1fr 1fr 5.6rem 8rem; }
+.fiche-table-tete.six, .fiche-table-ligne.six { grid-template-columns: 1.5fr 5.6rem 1fr 7rem 1fr 1fr; }
+.fiche-table-ligne select.court { width: 100%; }
+
+/* Disciplines */
+.fiche-discs > .fiche-disc + .fiche-disc { margin-top: .6rem; }
+.fiche-disc { background: #fff; border: 1px solid var(--ligne); border-radius: 6px; padding: .6rem .8rem; }
+.fiche-disc.clan { border-left: 4px solid var(--accent); }
+.fiche-disc-tete { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; }
+.fiche-disc-tete > select { flex: 1; min-width: 12rem; max-width: 22rem; }
+.fiche-disc-tete .nom { color: var(--accent); }
+.fiche-disc-niv, .fiche-disc-type { display: inline-flex; align-items: center; gap: .35rem; }
+.fiche-disc-niv label, .fiche-disc-type label, .fiche-anciens label { margin: 0 !important; }
+.fiche-pouvoirs { list-style: none; margin: .45rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .3rem; font-size: .8rem; }
+.fiche-pouvoirs li { background: var(--case); border-radius: 4px; padding: .3rem .45rem; color: var(--encre-pale); display: flex; align-items: center; flex-wrap: wrap; gap: .15rem; }
+.fiche-pouvoirs li.acquis { background: #f7e9ea; color: var(--encre); font-weight: 600; }
+.fiche-pouvoirs .points { color: var(--accent); letter-spacing: -.1em; }
+.fiche-anciens { display: grid; grid-template-columns: auto repeat(4, minmax(0, 1fr)); gap: .4rem; align-items: center; margin-top: .45rem; }
+.fiche-anciens .fiche-ligne + .fiche-ligne { margin-top: 0; }
+
+/* Panneau de description */
+.fiche-desc {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(460px, 100%); background: #fff; z-index: 10001;
+  box-shadow: -8px 0 30px rgba(0,0,0,.25); display: flex; flex-direction: column;
+}
+.fiche-desc-tete { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: .8rem 1rem; border-bottom: 1px solid var(--ligne); }
+.fiche-desc-tete strong { color: var(--accent); font-size: 1.05rem; }
+.fiche-desc-tete button { margin: 0 !important; }
+.fiche-desc-corps { flex: 1; overflow-y: auto; padding: .4rem 1.1rem 1rem; font-size: .9rem; }
+.fiche-desc-corps h4 { margin: 1rem 0 .3rem; color: var(--accent); }
+.fiche-desc-corps p { margin: .45rem 0; }
+.fiche-desc-source { font-size: .75rem; color: var(--encre-pale); font-style: italic; border-top: 1px dotted var(--ligne); padding-top: .3rem; }
+.fiche-desc-avert { margin: 0; padding: .5rem 1rem; font-size: .72rem; color: var(--encre-pale); background: var(--panneau); border-top: 1px solid var(--ligne); }
+
+/* Résumé imprimable */
+.fiche-resume { background: #fff; border: 1px solid var(--ligne); border-radius: 6px; padding: 1rem; font-size: .84rem; }
+.res-tete { display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; align-items: baseline; border-bottom: 2px solid var(--accent); padding-bottom: .4rem; margin-bottom: .6rem; }
+.res-tete strong { font-size: 1.2rem; color: var(--accent); }
+.res-grille { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem 1rem; }
+.res-bloc h5 { margin: 0 0 .2rem; font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; color: var(--accent); border-bottom: 1px solid var(--ligne); }
+.res-bloc ul { margin: 0; padding-left: 1rem; }
+.res-bloc li, .res-bloc p { margin: 0 0 .1rem; }
+.res-bloc .vide { color: var(--encre-pale); }
+.res-bloc .pre { white-space: pre-wrap; }
+.res-bloc.large { grid-column: 1 / -1; }
+.res-bloc table { width: 100%; border-collapse: collapse; margin-bottom: .3rem; display: table; }
+.res-bloc th, .res-bloc td { border: 1px solid var(--ligne); padding: .15rem .3rem; text-align: center; font-size: .8rem; }
+.res-blessures > div { display: flex; justify-content: space-between; border-bottom: 1px dotted var(--ligne); padding: .15rem 0; }
+.res-bloc .petit { font-size: .74rem; color: var(--encre-pale); }
+
+/* ---------------------------------------------------------- Tablette */
+@media (max-width: 1100px) {
+  .fiche-colonnes.trois { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fiche-pouvoirs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .res-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ---------------------------------------------------------- Mobile */
+@media (max-width: 760px) {
+  .fiche-nav-pc { display: none; }
+  .fiche-nav-mobile { display: flex; gap: .3rem; overflow-x: auto; padding: .45rem 0 .1rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .fiche-nav-mobile::-webkit-scrollbar { display: none; }
+  .cam-app .fiche-nav-mobile button {
+    flex: none; margin: 0; padding: .35rem .75rem; border-radius: 999px; font-size: .8rem; font-weight: 600;
+    background: #fff; color: var(--accent) !important; border: 1px solid var(--ligne);
+  }
+  .cam-app .fiche-nav-mobile button.actif { background: var(--accent); color: #fff !important; border-color: var(--accent); }
+  .fiche-section { padding: .8rem .7rem; border-radius: 0; border-left: none; border-right: none; margin-left: -.2rem; margin-right: -.2rem; }
+  .fiche-suivant { display: flex; justify-content: space-between; gap: .5rem; margin-top: 1rem; }
+  .fiche-colonnes.trois, .fiche-colonnes.deux { grid-template-columns: 1fr; }
+  .fiche-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fiche-champ.large { grid-column: 1 / -1; }
+  .fiche-pouvoirs { grid-template-columns: 1fr; }
+  .fiche-anciens { grid-template-columns: 1fr; }
+  .fiche-table-tete { display: none; }
+  .fiche-table-ligne.quatre, .fiche-table-ligne.six { grid-template-columns: 1fr 1fr; padding: .4rem 0; border-bottom: 1px dashed var(--ligne); }
+  .fiche-editeur select, .fiche-editeur input, .fiche-editeur textarea { font-size: 16px; } /* évite le zoom iOS */
+  .fiche-desc { top: auto; height: 78vh; width: 100%; border-radius: 12px 12px 0 0; box-shadow: 0 -8px 30px rgba(0,0,0,.3); }
+  .res-grille { grid-template-columns: 1fr; }
+  .fiche-px b { font-size: 1rem; }
+}
+
+/* ---------------------------------------------------------- Impression du résumé */
+@media print {
+  body.cam-impression-resume * { visibility: hidden !important; }
+  body.cam-impression-resume .fiche-resume, body.cam-impression-resume .fiche-resume * { visibility: visible !important; }
+  body.cam-impression-resume .fiche-resume { position: absolute; left: 0; top: 0; width: 100%; border: none; padding: 0; font-size: 9.5pt; }
+  body.cam-impression-resume .res-grille { grid-template-columns: repeat(3, 1fr) !important; }
+  .fiche-pas-imprimer { display: none !important; }
+}
+
+/* Page fiche : en-tête et barre d'actions */
+.fiche-entete .cam-portrait { width: 120px; height: 150px; }
+.fiche-resume-entete { margin-bottom: .3rem !important; }
+.fiche-actions { position: sticky; bottom: 0; z-index: 25; background: rgba(255,255,255,.96); border-top: 1px solid var(--ligne); padding: .2rem 0 .6rem; margin-top: 1rem; }
+.cam-app details.cam-bloc > summary { cursor: pointer; }
+@media (max-width: 760px) {
+  .fiche-entete .cam-portrait { width: 84px; height: 105px; }
+  .fiche-entete .cam-entete-fiche > .champs { min-width: 0; }
+  .fiche-actions .cam-actions { flex-wrap: nowrap; overflow-x: auto; gap: .3rem; scrollbar-width: none; }
+  .fiche-actions .cam-actions::-webkit-scrollbar { display: none; }
+  .cam-app .fiche-actions .cam-actions button { flex: none; font-size: .78rem; padding: .4rem .7rem; margin: .4rem 0 0; white-space: nowrap; }
+}
+@media print { .fiche-actions, .fiche-entete-collante { position: static; } }
