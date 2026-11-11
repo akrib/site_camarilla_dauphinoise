@@ -9,10 +9,11 @@
 // =====================================================================
 
 export const firebaseConfig = {
-  apiKey: "A_REMPLACER",
-  authDomain: "A_REMPLACER.firebaseapp.com",
-  projectId: "A_REMPLACER",
-  storageBucket: "A_REMPLACER.appspot.com",
-  messagingSenderId: "A_REMPLACER",
-  appId: "A_REMPLACER"
+    apiKey: "AIzaSyA2z3IiVkG2_E-WmAn_iXiaq_HzVmXm6xo",
+    authDomain: "camarilla-dauphinoise.firebaseapp.com",
+    projectId: "camarilla-dauphinoise",
+    storageBucket: "camarilla-dauphinoise.firebasestorage.app",
+    messagingSenderId: "747022558989",
+    appId: "1:747022558989:web:231bc51369b622a7ab7244"
+  
 };
