@@ -462,7 +462,9 @@ textarea.json:focus{outline:none;border-color:#7a7a7a;}
       <button id="btnZoomReset" title="Réinitialiser le zoom">⟲</button>
     </div>
     <div class="sep"></div>
-    <button id="btnCloud" title="Enregistrer, ouvrir et partager vos tableaux en ligne (Ctrl+S pour enregistrer)">☁ En ligne</button>
+    <button id="btnSave" title="Sauvegarder vos 3 tableaux en ligne (Ctrl+S). Chaque membre a un seul tableau en ligne, remplacé à chaque sauvegarde.">☁ Sauvegarder</button>
+    <button id="btnShare" title="Partager votre tableau avec d'autres membres, en lecture ou en modification">⇄ Partager</button>
+    <button id="btnCloud" title="Ouvrir votre tableau ou un tableau partagé avec vous">☰ Ouvrir</button>
     <span id="cloudStatus" class="cloud-status"></span>
     <div class="sep"></div>
     <button id="btnExport">⇩ Export JSON</button>
@@ -1486,6 +1488,12 @@ function fileToDataURL(file, maxSize, quality) {
 }
 
 /* ============================================================
+   NOTE / ARTICLE (texte d'exemple, modifiable au double-clic)
+   ============================================================ */
+document.getElementById('btnNote').addEventListener('click', () => addItem('note'));
+document.getElementById('btnArticle').addEventListener('click', () => addItem('article'));
+
+/* ============================================================
    MODALE PHOTO
    ============================================================ */
 document.getElementById('btnPhoto').addEventListener('click', () => {
@@ -1965,19 +1973,44 @@ if (typeof ResizeObserver !== 'undefined') {
 /* ============================================================
    PONT AVEC L'ENREGISTREMENT EN LIGNE (assets/js/camarilla/pages/tableau-en-ligne.js)
    ============================================================ */
-window.TableauEnquete = {
-  charge: false,
-  exporter: () => buildExportData([0, 1, 2]),
-  charger: (data) => { window.TableauEnquete.charge = true; loadState(data); },
+// Contenu des 3 tableaux, sans date d'export : deux appels sur un tableau
+// inchangé donnent le même résultat (sert à détecter les modifications).
+const exporterStable = () => {
+  const d = buildExportData([0, 1, 2]);
+  delete d.exportedAt;
+  return d;
+};
+const T = window.TableauEnquete = {
+  charge: false,      // un tableau enregistré a été chargé
+  pris: false,        // le module en ligne a démarré et décide de l'affichage
+  etatBase: '',       // contenu de référence tant que rien n'est chargé (vide ou démo)
+  exporter: exporterStable,
+  charger: (data) => {
+    T.charge = true;
+    loadState(data);
+    T.etatBase = JSON.stringify(exporterStable());
+  },
   vider: () => {
     boards.forEach(b => { b.items = []; b.threads = []; });
     disarmCurrent(); renderAll(); updateSlotStates(); updateMiniSelection(); updateNavArrows();
+    T.etatBase = JSON.stringify(exporterStable());
+  },
+  demo: () => {
+    if (T.charge || T.demoAffichee) return;
+    T.demoAffichee = true;
+    seed();
+    T.etatBase = JSON.stringify(exporterStable());
   }
 };
+T.etatBase = JSON.stringify(exporterStable());
 
-setTimeout(() => {
-  if (!window.TableauEnquete.charge && !new URLSearchParams(location.search).has('tableau')) seed();
-}, 80);
+// Un membre qui a déjà un tableau en ligne ne voit pas la démo le temps du
+// chargement. Sinon, démo immédiate ; et si le module en ligne ne démarre
+// pas (réseau, configuration), démo au bout de quelques secondes.
+let attendreEnLigne = new URLSearchParams(location.search).has('tableau');
+try { attendreEnLigne = attendreEnLigne || localStorage.getItem('cam-tableau-perso') === '1'; } catch (e) {}
+setTimeout(() => { if (!attendreEnLigne && !T.pris) T.demo(); }, 80);
+setTimeout(() => { if (!T.pris && !new URLSearchParams(location.search).has('tableau')) T.demo(); }, 8000);
 
 })();
 </script>
