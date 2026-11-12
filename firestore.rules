@@ -1,0 +1,482 @@
+rules_version = '2';
+
+// =====================================================================
+// Camarilla Dauphinoise — règles de sécurité Firestore
+// ---------------------------------------------------------------------
+// Ces règles s'exécutent sur les serveurs de Google : elles sont la
+// seule vraie protection des données (le code du site est public).
+// À coller dans Console Firebase > Firestore > Règles, puis « Publier ».
+//
+// Rôles (champ `role` de utilisateurs/{uid}) : joueur, conteur, admin.
+// Statut (champ `statut`) : en_attente, actif, suspendu.
+// Un compte n'accède à rien tant qu'un conteur ne l'a pas activé.
+// =====================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------
+    // Fonctions communes
+    // ------------------------------------------------------------------
+    function connecte() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function chemin(c, id) { return /databases/$(database)/documents/$(c)/$(id); }
+    function moi() { return get(chemin('utilisateurs', request.auth.uid)).data; }
+    function actif() { return connecte() && moi().statut == 'actif'; }
+    function conteur() { return actif() && moi().role in ['conteur', 'admin']; }
+    function admin() { return actif() && moi().role == 'admin'; }
+
+    function nouveau() { return request.resource.data; }
+    function ancien() { return resource.data; }
+    function champsModifies() { return nouveau().diff(ancien()).affectedKeys(); }
+    function seulement(champs) { return champsModifies().hasOnly(champs); }
+    function inchanges(champs) { return !champsModifies().hasAny(champs); }
+    function cles(autorisees, obligatoires) {
+      return nouveau().keys().hasOnly(autorisees) && nouveau().keys().hasAll(obligatoires);
+    }
+    function texte(v, max) { return v is string && v.size() <= max; }
+    function texteNonVide(v, max) { return v is string && v.size() > 0 && v.size() <= max; }
+    function refImage(v) { return v is string && v.size() <= 200; }
+
+    function perso(id) { return get(chemin('personnages', id)).data; }
+    function persoEnJeuDuJoueur(id) {
+      return id is string && id.size() > 0
+        && perso(id).proprietaire == uid() && perso(id).statut == 'active';
+    }
+
+    // ------------------------------------------------------------------
+    // Comptes
+    // ------------------------------------------------------------------
+    match /utilisateurs/{id} {
+      allow get: if connecte() && (id == uid() || conteur());
+      allow list: if conteur();
+
+      // Création de son propre profil à l'inscription : toujours joueur en attente.
+      allow create: if connecte() && id == uid()
+        && cles(['email', 'nom', 'role', 'statut', 'creeLe', 'majLe'], ['email', 'nom', 'role', 'statut', 'creeLe'])
+        && nouveau().role == 'joueur'
+        && nouveau().statut == 'en_attente'
+        && nouveau().email == request.auth.token.email
+        && texteNonVide(nouveau().nom, 60)
+        && nouveau().creeLe == request.time;
+
+      allow update: if connecte() && (
+        // Chacun peut changer son nom affiché.
+        (id == uid() && seulement(['nom', 'majLe']) && texteNonVide(nouveau().nom, 60))
+        // Un conteur active ou suspend les comptes joueurs (pas le sien).
+        || (conteur() && id != uid() && ancien().role == 'joueur'
+            && seulement(['statut', 'majLe', 'validePar'])
+            && nouveau().statut in ['en_attente', 'actif', 'suspendu'])
+        // Un admin gère rôles et statuts de tous les autres comptes.
+        || (admin() && id != uid()
+            && seulement(['statut', 'role', 'majLe', 'validePar'])
+            && nouveau().statut in ['en_attente', 'actif', 'suspendu']
+            && nouveau().role in ['joueur', 'conteur', 'admin'])
+      );
+
+      allow delete: if admin() && id != uid();
+    }
+
+    // Annuaire public entre membres actifs : nom affiché + rôle uniquement.
+    // Sert à choisir avec qui partager un tableau d'enquête.
+    match /annuaire/{id} {
+      function compte() { return getAfter(chemin('utilisateurs', id)).data; }
+      allow read: if actif();
+      allow create, update: if cles(['nom', 'role'], ['nom', 'role']) && (
+        // Chacun publie sa propre fiche, à l'identique de son profil.
+        (actif() && id == uid() && nouveau().nom == moi().nom && nouveau().role == moi().role)
+        // Un conteur inscrit un compte actif (à son activation, ou pour remettre
+        // l'annuaire à jour), avec le nom et le rôle de son profil.
+        || (conteur() && compte().statut == 'actif'
+            && nouveau().nom == compte().nom && nouveau().role == compte().role)
+      );
+      allow delete: if (connecte() && id == uid()) || conteur();
+    }
+
+    // ------------------------------------------------------------------
+    // Images (base64) — un document par image, immuable
+    // L'identifiant commence par l'uid du propriétaire et se termine par
+    // l'empreinte SHA-256 : il est impossible à deviner. On ne peut lire
+    // une image qu'en connaissant son identifiant (donc via un document
+    // auquel on a déjà accès) ; seuls les conteurs peuvent les lister.
+    // ------------------------------------------------------------------
+    match /images/{id} {
+      allow get: if actif();
+      allow list: if conteur();
+      allow create: if actif()
+        && id.matches(request.auth.uid + '_[0-9a-f]{64}')
+        && cles(['proprietaire', 'data', 'type', 'taille', 'creeLe'], ['proprietaire', 'data', 'type', 'taille', 'creeLe'])
+        && nouveau().proprietaire == uid()
+        && nouveau().data is string && nouveau().data.size() <= 950000
+        && nouveau().data.matches('data:image/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+')
+        && nouveau().type in ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+        && nouveau().taille == nouveau().data.size()
+        && nouveau().creeLe == request.time
+        && existsAfter(chemin('images_index', id));
+      allow delete: if conteur() || (actif() && ancien().proprietaire == uid());
+    }
+
+    // Index des images (sans leur contenu), écrit dans le même lot que l'image.
+    match /images_index/{id} {
+      allow read: if conteur();
+      allow create: if actif()
+        && id.matches(request.auth.uid + '_[0-9a-f]{64}')
+        && cles(['proprietaire', 'taille', 'creeLe'], ['proprietaire', 'taille', 'creeLe'])
+        && nouveau().proprietaire == uid()
+        && nouveau().taille is int && nouveau().taille > 0 && nouveau().taille <= 950000
+        && nouveau().creeLe == request.time
+        && getAfter(chemin('images', id)).data.taille == nouveau().taille;
+      allow delete: if conteur() || (actif() && ancien().proprietaire == uid());
+    }
+
+    // ------------------------------------------------------------------
+    // Fiches de personnage (fiche MET 8.0.2)
+    // brouillon -> soumise -> validee -> active -> archivee
+    //                     \-> refusee -> (corrigée) -> soumise
+    // Le joueur ne modifie que ses fiches brouillon / soumise / refusee.
+    // La fiche complète est dans le champ `fiche` ; les champs de premier
+    // niveau (nom, clan, secte, influences, PX…) en sont recopiés pour les
+    // listes et la page Influences.
+    // ------------------------------------------------------------------
+    match /personnages/{id} {
+      function xpValide(x) {
+        return x is map && x.keys().hasOnly(['acquise', 'depensee', 'restante'])
+          && x.get('acquise', 0) is number && x.get('depensee', 0) is number && x.get('restante', 0) is number;
+      }
+      function ficheValide(d) {
+        return d.schema == 2
+          && texteNonVide(d.nom, 80)
+          && texte(d.clan, 60) && texte(d.secte, 60) && texte(d.race, 30) && texte(d.age, 30) && texte(d.typeFiche, 40)
+          && (d.generation == null || (d.generation is int && d.generation >= 3 && d.generation <= 16))
+          && d.niveauGotha is int && d.niveauGotha >= 0 && d.niveauGotha <= 10
+          && d.niveauPegre is int && d.niveauPegre >= 0 && d.niveauPegre <= 10
+          && d.specsGotha is list && d.specsGotha.size() <= 10
+          && d.specsPegre is list && d.specsPegre.size() <= 10
+          && xpValide(d.xp)
+          && d.fiche is map && d.fiche.keys().size() <= 120
+          && d.fiche.get('nom', '') == d.nom && d.fiche.get('clan', '') == d.clan && d.fiche.get('secte', '') == d.secte
+          && refImage(d.portrait)
+          && texte(d.contenuJson, 600000)
+          && texte(d.commentaireConteur, 4000)
+          && d.statut in ['brouillon', 'soumise', 'refusee', 'validee', 'active', 'archivee'];
+      }
+      function champsFiche() {
+        return ['schema', 'proprietaire', 'proprietaireNom', 'nom', 'clan', 'secte', 'race', 'age', 'typeFiche',
+                'generation', 'niveauGotha', 'specsGotha', 'niveauPegre', 'specsPegre', 'xp', 'fiche', 'portrait',
+                'contenuJson', 'statut', 'commentaireConteur', 'creeLe', 'majLe', 'validePar', 'valideLe'];
+      }
+      function champsJoueur() {
+        return ['schema', 'proprietaireNom', 'nom', 'clan', 'secte', 'race', 'age', 'typeFiche', 'generation',
+                'niveauGotha', 'specsGotha', 'niveauPegre', 'specsPegre', 'xp', 'fiche', 'portrait',
+                'contenuJson', 'statut', 'majLe'];
+      }
+
+      allow read: if (actif() && ancien().proprietaire == uid()) || conteur();
+
+      allow create: if actif()
+        && cles(champsFiche(), ['schema', 'proprietaire', 'nom', 'fiche', 'statut', 'creeLe'])
+        && ficheValide(nouveau())
+        && nouveau().creeLe == request.time
+        && (
+          (nouveau().proprietaire == uid() && nouveau().statut == 'brouillon'
+            && nouveau().commentaireConteur == '' && nouveau().proprietaireNom == moi().nom
+            && !nouveau().keys().hasAny(['validePar', 'valideLe']))
+          || conteur()
+        );
+
+      allow update: if actif() && ficheValide(nouveau()) && nouveau().keys().hasOnly(champsFiche()) && (
+        (ancien().proprietaire == uid()
+          && ancien().statut in ['brouillon', 'soumise', 'refusee']
+          && nouveau().statut in ['brouillon', 'soumise']
+          && seulement(champsJoueur()))
+        || (conteur() && inchanges(['proprietaire', 'creeLe']))
+      );
+
+      allow delete: if (actif() && ancien().proprietaire == uid() && ancien().statut in ['brouillon', 'refusee'])
+        || conteur();
+    }
+
+    // ------------------------------------------------------------------
+    // Référentiel des règles MET (descriptions des éléments de la fiche)
+    // Textes confidentiels de la Fédération : lisibles par les membres
+    // actifs uniquement, importés par un administrateur.
+    // Documents : « index » + un document par catégorie (« atouts »,
+    // « pouvoirs »…), découpé en « atouts--2 »… si besoin.
+    // ------------------------------------------------------------------
+    match /referentiel/{id} {
+      allow read: if actif();
+      allow create, update: if admin()
+        && (
+          (id == 'index' && cles(['version', 'avertissement', 'categories', 'importeLe', 'importePar'],
+                                 ['version', 'categories', 'importeLe', 'importePar'])
+            && texte(nouveau().version, 200) && nouveau().categories is map && nouveau().importePar == uid())
+          || (id != 'index' && cles(['categorie', 'partie', 'entrees'], ['categorie', 'partie', 'entrees'])
+            && texteNonVide(nouveau().categorie, 60) && nouveau().partie is int && nouveau().entrees is map)
+        );
+      allow delete: if admin();
+    }
+
+    // ------------------------------------------------------------------
+    // Tableaux d'enquête (partageables)
+    // Un seul document par membre : tableaux/{uid}, qui contient les 3
+    // tableaux de la page et qui est remplacé à chaque sauvegarde.
+    // (Les documents créés avant cette règle, à identifiant aléatoire,
+    // restent lisibles, modifiables et supprimables ; on ne peut plus en créer.)
+    // acces  : liste des uid qui peuvent lire (propriétaire inclus)
+    // droits : { uid: 'lecture' | 'ecriture' }
+    // version : incrémentée à chaque enregistrement (détection de conflit)
+    // ------------------------------------------------------------------
+    match /tableaux/{id} {
+      function tableauValide(d) {
+        return texteNonVide(d.titre, 100)
+          && texte(d.contenuJson, 950000)
+          && d.acces is list && d.acces.size() <= 40
+          && d.droits is map
+          && d.version is int
+          && d.majPar == uid() && d.majParNom == moi().nom;
+      }
+
+      allow read: if (actif() && uid() in ancien().acces) || conteur();
+
+      allow create: if actif()
+        && id == uid()
+        && cles(['proprietaire', 'proprietaireNom', 'titre', 'acces', 'droits', 'contenuJson', 'version',
+                 'creeLe', 'majLe', 'majPar', 'majParNom'],
+                ['proprietaire', 'proprietaireNom', 'titre', 'acces', 'droits', 'contenuJson', 'version', 'creeLe'])
+        && nouveau().proprietaire == uid() && nouveau().proprietaireNom == moi().nom
+        && nouveau().acces.hasAll([uid()])
+        && nouveau().version == 1
+        && nouveau().creeLe == request.time
+        && tableauValide(nouveau());
+
+      allow update: if actif() && tableauValide(nouveau())
+        && nouveau().version == ancien().version + 1
+        && (
+          // Propriétaire : contenu, titre et partage. Son nom affiché suit
+          // son profil s'il en a changé.
+          (ancien().proprietaire == uid()
+            && inchanges(['proprietaire', 'creeLe'])
+            && (nouveau().proprietaireNom == ancien().proprietaireNom || nouveau().proprietaireNom == moi().nom)
+            && nouveau().acces.hasAll([uid()]))
+          // Invité en écriture : contenu et titre seulement.
+          || (uid() in ancien().acces && ancien().droits.get(uid(), '') == 'ecriture'
+            && seulement(['contenuJson', 'titre', 'majLe', 'majPar', 'majParNom', 'version']))
+        );
+
+      allow delete: if (actif() && ancien().proprietaire == uid()) || conteur();
+    }
+
+    // ------------------------------------------------------------------
+    // Panneau d'affichage (liège) : un seul document, panneau/principal
+    // notes   : { id: { texte, type, police, x, y, rotation, epingle, r, g, dechiree } }
+    // j0 … j5 : journal des souvenirs, 6 segments de 100 lignes { t, n, a }
+    //           (date en ms, nom affiché, action). On ajoute au segment
+    //           « courant » ; quand il est plein, on passe au suivant, vidé :
+    //           les 500 dernières lignes sont toujours conservées.
+    // op      : { a, id } dernière opération : relie la ligne ajoutée à la
+    //           note modifiée, sans garder d'historique note par note.
+    // Chaque écriture d'un membre ajoute exactement UNE ligne au journal, à
+    // son nom, et la modification de note correspond à l'action annoncée.
+    // ------------------------------------------------------------------
+    match /panneau/{id} {
+      function champsPanneau() { return ['notes', 'courant', 'op', 'j0', 'j1', 'j2', 'j3', 'j4', 'j5']; }
+      function segments() { return ['j0', 'j1', 'j2', 'j3', 'j4', 'j5']; }
+      function suivant(c) { return {'j0': 'j1', 'j1': 'j2', 'j2': 'j3', 'j3': 'j4', 'j4': 'j5', 'j5': 'j0'}[c]; }
+      function seg(d) { return d[d.courant]; }
+      function derniere() { return seg(nouveau())[seg(nouveau()).size() - 1]; }
+
+      function entreeValide(e) {
+        return e is map && e.keys().hasOnly(['t', 'n', 'a']) && e.keys().hasAll(['t', 'n', 'a'])
+          && e.n == moi().nom
+          && e.a in ['visite', 'ajout', 'interet', 'caviardage', 'coloriage', 'dechirure', 'retrait', 'deplacement']
+          && e.t is int && e.t > request.time.toMillis() - 3600000 && e.t < request.time.toMillis() + 3600000;
+      }
+      function journalAjoute() {
+        return nouveau().courant in segments() && (
+          // Une ligne de plus dans le segment courant, sans toucher aux autres…
+          (nouveau().courant == ancien().courant
+            && seg(ancien()).size() < 150
+            && seg(nouveau()).size() == seg(ancien()).size() + 1
+            && seg(nouveau()).hasAll(seg(ancien()))
+            && !(derniere() in seg(ancien()))
+            && seulement(['notes', 'op', nouveau().courant]))
+          // … ou le segment est plein : on repart sur le suivant, vidé.
+          || (nouveau().courant == suivant(ancien().courant)
+            && seg(ancien()).size() >= 100
+            && seg(nouveau()).size() == 1
+            && seulement(['notes', 'op', 'courant', nouveau().courant]))
+        );
+      }
+
+      function marques(l) { return l is list && l.size() <= 40; }
+      function noteValide(n) {
+        return n is map
+          && n.keys().hasOnly(['texte', 'type', 'police', 'x', 'y', 'rotation', 'epingle', 'r', 'g', 'dechiree'])
+          && n.keys().hasAll(['texte', 'type', 'police', 'x', 'y', 'rotation', 'epingle', 'r', 'g', 'dechiree'])
+          && texte(n.texte, 1200)
+          && n.type in ['paper', 'postit', 'parchment', 'newspaper', 'napkin', 'businesscard', 'expense', 'invoice', 'receipt']
+          && n.police in ['georgia', 'serif', 'arial', 'verdana', 'mono', 'trebuchet']
+          && n.x is number && n.x >= 0 && n.x <= 1
+          && n.y is number && n.y >= 0 && n.y <= 1
+          && n.rotation is number && n.rotation >= -5 && n.rotation <= 5
+          && texte(n.epingle, 20) && marques(n.r) && marques(n.g) && n.dechiree is bool;
+      }
+      function cle() { return nouveau().op.id; }
+      function avant() { return ancien().notes[cle()]; }
+      function apres() { return nouveau().notes[cle()]; }
+      function notesTouchees() { return nouveau().notes.diff(ancien().notes).affectedKeys(); }
+      function noteModifiee(champs) {
+        return notesTouchees().hasOnly([cle()]) && cle() in ancien().notes && cle() in nouveau().notes
+          && apres().diff(avant()).affectedKeys().hasOnly(champs) && noteValide(apres());
+      }
+      function operationValide() {
+        return nouveau().op is map && nouveau().op.keys().hasOnly(['a', 'id']) && nouveau().op.id is string
+          && nouveau().op.a == derniere().a
+          && (
+            (derniere().a in ['visite', 'interet'] && !champsModifies().hasAny(['notes']))
+            || (derniere().a == 'ajout' && notesTouchees().hasOnly([cle()]) && !(cle() in ancien().notes)
+                && cle().size() > 0 && cle().size() <= 40 && nouveau().notes.size() <= 80
+                && noteValide(apres()) && apres().texte.size() > 0
+                && apres().r.size() == 0 && apres().g.size() == 0 && apres().dechiree == false)
+            || (derniere().a == 'deplacement' && noteModifiee(['x', 'y']))
+            || (derniere().a == 'caviardage' && noteModifiee(['texte', 'r'])
+                && apres().r.size() == avant().r.size() + 1)
+            || (derniere().a == 'coloriage' && noteModifiee(['texte', 'g'])
+                && apres().g.size() == avant().g.size() + 1)
+            || (derniere().a == 'dechirure' && noteModifiee(['texte', 'r', 'g', 'dechiree'])
+                && avant().dechiree == false && apres().dechiree == true
+                && apres().texte.size() < avant().texte.size())
+            || (derniere().a == 'retrait' && notesTouchees().hasOnly([cle()])
+                && cle() in ancien().notes && !(cle() in nouveau().notes))
+          );
+      }
+      function structureValide() {
+        return cles(champsPanneau(), champsPanneau())
+          && nouveau().notes is map && nouveau().notes.size() <= 80
+          && nouveau().courant in segments()
+          && nouveau().j0 is list && nouveau().j0.size() <= 150
+          && nouveau().j1 is list && nouveau().j1.size() <= 150
+          && nouveau().j2 is list && nouveau().j2.size() <= 150
+          && nouveau().j3 is list && nouveau().j3.size() <= 150
+          && nouveau().j4 is list && nouveau().j4.size() <= 150
+          && nouveau().j5 is list && nouveau().j5.size() <= 150;
+      }
+
+      allow read: if actif();
+
+      // Premier passage : panneau vide, une seule ligne (la visite).
+      allow create: if actif() && id == 'principal'
+        && cles(champsPanneau(), champsPanneau())
+        && nouveau().notes.size() == 0 && nouveau().courant == 'j0'
+        && nouveau().j0.size() == 1 && entreeValide(nouveau().j0[0]) && nouveau().j0[0].a == 'visite'
+        && nouveau().j1.size() == 0 && nouveau().j2.size() == 0 && nouveau().j3.size() == 0
+        && nouveau().j4.size() == 0 && nouveau().j5.size() == 0
+        && nouveau().op.keys().hasOnly(['a', 'id']) && nouveau().op.a == 'visite' && nouveau().op.id == '';
+
+      allow update: if
+        // Conteurs : effacer les souvenirs, remettre le panneau en ordre.
+        (conteur() && structureValide())
+        // Membres : une action, et sa ligne dans le journal.
+        || (actif() && entreeValide(derniere()) && journalAjoute() && operationValide());
+
+      allow delete: if admin();
+    }
+
+    // ------------------------------------------------------------------
+    // Influences : actions des joueurs (globale, ciblée, soutien, AIP)
+    // Seul le propriétaire d'un personnage « en jeu » peut agir pour lui.
+    // ------------------------------------------------------------------
+    match /influences/{id} {
+      allow read: if (actif() && ancien().proprietaire == uid()) || conteur();
+
+      allow create: if actif()
+        && cles(['proprietaire', 'personnageId', 'personnageNom', 'type', 'date', 'mois', 'ville', 'zone',
+                 'categorie', 'categorieCible', 'nomAction', 'niveau', 'specialisation', 'raisonSociale', 'cible',
+                 'pointsAction', 'descriptif', 'statut', 'reponseConteur', 'creeLe'],
+                ['proprietaire', 'personnageId', 'personnageNom', 'type', 'mois', 'categorie',
+                 'nomAction', 'pointsAction', 'descriptif', 'statut', 'reponseConteur', 'creeLe'])
+        && nouveau().proprietaire == uid()
+        && persoEnJeuDuJoueur(nouveau().personnageId)
+        && nouveau().personnageNom == perso(nouveau().personnageId).nom
+        && nouveau().type in ['globale', 'ciblee', 'soutien', 'aip']
+        && nouveau().mois is string && nouveau().mois.matches('[0-9]{4}-[0-9]{2}')
+        && texte(nouveau().get('date', ''), 10)
+        && texte(nouveau().get('ville', ''), 60) && texte(nouveau().get('zone', ''), 20)
+        && texteNonVide(nouveau().categorie, 60) && texteNonVide(nouveau().nomAction, 120)
+        && nouveau().get('niveau', 0) is int
+        && texte(nouveau().get('specialisation', ''), 60)
+        && texte(nouveau().get('raisonSociale', ''), 150)
+        && texte(nouveau().get('cible', ''), 150)
+        && texte(nouveau().get('categorieCible', ''), 60)
+        && nouveau().pointsAction is int && nouveau().pointsAction >= -3 && nouveau().pointsAction <= 30
+        && texteNonVide(nouveau().descriptif, 4000)
+        && nouveau().statut == 'attente' && nouveau().reponseConteur == ''
+        && nouveau().creeLe == request.time;
+
+      allow update: if conteur()
+        && seulement(['reponseConteur', 'statut', 'majLe', 'traitePar'])
+        && nouveau().statut in ['attente', 'traitee']
+        && texte(nouveau().reponseConteur, 6000);
+
+      allow delete: if (actif() && ancien().proprietaire == uid() && ancien().statut == 'attente') || conteur();
+    }
+
+    // Registre des raisons sociales de chaque personnage.
+    match /raisons_sociales/{id} {
+      function raisonValide(d) {
+        return texteNonVide(d.nom, 150) && texte(d.ville, 60) && texte(d.zone, 20)
+          && texte(d.categorie, 60) && texte(d.description, 3000);
+      }
+      allow read: if (actif() && ancien().proprietaire == uid()) || conteur();
+      allow create: if actif()
+        && cles(['proprietaire', 'personnageId', 'personnageNom', 'nom', 'ville', 'zone', 'categorie', 'description', 'creeLe', 'majLe'],
+                ['proprietaire', 'personnageId', 'personnageNom', 'nom', 'ville', 'zone', 'categorie', 'description', 'creeLe'])
+        && nouveau().proprietaire == uid()
+        && persoEnJeuDuJoueur(nouveau().personnageId)
+        && nouveau().personnageNom == perso(nouveau().personnageId).nom
+        && raisonValide(nouveau())
+        && nouveau().creeLe == request.time;
+      allow update: if actif() && raisonValide(nouveau()) && (
+        (ancien().proprietaire == uid() && seulement(['nom', 'ville', 'zone', 'categorie', 'description', 'majLe']))
+        || (conteur() && inchanges(['proprietaire', 'personnageId', 'creeLe']))
+      );
+      allow delete: if (actif() && ancien().proprietaire == uid()) || conteur();
+    }
+
+    // Tickets : demandes adressées aux conteurs.
+    match /tickets/{id} {
+      allow read: if (actif() && ancien().proprietaire == uid()) || conteur();
+
+      allow create: if actif()
+        && cles(['proprietaire', 'proprietaireNom', 'personnageId', 'personnageNom', 'categorie', 'sujet',
+                 'description', 'statut', 'resultat', 'creeLe', 'majLe'],
+                ['proprietaire', 'proprietaireNom', 'personnageId', 'personnageNom', 'categorie', 'sujet',
+                 'description', 'statut', 'resultat', 'creeLe'])
+        && nouveau().proprietaire == uid() && nouveau().proprietaireNom == moi().nom
+        && (
+          (nouveau().personnageId == '' && nouveau().personnageNom == '')
+          || (perso(nouveau().personnageId).proprietaire == uid()
+              && nouveau().personnageNom == perso(nouveau().personnageId).nom)
+        )
+        && texteNonVide(nouveau().categorie, 80) && texteNonVide(nouveau().sujet, 150)
+        && texteNonVide(nouveau().description, 6000)
+        && nouveau().statut == 'En attente' && nouveau().resultat == ''
+        && nouveau().creeLe == request.time;
+
+      allow update: if actif() && (
+        // Conteur : statut et réponse.
+        (conteur() && seulement(['statut', 'resultat', 'majLe', 'traitePar'])
+          && nouveau().statut in ['En attente', 'En cours', 'Informations demandées', 'Complété', 'Refusé', 'Annulé']
+          && texte(nouveau().resultat, 6000))
+        // Joueur : compléter sa demande quand le conteur demande des informations,
+        // ou annuler une demande pas encore traitée.
+        || (ancien().proprietaire == uid() && (
+              (ancien().statut == 'Informations demandées' && seulement(['description', 'statut', 'majLe'])
+                && nouveau().statut in ['En attente', 'Annulé'] && texteNonVide(nouveau().description, 8000))
+              || (ancien().statut == 'En attente' && seulement(['statut', 'majLe']) && nouveau().statut == 'Annulé')
+           ))
+      );
+
+      allow delete: if conteur();
+    }
+  }
+}
