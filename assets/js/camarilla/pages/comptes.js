@@ -39,6 +39,7 @@ pageProtegee(racine, 'conteur', async ({ user, profil }) => {
   onglets(bloc)('attente');
 
   let comptes = [];
+  let annuaireVerifie = false;
 
   async function charger() {
     try {
@@ -46,6 +47,7 @@ pageProtegee(racine, 'conteur', async ({ user, profil }) => {
       comptes = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
         .sort((a, b) => millis(b.creeLe) - millis(a.creeLe));
       dessiner();
+      if (!annuaireVerifie) { annuaireVerifie = true; verifierAnnuaire(); }
     } catch (e) { message(msg, messageErreur(e), 'err'); }
   }
 
@@ -53,8 +55,38 @@ pageProtegee(racine, 'conteur', async ({ user, profil }) => {
     try {
       await fs.updateDoc(fs.doc(db, 'utilisateurs', c.id), { ...champs, majLe: fs.serverTimestamp(), validePar: user.uid });
       message(msg, libelle + ' : ' + c.nom, 'ok');
+      await majAnnuaire({ ...c, ...champs });
       await charger();
     } catch (e) { message(msg, messageErreur(e), 'err'); }
+  }
+
+  // L'annuaire (nom + rôle des comptes actifs) sert à choisir avec qui
+  // partager un tableau d'enquête. Un compte y figure dès son activation,
+  // sans attendre que la personne se reconnecte, et en sort s'il est suspendu.
+  async function majAnnuaire(c, actuel) {
+    const ref = fs.doc(db, 'annuaire', c.id);
+    try {
+      if (c.statut === 'actif') {
+        if (!actuel || actuel.nom !== c.nom || actuel.role !== c.role) await fs.setDoc(ref, { nom: c.nom, role: c.role });
+      } else if (actuel !== null) {
+        await fs.deleteDoc(ref);
+      }
+    } catch (e) { console.warn('Annuaire non mis à jour pour ' + c.nom, e); }
+  }
+
+  // Remet l'annuaire en accord avec les comptes (une fois par visite de la page).
+  async function verifierAnnuaire() {
+    try {
+      const snap = await fs.getDocs(fs.collection(db, 'annuaire'));
+      const presents = new Map(snap.docs.map((d) => [d.id, d.data()]));
+      for (const c of comptes) {
+        const actuel = presents.has(c.id) ? presents.get(c.id) : null;
+        const voulu = c.statut === 'actif';
+        if (voulu ? (!actuel || actuel.nom !== c.nom || actuel.role !== c.role) : actuel !== null) await majAnnuaire(c, actuel);
+        presents.delete(c.id);
+      }
+      for (const id of presents.keys()) await fs.deleteDoc(fs.doc(db, 'annuaire', id));   // comptes supprimés
+    } catch (e) { console.warn('Vérification de l\'annuaire impossible', e); }
   }
 
   // Un conteur gère les joueurs ; un admin gère tout le monde sauf lui-même.
@@ -111,14 +143,13 @@ function panneauMaintenance() {
   bouton.addEventListener('click', async () => {
     message(sortie, 'Analyse en cours…', 'info');
     try {
-      const [index, persos, tableaux, affichage] = await Promise.all([
+      const [index, persos, tableaux] = await Promise.all([
         fs.getDocs(fs.collection(db, 'images_index')),
         fs.getDocs(fs.collection(db, 'personnages')),
-        fs.getDocs(fs.collection(db, 'tableaux')),
-        fs.getDocs(fs.collection(db, 'affichage'))
+        fs.getDocs(fs.collection(db, 'tableaux'))
       ]);
       const utilisees = new Set();
-      [persos, tableaux, affichage].forEach((s) => s.docs.forEach((d) => collecterRefs(d.data(), utilisees)));
+      [persos, tableaux].forEach((s) => s.docs.forEach((d) => collecterRefs(d.data(), utilisees)));
       const uneSemaine = Date.now() - 7 * 24 * 3600 * 1000;
       let total = 0;
       orphelines = [];

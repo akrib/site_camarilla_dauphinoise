@@ -61,8 +61,8 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
   racine.append(h('h2', {}, 'Mes outils'),
     h('div', { class: 'cam-grille' },
       tuile('/membres/fiches/', 'Mes fiches de personnage', 'Créer, compléter et soumettre vos fiches au conteur.'),
-      tuile('/utils/tableau', 'Tableau d\'enquête', 'Vos tableaux, enregistrés en ligne et partageables.'),
-      tuile('/membres/affichage/', 'Tableau d\'affichage', 'Annonces des conteurs et messages des joueurs.'),
+      tuile('/utils/tableau', 'Tableau d\'enquête', 'Vos 3 tableaux, sauvegardés en ligne et partageables.'),
+      tuile('/membres/affichage/', 'Panneau d\'affichage', 'Les notes épinglées sur le liège, et ce que les goules en ont vu.'),
       tuile('/influences/', 'Influences', 'Actions d\'influence, raisons sociales et tickets.')));
 
   // --- Outils conteurs ---
