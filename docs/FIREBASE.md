@@ -166,9 +166,11 @@ Cette étape empêche d'autres sites d'utiliser votre configuration.
 | Notifications | `/membres/notifications/` | membres actifs |
 | Challenge (générateur + challenges demandés) | `/utils/challenge` | tout le monde (demandes : personnages et conteurs) |
 | Carte de Grenoble | `/utils/carte` | personnages validés (et conteurs) |
-| Influences | `/influences/` | membres ayant un personnage « en jeu » |
-| Comptes | `/membres/comptes/` | conteurs (rôles : admin) |
-| Influences — conteur | `/influences/conteur/` | conteurs |
+| Influences | `/influences/` | personnage incarné « en jeu » |
+| Tickets | `/membres/tickets/` | membres actifs (réponses : conteurs) |
+| Comptes | `/membres/comptes/` | conteurs (rôles, maintenance : admin) |
+| Influences — conteur (et calendrier) | `/influences/conteur/` | conteurs |
+| Territoires (outil des conteurs) | `/membres/territoires/` | conteurs |
 
 ### Cycle de vie d'une fiche
 
@@ -179,7 +181,15 @@ Cette étape empêche d'autres sites d'utiliser votre configuration.
   ou la mettre en jeu.
 - Une fois validée, seul un conteur peut la modifier. Le joueur dispose d'un bouton
   « Demander une modification », qui crée un ticket.
-- Les influences ne sont accessibles qu'avec un personnage **en jeu**.
+- Les influences ne sont accessibles qu'avec un personnage **en jeu** : la page
+  Influences agit pour le **personnage incarné** (comme la carte, le panneau et le
+  tableau d'enquête) ; un bouton permet d'en changer.
+- **Stockage en deux parties** : le document `personnages/{id}` ne garde que les champs
+  des listes (nom, clan, influences, PX, statut…) ; la fiche MET complète et les données
+  complémentaires sont dans `personnages/{id}/detail/fiche`, compressées, lues seulement
+  à l'ouverture de la fiche. Les deux sont écrits ensemble. Les anciennes fiches passent
+  au nouveau format à leur prochain enregistrement, ou toutes d'un coup par
+  **Comptes > Maintenance > Migrer les fiches** (admin).
 
 ### Calendrier des parties et fenêtres d'influences
 
@@ -205,6 +215,15 @@ Ces fenêtres sont vérifiées par les **règles Firestore** (heure du serveur),
 par la page. Document : `calendrier/parties`
 (`parties : { 'AAAA-MM': { date, limite, titre, ouverture, fermeture } }`, `anticipation`).
 
+### Tickets
+
+Page **Tickets** (`/membres/tickets/`, tuile de l'espace membres) : nouvelle demande aux
+conteurs (scène, règles, XP, signalement…), suivi, complément quand un conteur demande
+des informations, annulation. Les conteurs ont un onglet **Tickets des joueurs** : les
+tickets ouverts sont chargés par défaut (bouton pour afficher aussi les tickets clos),
+réponse, statut, export CSV. La demande de modification d'une fiche validée crée aussi
+un ticket.
+
 ### Textes longs compressés (Unishox2)
 
 Les textes longs sont compressés avant d'être enregistrés : descriptif et réponse des
@@ -215,6 +234,20 @@ demandés. Un texte de plus de 160 caractères est stocké en **octets** (Unisho
 10 % ; sinon il reste en texte. Les anciens documents restent lisibles. Bibliothèque :
 `assets/js/camarilla/lib/unishox2.js` (Unishox2 1.1.5, licence Apache-2.0) ; code :
 `assets/js/camarilla/compression.js`. Les exports CSV contiennent les textes en clair.
+
+Les gros JSON (contenu des tableaux d'enquête, détail des fiches, cartes des personnages,
+territoires) sont compressés avec **deflate**, la compression native des navigateurs
+(environ 80 % de gain ; Unishox2 est trop lent sur ces volumes). Un navigateur antérieur
+à 2023 ne sait pas les relire : il faut le mettre à jour.
+
+### Annuaire gardé dans le navigateur
+
+La liste des comptes (`annuaire`) et des personnages validés (`repertoire`) est lue
+**une fois après la connexion**, puis gardée dans le navigateur. Elle sert à partager un
+tableau d'enquête, à proposer un challenge, à consulter la carte d'un personnage
+(conteurs). Pour voir un membre ou un personnage validé depuis, il suffit de **se
+déconnecter puis se reconnecter**. Sa propre entrée de l'annuaire n'est vérifiée
+qu'une fois par connexion (ou quand le nom ou le rôle change).
 
 ### Fiche de personnage MET
 
@@ -286,9 +319,17 @@ La page contient 3 tableaux. Chaque personnage a **un seul tableau en ligne**
 Page **Espace membres > Notifications** (`/membres/notifications/`), aussi accessible par
 le lien « Notifications » en haut des pages membres.
 
-- **Conteurs** : les fiches soumises à valider (avec un lien pour les relire), et les
-  challenges qu'ils ont envoyés, avec le résultat une fois résolus (« Lu, supprimer »).
+- **Tous** : la fenêtre des influences de la partie en cours, avec un rappel en rouge
+  moins de deux jours avant la date limite.
+- **Conteurs** : « À traiter » (actions d'influence sans réponse, tickets ouverts), les
+  fiches soumises à valider (avec un lien pour les relire), et les challenges qu'ils ont
+  envoyés, avec le résultat une fois résolus (« Lu, supprimer »).
 - **Joueurs** :
+  - les **nouvelles réponses des conteurs** à leurs actions d'influence et à leurs
+    tickets (lien « Lire la réponse ») ; elles ne sont plus signalées une fois l'onglet
+    Résultats ou la page Tickets ouverts. Rien n'est écrit dans la base pour cela : la
+    date de réponse (`reponduLe`) est posée par le conteur, la date de dernière visite
+    est gardée dans le navigateur ;
   - le résultat de leurs demandes de validation (validée, mise en jeu, renvoyée pour
     correction, archivée) avec le **message du conteur** ;
   - les tableaux d'enquête partagés avec leurs personnages (lien « Ouvrir », qui fait
@@ -350,14 +391,12 @@ Grenoble et de ses environs :
   (sombre) ou **Jour** (clair) ;
 - **3D** : la même carte inclinée, bâtiments en volume à leur hauteur réelle. Le
   passage de l'un à l'autre garde le centre, le zoom et tous les tracés ;
-- **Territoires** : polygones dessinés à la main (clic par clic, double-clic ou Entrée
-  pour fermer), points déplaçables, ajout / suppression de points, agrandir / réduire,
-  déplacement d'un bloc, couleur, transparence, nom (les zones 1 à 24 sont proposées),
-  description ;
 - **Havres** : marqueurs déplaçables, nom, description, icône, couleur ;
 - **Zones de chasse** : un **cercle autour du marqueur** (300 m par défaut, de 50 m à
   3 km), réglable au curseur ou en glissant le point blanc sur le bord du cercle ; le
   cercle suit le marqueur quand on le déplace ;
+- **Territoires** : tracés par les conteurs seulement (ci-dessous) ; la case
+  **Territoires** de la barre les affiche (lecture seule, choix retenu) ;
 - **Rondes** : lignes reliant plusieurs points (cliquer sur un havre pendant le tracé
   y pose un point) ;
 - **Zones** : les deux cartes de référence de l'association (zones 1 à 7 et 8 à 24),
@@ -372,9 +411,22 @@ Grenoble et de ses environs :
   conteur voit toutes les actions du mois (lecture seule). Dans la gestion des
   influences, chaque formulaire a aussi « 📍 Choisir sur la carte ».
 
-Sauvegarde : dans le navigateur, **une carte par personnage** (clé `cam-carte-{id}`),
-plus **Export / Import JSON** pour passer d'un appareil à l'autre ou partager une carte.
-Les actions d'influence, elles, sont dans Firestore (champ `lieu : { lng, lat }`).
+Sauvegarde : **une carte par personnage dans Firestore** (`cartes/{idPersonnage}`, JSON
+compressé), envoyée 2 secondes après la dernière modification (déplacer ou zoomer la
+carte n'écrit rien), avec une copie dans le navigateur ; l'état s'affiche en bas à
+gauche. La carte d'un conteur sans personnage reste dans son navigateur. **Export /
+Import JSON** dans tous les cas. Les actions d'influence sont dans Firestore (champ
+`lieu : { lng, lat }`).
+
+Les **conteurs** choisissent dans la barre la carte d'un personnage à consulter
+(`/utils/carte?carte=ID`) : en **lecture seule**, sans outils de dessin.
+
+**Outil des territoires** (`/membres/territoires/`, conteurs et admins) : carte en 2D
+pour tracer les territoires officiels (clic par clic, double-clic ou Entrée pour fermer,
+points déplaçables, ajout / suppression de points, agrandir / réduire, déplacement d'un
+bloc, couleur, transparence, nom, description) et leur donner un **numéro de zone (1 à
+24)**. Bouton **Enregistrer** (ou Ctrl+S) : document `territoires/officiels`. Le numéro de
+zone sert à remplir la zone d'une action d'influence d'après le lieu choisi sur la carte.
 
 Dépendances, toutes gratuites et sans clé d'API :
 
@@ -425,8 +477,11 @@ Suivi de la consommation : console Firebase > Firestore Database > onglet **Util
 Les sauvegardes automatiques de Firestore exigent le forfait payant. Avec l'offre
 gratuite, sauvegardez depuis le site :
 
-- **Influences — conteur > Exports CSV** (actions, raisons sociales, tickets,
-  personnages en jeu) ;
+- **Comptes > Maintenance > Exporter toute la base (JSON)** (admin) : toutes les données,
+  fiches complètes et textes en clair, images en option. Le fichier contient les emails
+  des membres : gardez-le en lieu sûr ;
+- **Influences — conteur > Exports CSV** (actions avec partie et lieu, raisons sociales,
+  personnages en jeu) et **Tickets > Exporter en CSV** ;
 - **Fiches > Exporter en JSON** pour chaque fiche importante.
 
 ---
@@ -441,8 +496,8 @@ npm install
 npm test        # Java 21 requis (émulateur Firestore officiel)
 ```
 
-Le workflow GitHub `.github/workflows/regles-firestore.yml` lance aussi ces tests
-automatiquement à chaque modification du dossier `firebase/`.
+À lancer avant chaque publication des règles (il n'y a pas de test automatique sur
+GitHub).
 
 ### Tester le site en local, sans toucher aux vraies données
 
@@ -467,7 +522,10 @@ Puis ouvrez <http://localhost:4000/connexion/?emulateurs=1>. Le paramètre
 | `assets/js/camarilla/calendrier.js` | calendrier des parties, fenêtres d'influences |
 | `assets/js/camarilla/compression.js` | compression des textes longs (Unishox2) |
 | `assets/js/camarilla/lib/unishox2.js` | bibliothèque Unishox2 (Apache-2.0) |
-| `assets/js/camarilla/carte-base.js` | MapLibre à la demande, fonds, choix d'un lieu |
+| `assets/js/camarilla/carte-base.js` | MapLibre à la demande, fonds, choix d'un lieu, territoires officiels |
+| `assets/js/camarilla/annuaire.js` | annuaire et répertoire gardés dans le navigateur |
+| `assets/js/camarilla/suivi.js` | nouvelles réponses, travail des conteurs, rappels du calendrier |
+| `assets/js/camarilla/outils/tableau.js`, `challenge.js` | scripts des pages tableau d'enquête et challenge (CSS : `assets/css/tableau.css`, `challenge.css`) |
 | `assets/js/camarilla/pages/*.js` | une page = un module |
 | `assets/js/camarilla/fiche/referentiel.js` | listes et coûts de la fiche MET (généré par `outils/fiche/extraire_excel.py`) |
 | `assets/js/camarilla/fiche/modele.js` | structure d'une fiche, import d'un classeur Excel |

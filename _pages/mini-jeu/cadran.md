@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: null
 title: "Coffre-fort à Cadran"
 permalink: /mini-jeu/cadran/
 ---

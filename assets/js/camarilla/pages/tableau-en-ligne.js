@@ -14,10 +14,12 @@
 // droits ({ compte: 'lecture' | 'ecriture' }), invites ({ idPersonnage:
 // { nom, droit } }), majPar / majPerso / majParNom (dernier enregistrement).
 import {
-  h, db, fs, surSession, estActif, estConteur, message, messageErreur, dateFr, millis, confirmer
+  h, db, fs, surSession, estConteur, message, messageErreur, dateFr, millis, confirmer
 } from '../core.js';
 import { externaliser, internaliser } from '../images.js';
-import { exigerPersonnage, fenetreChoixPersonnage } from '../incarnation.js';
+import { accesOutil, fenetreChoixPersonnage } from '../incarnation.js';
+import { personnagesValides } from '../annuaire.js';
+import { compresserJson, decompresserJson } from '../compression.js';
 
 const T = window.TableauEnquete;
 T.pris = true;            // le module décide de ce qui s'affiche
@@ -62,11 +64,6 @@ function adresse(id) {
 // ---------------------------------------------------------------------
 // Garde : la page ne s'ouvre qu'à un personnage incarné (ou à un conteur)
 // ---------------------------------------------------------------------
-function afficherGarde(...contenu) {
-  garde.hidden = false;
-  garde.replaceChildren(h('div', { class: 'cam-garde-boite' }, ...contenu,
-    h('p', { class: 'sous-titre', style: 'margin-top:1rem' }, h('a', { href: '/membres/' }, '← Espace membres'))));
-}
 
 // ---------------------------------------------------------------------
 // Statut dans la barre d'outils
@@ -119,25 +116,12 @@ surSession((s) => {
 });
 
 async function demarrer() {
-  const retour = encodeURIComponent(location.pathname + location.search);
-  if (!session.user) {
-    afficherGarde(h('h2', {}, 'Connexion requise'),
-      h('p', {}, 'Le tableau d\'enquête est réservé aux personnages des membres de l\'association.'),
-      h('a', { class: 'cam-btn', href: '/connexion/?retour=' + retour }, 'Se connecter'));
-    return;
-  }
-  if (!estActif(session.profil)) {
-    afficherGarde(h('h2', {}, 'Compte pas encore actif'),
-      h('p', {}, 'Un conteur doit activer votre compte avant que vous puissiez utiliser le tableau d\'enquête.'));
-    return;
-  }
-  const zone = h('div');
-  afficherGarde(zone);
-  zone.append(h('p', { class: 'sous-titre' }, 'Vérification de votre personnage…'));
-  const acces = await exigerPersonnage(zone, session, { outil: 'ce tableau d\'enquête' });
+  const acces = await accesOutil(garde, session, {
+    outil: 'ce tableau d\'enquête',
+    reserve: 'Le tableau d\'enquête est réservé aux personnages des membres de l\'association.'
+  });
   if (!acces) return;
   perso = acces.perso;
-  garde.hidden = true;
   pret = true;
   btnPerso.textContent = perso ? '☺ ' + perso.nom : '☺ Conteur';
   btnPerso.title = perso ? 'Vous incarnez ' + perso.nom + ' (cliquer pour changer)' : 'Mode conteur : vous consultez sans personnage (cliquer pour en incarner un)';
@@ -299,6 +283,7 @@ async function ouvrir(id) {
 }
 
 async function afficher(id, d) {
+  d = { ...d, contenuJson: await decompresserJson(d.contenuJson) };
   const contenu = await internaliser(JSON.parse(d.contenuJson || '{}'));
   T.charger(contenu.boards ? contenu : { version: 2, boards: [] });
   courant = {
@@ -334,13 +319,16 @@ async function revenirAuMien() {
 // Mise à jour en direct quand quelqu'un d'autre (ou un autre appareil) modifie le tableau affiché.
 function suivre(id) {
   if (arretEcoute) arretEcoute();
-  arretEcoute = fs.onSnapshot(fs.doc(db, 'tableaux', id), (snap) => {
+  arretEcoute = fs.onSnapshot(fs.doc(db, 'tableaux', id), async (snap) => {
     if (!courant || courant.id !== id) return;
     if (!snap.exists()) { majStatut('ce tableau a été supprimé'); courant = null; reference = null; return; }
     if (snap.metadata.hasPendingWrites) return;
     const d = snap.data();
+    let json;
+    try { json = await decompresserJson(d.contenuJson); } catch (e) { console.error(e); return; }
+    if (!courant || courant.id !== id) return;
     courant.acces = d.acces; courant.droits = d.droits; courant.invites = d.invites || {}; courant.titre = d.titre;
-    if (d.contenuJson === dernierJson || (enEcriture !== null && d.contenuJson === enEcriture)) {
+    if (json === dernierJson || (enEcriture !== null && json === enEcriture)) {
       // Même contenu (notre propre sauvegarde, ou seul le partage a changé).
       courant.version = Math.max(courant.version, d.version);
       majStatut();
@@ -433,12 +421,12 @@ async function sauvegarderMien(partage = null, msg = null) {
       await fs.setDoc(ref, {
         proprietaire: uid(), personnage: perso.id, proprietaireNom: perso.nom, titre,
         acces: p.acces, droits: p.droits, invites: p.invites,
-        contenuJson: json, version: 1, creeLe: fs.serverTimestamp(), ...signature()
+        contenuJson: await compresserJson(json), version: 1, creeLe: fs.serverTimestamp(), ...signature()
       });
       courant = { id: perso.id, titre, proprietaire: uid(), personnage: perso.id, proprietaireNom: perso.nom, acces: p.acces, droits: p.droits, invites: p.invites, version: 1 };
     } else {
       const champs = { ...signature(), proprietaireNom: perso.nom };
-      if (json !== null) champs.contenuJson = json;
+      if (json !== null) champs.contenuJson = await compresserJson(json);
       if (partage) Object.assign(champs, partage);
       const r = await ecrireVersion(perso.id, champs, existant.version);
       if (typeof r === 'string') { enCours = false; return await apresConflit(r, perso.id); }
@@ -471,7 +459,7 @@ async function sauvegarderPartage() {
     const etat = etatActuel();
     const json = await preparerContenu();
     enEcriture = json;
-    const r = await ecrireVersion(id, { contenuJson: json, ...signature() }, courant.version);
+    const r = await ecrireVersion(id, { contenuJson: await compresserJson(json), ...signature() }, courant.version);
     if (typeof r === 'string') { enCours = false; return await apresConflit(r, id); }
     courant.version = r;
     dernierJson = json;
@@ -600,14 +588,11 @@ async function partager() {
       h('button', { type: 'button', class: 'secondaire', onclick: () => m.fermer() }, 'Annuler')),
     msg);
 
-  // Personnages validés des autres membres (répertoire).
+  // Personnages validés des autres membres (annuaire lu à la connexion).
   const choix = new Map();
   let persos = [];
   try {
-    const snap = await fs.getDocs(fs.collection(db, 'repertoire'));
-    persos = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-      .filter((x) => x.proprietaire !== uid())
-      .sort((a, b) => (a.nom || '').localeCompare(b.nom || '', 'fr'));
+    persos = (await personnagesValides()).filter((x) => x.proprietaire !== uid());
   } catch (e) { message(msg, messageErreur(e), 'err'); }
   const invitesActuels = (actuel && actuel.invites) || {};
   persos.forEach((x) => choix.set(x.id, (invitesActuels[x.id] && invitesActuels[x.id].droit) || ''));
@@ -622,7 +607,8 @@ async function partager() {
         h('option', { value: 'ecriture', selected: choix.get(x.id) === 'ecriture' }, 'Modification'));
       sel.addEventListener('change', () => choix.set(x.id, sel.value));
       return h('tr', {}, h('td', {}, x.nom), h('td', {}, sel));
-    }) : [h('tr', {}, h('td', {}, persos.length ? 'Aucun personnage ne correspond.' : 'Aucun autre personnage validé pour le moment.'))]));
+    }) : [h('tr', {}, h('td', {}, persos.length ? 'Aucun personnage ne correspond.' : 'Aucun autre personnage validé pour le moment.'))]),
+      h('tr', {}, h('td', { colspan: 2, class: 'sous-titre' }, 'Un personnage validé depuis votre connexion n\'apparaît pas ? Déconnectez-vous puis reconnectez-vous.')));
   };
   filtre.addEventListener('input', dessiner);
   dessiner();

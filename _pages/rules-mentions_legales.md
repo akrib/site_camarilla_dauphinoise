@@ -18,7 +18,7 @@ section: "rules"
 ## 🌐 Hébergement du site
 
 **Plateforme** : GitHub Pages  
-**URL** : [https://akrib.github.io/site_camarilla_dauphinoise/](https://akrib.github.io/site_camarilla_dauphinoise/)  
+**URL** : [https://www.camarilla-dauphinoise.fr/](https://www.camarilla-dauphinoise.fr/)  
 **Hébergeur** : GitHub Inc.  
 **Adresse** : 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis
 

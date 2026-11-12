@@ -96,10 +96,6 @@ export function moisParDefaut(cal, maintenant = Date.now()) {
   const p = cal.existe ? partieCourante(cal, maintenant) : null;
   return p ? p.cle : moisCourant();
 }
-// Prochaine partie à venir (date de jeu aujourd'hui ou plus tard).
-export function prochainePartie(cal, maintenant = Date.now()) {
-  return cal.parties.find((p) => finJour(p.date) >= maintenant) || null;
-}
 
 export const LIBELLES_ETAT = { a_venir: 'Pas encore ouvertes', ouverte: 'Ouvertes', fermee: 'Closes' };
 

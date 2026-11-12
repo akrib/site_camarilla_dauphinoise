@@ -1,4 +1,5 @@
 ---
+published: false   # brouillon : n'est plus publié sur le site
 layout: clan_v2
 title: "Clan Ventrue"
 section: clan

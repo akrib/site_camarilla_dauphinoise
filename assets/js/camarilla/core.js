@@ -53,29 +53,30 @@ let etat = { user: null, profil: null, pret: false };
 const abonnes = new Set();
 let arreterProfil = null;
 let nomInscription = null;   // nom saisi à l'inscription, utilisé pour créer le profil
-let annuaireSynchro = null;  // dernière valeur écrite dans annuaire/{uid}
 
 function notifier() { abonnes.forEach((cb) => { try { cb(etat); } catch (e) { console.error(e); } }); }
 
 authMod.onAuthStateChanged(auth, async (user) => {
   if (arreterProfil) { arreterProfil(); arreterProfil = null; }
-  annuaireSynchro = null;
   if (!user) { etat = { user: null, profil: null, pret: true }; notifier(); return; }
 
+  // Le profil est suivi en direct ; s'il n'existe pas encore (inscription),
+  // on le crée, et le suivi reçoit aussitôt la nouvelle version.
   const ref = fs.doc(db, 'utilisateurs', user.uid);
-  try {
-    const snap = await fs.getDoc(ref);
-    if (!snap.exists()) {
-      const nom = (nomInscription || user.displayName || (user.email || 'Joueur').split('@')[0]).trim().slice(0, 60) || 'Joueur';
-      await fs.setDoc(ref, {
-        email: user.email, nom, role: 'joueur', statut: 'en_attente',
-        creeLe: fs.serverTimestamp(), majLe: fs.serverTimestamp()
-      });
+  let creation = false;
+  arreterProfil = fs.onSnapshot(ref, async (snap) => {
+    if (!snap.exists() && !creation) {
+      creation = true;
+      try {
+        const nom = (nomInscription || user.displayName || (user.email || 'Joueur').split('@')[0]).trim().slice(0, 60) || 'Joueur';
+        await fs.setDoc(ref, {
+          email: user.email, nom, role: 'joueur', statut: 'en_attente',
+          creeLe: fs.serverTimestamp(), majLe: fs.serverTimestamp()
+        });
+        nomInscription = null;
+        return;
+      } catch (e) { console.error('Création du profil impossible', e); }
     }
-  } catch (e) { console.error('Création du profil impossible', e); }
-  nomInscription = null;
-
-  arreterProfil = fs.onSnapshot(ref, (snap) => {
     etat = { user, profil: snap.exists() ? { id: snap.id, ...snap.data() } : null, pret: true };
     synchroniserAnnuaire(user, etat.profil);
     notifier();
@@ -86,21 +87,24 @@ authMod.onAuthStateChanged(auth, async (user) => {
   });
 });
 
-// L'annuaire (annuaire/{uid}) ne contient que le nom affiché et le rôle :
-// il permet aux joueurs de se choisir entre eux (partage des tableaux).
+// L'annuaire (annuaire/{uid}) ne contient que le nom affiché et le rôle.
+// Sa propre entrée n'est vérifiée qu'une fois par connexion (ou quand le nom
+// ou le rôle change) : ce qui a été écrit est retenu dans le navigateur.
+// La lecture de l'annuaire complet est dans annuaire.js (cache local).
+export const CLE_ANNUAIRE = (uid) => 'cam-annuaire-' + uid;
+const CLE_MON_ENTREE = (uid) => 'cam-annuaire-moi-' + uid;
 async function synchroniserAnnuaire(user, profil) {
   if (!estActif(profil)) return;
-  const voulu = { nom: profil.nom, role: profil.role };
-  const cle = JSON.stringify(voulu);
-  if (annuaireSynchro === cle) return;
-  annuaireSynchro = cle;
+  const voulu = JSON.stringify({ nom: profil.nom, role: profil.role });
+  try { if (localStorage.getItem(CLE_MON_ENTREE(user.uid)) === voulu) return; } catch (e) { /* navigation privée */ }
   try {
     const ref = fs.doc(db, 'annuaire', user.uid);
     const snap = await fs.getDoc(ref);
-    if (!snap.exists() || snap.data().nom !== voulu.nom || snap.data().role !== voulu.role) {
-      await fs.setDoc(ref, voulu);
+    if (!snap.exists() || snap.data().nom !== profil.nom || snap.data().role !== profil.role) {
+      await fs.setDoc(ref, { nom: profil.nom, role: profil.role });
     }
-  } catch (e) { annuaireSynchro = null; console.warn('Annuaire non synchronisé', e); }
+    try { localStorage.setItem(CLE_MON_ENTREE(user.uid), voulu); } catch (e) { /* ignore */ }
+  } catch (e) { console.warn('Annuaire non synchronisé', e); }
 }
 
 /** Appelle cb({user, profil, pret}) maintenant (si prêt) et à chaque changement. */
@@ -108,13 +112,6 @@ export function surSession(cb) {
   abonnes.add(cb);
   if (etat.pret) cb(etat);
   return () => abonnes.delete(cb);
-}
-
-/** Promesse résolue avec la session dès qu'elle est connue. */
-export function sessionPrete() {
-  return new Promise((resolve) => {
-    const stop = surSession((s) => { if (s.pret) { setTimeout(() => stop(), 0); resolve(s); } });
-  });
 }
 
 export function sessionCourante() { return etat; }
@@ -150,6 +147,8 @@ export async function renvoyerVerification() {
 
 export async function deconnexion(redirection = '/') {
   try { const { viderCacheImages } = await import('./images.js'); await viderCacheImages(); } catch (e) { /* ignore */ }
+  // L'annuaire gardé dans le navigateur sera relu à la prochaine connexion.
+  try { const u = auth.currentUser; if (u) { localStorage.removeItem(CLE_ANNUAIRE(u.uid)); localStorage.removeItem(CLE_MON_ENTREE(u.uid)); } } catch (e) { /* ignore */ }
   await authMod.signOut(auth);
   location.href = redirection;
 }
@@ -287,11 +286,6 @@ export function h(tag, props = {}, ...enfants) {
   return el;
 }
 
-/** Échappe une chaîne pour un usage exceptionnel en HTML. */
-export function esc(s) {
-  return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
-
 export function options(select, valeurs, selection, avecVide) {
   select.replaceChildren(
     ...(avecVide ? [h('option', { value: '' }, typeof avecVide === 'string' ? avecVide : '')] : []),
@@ -324,8 +318,13 @@ export function millis(v) {
   return isNaN(t) ? 0 : t;
 }
 
-export function moisCourant() { return new Date().toISOString().slice(0, 7); }
-export function aujourdhui() { return new Date().toISOString().slice(0, 10); }
+// Date du jour en heure locale (et non en UTC : entre minuit et 1 ou 2 h,
+// toISOString() donnerait la veille).
+export function aujourdhui() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+export function moisCourant() { return aujourdhui().slice(0, 7); }
 
 export function telecharger(texte, nomFichier, type = 'application/json') {
   const blob = new Blob([texte], { type });

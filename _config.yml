@@ -57,6 +57,8 @@ exclude:
   - vendor/ruby/
   - firebase/
   - docs/
+  - outils/
+  - robot.txt
 
 # Plugins (previously gems:)
 plugins:

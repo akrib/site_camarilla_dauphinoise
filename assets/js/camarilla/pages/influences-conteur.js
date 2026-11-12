@@ -1,10 +1,11 @@
 // Page /influences/conteur/ : tableau de bord des conteurs (Firestore).
 // Onglet « Calendrier » : dates des parties et dates limites des influences.
+// (Les tickets ont leur propre page : /membres/tickets/.)
 import {
   h, db, fs, pageProtegee, barreMembre, message, messageErreur, dateFr, millis, onglets, options,
   telecharger, versCsv, confirmer
 } from '../core.js';
-import { ZONES, STATUTS_TICKET, TYPES_ACTION, CATEGORIES_AIP } from '../donnees.js';
+import { ZONES, TYPES_ACTION, CATEGORIES_AIP, classeCat, libelleZone } from '../donnees.js';
 import { compresser, donneesDoc } from '../compression.js';
 import {
   chargerCalendrier, calculerCalendrier, moisParDefaut, partie, libellePartie, resumeEtat, etat, LIBELLES_ETAT, MAX_PARTIES
@@ -13,11 +14,6 @@ import {
 const racine = document.getElementById('cam-influences-conteur');
 barreMembre(document.getElementById('cam-barre'));
 
-const CLASSE_TICKET = {
-  'En attente': 'attente', 'En cours': 'encours', 'Informations demandées': 'infos',
-  'Complété': 'complete', 'Refusé': 'refuse', 'Annulé': 'annule'
-};
-const classeCat = (c) => (c || '').includes('Gotha') ? 'gotha' : ((c || '').includes('Pègre') ? 'pegre' : '');
 
 pageProtegee(racine, 'conteur', async ({ user }) => {
   let calendrier = await chargerCalendrier().catch(() => ({ existe: false, parties: [], anticipation: false }));
@@ -37,10 +33,9 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
     actions: h('div', { dataset: { panneau: 'actions' } }),
     districts: h('div', { dataset: { panneau: 'districts' } }),
     raisons: h('div', { dataset: { panneau: 'raisons' } }),
-    tickets: h('div', { dataset: { panneau: 'tickets' } }),
     exports: h('div', { dataset: { panneau: 'exports' } })
   };
-  const libelles = { calendrier: 'Calendrier', personnages: 'Personnages', actions: 'Actions du mois', districts: 'Districts', raisons: 'Raisons sociales', tickets: 'Tickets', exports: 'Exports CSV' };
+  const libelles = { calendrier: 'Calendrier', personnages: 'Personnages', actions: 'Actions du mois', districts: 'Districts', raisons: 'Raisons sociales', exports: 'Exports CSV' };
   const app = h('div', {},
     h('div', { class: 'cam-onglets' }, Object.keys(panneaux).map((k) => h('button', { type: 'button', dataset: { onglet: k } }, libelles[k]))),
     Object.values(panneaux));
@@ -53,28 +48,28 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
   onglets(app)(panneaux[ongletDemande] ? ongletDemande : 'actions');
   majInfoPartie();
 
-  let actions = [], persos = [], raisons = [], tickets = [];
+  let actions = [], persos = [], raisons = null;
 
-  async function charger() {
+  // Personnages en jeu et raisons sociales ne dépendent pas du mois : lus une
+  // fois (bouton « Actualiser » pour les relire), seules les actions changent.
+  async function charger(tout = true) {
     message(msg, 'Chargement…', 'info');
     try {
-      const [a, p, r, t] = await Promise.all([
+      const [a, p, r] = await Promise.all([
         fs.getDocs(fs.query(fs.collection(db, 'influences'), fs.where('mois', '==', mois.value))),
-        fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('statut', '==', 'active'))),
-        fs.getDocs(fs.collection(db, 'raisons_sociales')),
-        fs.getDocs(fs.collection(db, 'tickets'))
+        tout || !persos.length ? fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('statut', '==', 'active'))) : null,
+        tout || !raisons ? fs.getDocs(fs.collection(db, 'raisons_sociales')) : null
       ]);
       actions = a.docs.map(donneesDoc).sort((x, y) => millis(y.creeLe) - millis(x.creeLe));
-      persos = p.docs.map((d) => ({ id: d.id, ...d.data() })).sort((x, y) => (x.nom || '').localeCompare(y.nom || ''));
-      raisons = r.docs.map(donneesDoc).sort((x, y) => (x.personnageNom || '').localeCompare(y.personnageNom || '') || (x.nom || '').localeCompare(y.nom || ''));
-      tickets = t.docs.map(donneesDoc).sort((x, y) => millis(y.creeLe) - millis(x.creeLe));
+      if (p) persos = p.docs.map((d) => ({ id: d.id, ...d.data() })).sort((x, y) => (x.nom || '').localeCompare(y.nom || ''));
+      if (r) raisons = r.docs.map(donneesDoc).sort((x, y) => (x.personnageNom || '').localeCompare(y.personnageNom || '') || (x.nom || '').localeCompare(y.nom || ''));
       const enAttente = actions.filter((x) => x.statut === 'attente').length;
-      message(msg, actions.length + ' action(s) en ' + mois.value + ', dont ' + enAttente + ' sans réponse. '
-        + tickets.filter((x) => ['En attente', 'En cours'].includes(x.statut)).length + ' ticket(s) à traiter.', 'ok');
-      dessinerPersonnages(); dessinerActions(); dessinerDistricts(); dessinerRaisons(); dessinerTickets(); dessinerExports();
+      message(msg, actions.length + ' action(s) en ' + mois.value + ', dont ' + enAttente + ' sans réponse.', 'ok');
+      dessinerPersonnages(); dessinerActions(); dessinerDistricts(); dessinerExports();
+      if (r) dessinerRaisons();
     } catch (e) { message(msg, messageErreur(e), 'err'); }
   }
-  mois.addEventListener('change', () => { majInfoPartie(); charger(); });
+  mois.addEventListener('change', () => { majInfoPartie(); charger(false); });
 
   // --- Calendrier des parties ---
   function dessinerCalendrier() {
@@ -208,7 +203,7 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
         h('span', { class: 'cam-tag ' + classeCat(a.categorie) }, a.categorie),
         h('span', { class: 'cam-tag' }, TYPES_ACTION[a.type] || a.type),
         h('span', { class: 'cam-tag ' + a.statut }, a.statut === 'traitee' ? 'Traitée' : 'Sans réponse'),
-        (a.date ? dateFr(a.date) : '') + ' · ' + (a.ville || '') + ' zone ' + (a.zone || '?'),
+        (a.date ? dateFr(a.date) : '') + ' · ' + (a.ville || '') + ' · zone ' + (libelleZone(a.zone) || '?'),
         a.lieu ? [' · ', h('a', { href: '/utils/carte?mois=' + encodeURIComponent(a.mois) + '&action=' + encodeURIComponent(a.id) }, '📍 carte')] : ''),
       h('strong', {}, a.personnageNom), ' — ', a.nomAction, ' — ', a.pointsAction + ' pt(s)',
       a.niveau ? ' — niveau ' + a.niveau : '', a.specialisation ? ' — ' + a.specialisation : '',
@@ -224,7 +219,8 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
             try {
               const statut = traitee.checked ? 'traitee' : 'attente';
               await fs.updateDoc(fs.doc(db, 'influences', a.id), {
-                reponseConteur: compresser(reponse.value.trim()), statut, majLe: fs.serverTimestamp(), traitePar: user.uid
+                reponseConteur: compresser(reponse.value.trim()), statut, majLe: fs.serverTimestamp(), traitePar: user.uid,
+                ...(reponse.value.trim() ? { reponduLe: fs.serverTimestamp() } : {})
               });
               a.reponseConteur = reponse.value.trim(); a.statut = statut;
               message(msgA, 'Réponse enregistrée.', 'ok');
@@ -250,7 +246,7 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
       h('h2', {}, 'Actions par district — ' + mois.value),
       h('table', { class: 'cam-table' },
         h('thead', {}, h('tr', {}, h('th', {}, 'Zone'), h('th', {}, 'Actions'))),
-        h('tbody', {}, ZONES.map((z) => h('tr', {}, h('td', {}, z),
+        h('tbody', {}, ZONES.map((z) => h('tr', {}, h('td', {}, libelleZone(z)),
           h('td', {}, h('div', { class: 'cam-barre-progression' }, h('span', {}, String(compte[z])),
             h('div', {}, h('div', { style: 'width:' + Math.round(compte[z] / max * 100) + '%' }))))))))));
   }
@@ -274,40 +270,6 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
     dessiner();
   }
 
-  // --- Tickets ---
-  let filtreTicket = '';
-  function dessinerTickets() {
-    const sel = options(h('select', {}), STATUTS_TICKET, filtreTicket, 'Tous les statuts');
-    sel.addEventListener('change', () => { filtreTicket = sel.value; dessinerTickets(); });
-    const liste = tickets.filter((t) => !filtreTicket || t.statut === filtreTicket);
-    panneaux.tickets.replaceChildren(h('div', { class: 'cam-bloc' },
-      h('h2', {}, 'Tickets'),
-      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Statut'), sel)),
-      h('p', { class: 'sous-titre' }, liste.length + ' ticket(s).'),
-      ...liste.map((t) => {
-        const statut = options(h('select', {}), STATUTS_TICKET, t.statut);
-        const resultat = h('textarea', { maxlength: 6000 }, t.resultat || '');
-        const msgT = h('div', { class: 'cam-msg' });
-        return h('div', { class: 'cam-element' },
-          h('div', { class: 'meta' },
-            h('span', { class: 'cam-tag ' + (CLASSE_TICKET[t.statut] || '') }, t.statut),
-            h('span', { class: 'cam-tag' }, t.categorie),
-            dateFr(t.creeLe, true) + ' — ' + (t.proprietaireNom || '') + (t.personnageNom ? ' (' + t.personnageNom + ')' : '')),
-          h('strong', {}, t.sujet), h('div', { class: 'texte' }, t.description),
-          h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Statut'), statut)),
-          h('label', {}, 'Réponse au joueur'), resultat,
-          h('button', {
-            type: 'button', class: 'petit ok', onclick: async () => {
-              try {
-                await fs.updateDoc(fs.doc(db, 'tickets', t.id), { statut: statut.value, resultat: compresser(resultat.value.trim()), majLe: fs.serverTimestamp(), traitePar: user.uid });
-                t.statut = statut.value; t.resultat = resultat.value.trim();
-                message(msgT, 'Ticket mis à jour.', 'ok');
-              } catch (e) { message(msgT, messageErreur(e), 'err'); }
-            }
-          }, 'Enregistrer'), msgT);
-      })));
-  }
-
   // --- Exports CSV (pour archiver ou retravailler dans un tableur) ---
   function dessinerExports() {
     const btn = (texte, fn) => h('button', { type: 'button', class: 'secondaire', onclick: fn }, texte);
@@ -321,17 +283,14 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
           { titre: 'Spécialisation', cle: 'specialisation' }, { titre: 'Raison sociale', cle: 'raisonSociale' }, { titre: 'Cible', cle: 'cible' },
           { titre: 'Catégorie cible', cle: 'categorieCible' }, { titre: 'Points', cle: 'pointsAction' }, { titre: 'Ville', cle: 'ville' },
           { titre: 'Zone', cle: 'zone' }, { titre: 'Descriptif', cle: 'descriptif' }, { titre: 'Réponse conteur', cle: 'reponseConteur' },
-          { titre: 'Statut', cle: 'statut' }, { titre: 'Envoyée le', cle: 'creeLe' }
+          { titre: 'Statut', cle: 'statut' }, { titre: 'Envoyée le', cle: 'creeLe' },
+          { titre: 'Partie', valeur: (a) => { const p = partie(calendrier, a.mois); return p ? libellePartie(p) : a.mois; } },
+          { titre: 'Latitude', valeur: (a) => (a.lieu ? a.lieu.lat : '') }, { titre: 'Longitude', valeur: (a) => (a.lieu ? a.lieu.lng : '') }
         ]), 'actions-' + mois.value + '.csv', 'text/csv;charset=utf-8')),
-        btn('Raisons sociales', () => telecharger(versCsv(raisons, [
+        btn('Raisons sociales', () => telecharger(versCsv(raisons || [], [
           { titre: 'Nom', cle: 'nom' }, { titre: 'Personnage', cle: 'personnageNom' }, { titre: 'Ville', cle: 'ville' },
           { titre: 'Zone', cle: 'zone' }, { titre: 'Catégorie', cle: 'categorie' }, { titre: 'Description', cle: 'description' }
         ]), 'raisons-sociales.csv', 'text/csv;charset=utf-8')),
-        btn('Tickets', () => telecharger(versCsv(tickets, [
-          { titre: 'Créé le', cle: 'creeLe' }, { titre: 'Joueur', cle: 'proprietaireNom' }, { titre: 'Personnage', cle: 'personnageNom' },
-          { titre: 'Catégorie', cle: 'categorie' }, { titre: 'Sujet', cle: 'sujet' }, { titre: 'Description', cle: 'description' },
-          { titre: 'Statut', cle: 'statut' }, { titre: 'Réponse', cle: 'resultat' }
-        ]), 'tickets.csv', 'text/csv;charset=utf-8')),
         btn('Personnages en jeu', () => telecharger(versCsv(persos, [
           { titre: 'Personnage', cle: 'nom' }, { titre: 'Joueur', cle: 'proprietaireNom' }, { titre: 'Clan', cle: 'clan' },
           { titre: 'Secte', cle: 'secte' }, { titre: 'Âge', cle: 'age' }, { titre: 'Génération', cle: 'generation' },

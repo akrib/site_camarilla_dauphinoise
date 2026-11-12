@@ -1,4 +1,5 @@
 ---
+published: false   # brouillon : n'est plus publié sur le site
 layout: post-centered
 title: "Liste des pages à valider"
 categories:

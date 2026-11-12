@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: null
 title: "Mini-jeu assembleur — Enigmes"
 permalink: /mini-jeu/assembleur/
 ---

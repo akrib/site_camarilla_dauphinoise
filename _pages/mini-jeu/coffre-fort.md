@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: null
 title: "Coffre-fort Sécurisé"
 permalink: /mini-jeu/coffre-fort/
 ---

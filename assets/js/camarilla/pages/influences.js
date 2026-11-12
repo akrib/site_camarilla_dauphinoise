@@ -1,12 +1,13 @@
-// Page /influences/ : actions d'influence des joueurs (Firestore).
+// Page /influences/ : actions d'influence du personnage incarné (Firestore).
 // Les actions visent une partie du calendrier (champ mois = clé de la partie)
 // et ne se créent / modifient que pendant sa fenêtre d'influences.
 // Paramètres d'adresse reconnus (liens depuis la carte de Grenoble) :
-//   ?perso=ID   personnage à sélectionner
+//   ?perso=ID   personnage à incarner (s'il est en jeu et au membre)
 //   ?mois=AAAA-MM&lieu=lng,lat#actions   nouvelle action, partie et lieu choisis
 //   ?action=ID#resultats   action à mettre en avant (et à modifier si possible)
+// Les tickets ont leur propre page : /membres/tickets/.
 import {
-  h, db, fs, pageProtegee, barreMembre, message, messageErreur, dateFr, millis, onglets, options,
+  h, db, fs, pageProtegee, barreMembre, estConteur, message, messageErreur, dateFr, millis, onglets, options,
   confirmer, aujourdhui
 } from '../core.js';
 import { compresser, donneesDoc } from '../compression.js';
@@ -14,39 +15,59 @@ import {
   chargerCalendrier, encartCalendrier, periodesModifiables, modifiable, moisParDefaut, libelleMois, libellePartie,
   partieCourante, resumeEtat, partie
 } from '../calendrier.js';
-import { choisirLieu, texteLieu } from '../carte-base.js';
+import { choisirLieu, texteLieu, chargerTerritoires, zoneDuPoint } from '../carte-base.js';
 import {
-  VILLES, ZONES, POINTS, SPECIALISATIONS, CAT_GOTHA, CAT_PEGRE, ACTIONS_GOTHA_GLOB, ACTIONS_PEGRE_GLOB,
-  CATEGORIES_AIP, AIP_ACTIONS, CATEGORIES_RAISON_SOCIALE, CATEGORIES_TICKET, TYPES_ACTION, STATUTS_TICKET
+  VILLES, OPTIONS_ZONES, POINTS, SPECIALISATIONS, CAT_GOTHA, CAT_PEGRE, ACTIONS_GOTHA_GLOB, ACTIONS_PEGRE_GLOB,
+  CATEGORIES_AIP, AIP_ACTIONS, CATEGORIES_RAISON_SOCIALE, TYPES_ACTION, classeCat, libelleZone
 } from '../donnees.js';
+import { personnageIncarne, incarner, blocChoixPersonnage, fenetreChoixPersonnage } from '../incarnation.js';
+import { marquerVu } from '../suivi.js';
 
 const racine = document.getElementById('cam-influences');
 barreMembre(document.getElementById('cam-barre'));
 
-const CLASSE_TICKET = {
-  'En attente': 'attente', 'En cours': 'encours', 'Informations demandées': 'infos',
-  'Complété': 'complete', 'Refusé': 'refuse', 'Annulé': 'annule'
-};
-const classeCat = (c) => (c || '').includes('Gotha') ? 'gotha' : ((c || '').includes('Pègre') ? 'pegre' : '');
-
 pageProtegee(racine, 'actif', async ({ user, profil }) => {
   const uid = user.uid;
   const params = new URLSearchParams(location.search);
-  const [snap, cal] = await Promise.all([
-    fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('proprietaire', '==', uid))),
-    chargerCalendrier().catch(() => ({ existe: false, parties: [], anticipation: false }))
+  const [cal, incarne] = await Promise.all([
+    chargerCalendrier().catch(() => ({ existe: false, parties: [], anticipation: false })),
+    personnageIncarne(uid)
   ]);
-  const tousPersos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  const enJeu = tousPersos.filter((p) => p.statut === 'active').sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
-  const persoDemande = enJeu.find((p) => p.id === params.get('perso'));
+  let perso = incarne;
+  // Lien venant de la carte : on agit pour le personnage indiqué, s'il est au membre et en jeu.
+  const demande = params.get('perso');
+  if (demande && (!perso || perso.id !== demande)) {
+    try {
+      const s = await fs.getDoc(fs.doc(db, 'personnages', demande));
+      const p = s.exists() ? { id: s.id, ...s.data() } : null;
+      if (p && p.proprietaire === uid && p.statut === 'active') { incarner(uid, p); perso = p; }
+    } catch (e) { console.warn(e); }
+  }
+  const encart = encartCalendrier(cal);
+  if (encart) racine.append(encart);
+  if (!perso || perso.statut !== 'active') {
+    racine.append(
+      perso ? h('div', { class: 'cam-encart alerte' }, 'Vous incarnez ', h('strong', {}, perso.nom), ', qui n\'est pas encore en jeu : pas d\'influences pour ce personnage. Choisissez un personnage en jeu.') : '',
+      estConteur(profil) ? h('p', { class: 'sous-titre' }, 'Conteur : les actions des joueurs sont dans ', h('a', { href: '/influences/conteur/' }, 'Influences — conteur'), '.') : '',
+      blocChoixPersonnage(uid, {
+        titre: 'Influences : choisissez un personnage en jeu',
+        texte: 'Les influences se jouent avec un personnage « en jeu ». Celui que vous choisissez devient aussi votre personnage incarné dans les autres outils.',
+        filtre: (p) => p.statut === 'active',
+        vide: ['Aucun de vos personnages n\'est « en jeu ». Créez une fiche dans ', h('a', { href: '/membres/fiches/' }, 'Mes fiches de personnage'),
+          ' et faites-la valider puis mettre en jeu par un conteur. Pour une question aux conteurs : ', h('a', { href: '/membres/tickets/' }, 'Tickets'), '.'],
+        apresChoix: () => location.reload()
+      }));
+    return;
+  }
   const lieuDemande = (() => {
     const [lng, lat] = (params.get('lieu') || '').split(',').map(Number);
     return Number.isFinite(lng) && Number.isFinite(lat) && Math.abs(lng) <= 180 && Math.abs(lat) <= 90 ? { lng, lat } : null;
   })();
+  // Zones officielles tracées par les conteurs : la zone se déduit du lieu.
+  let territoires = [];
+  const territoiresPrets = chargerTerritoires().then((t) => { territoires = t; }).catch(() => {});
 
-  let perso = null;            // personnage sélectionné
   let raisons = [];            // raisons sociales du personnage
-  const choixPerso = options(h('select', {}), enJeu.map((p) => [p.id, p.nom]), (persoDemande || enJeu[0] || {}).id || '');
 
   // ===================================================================
   // Structure
@@ -56,31 +77,21 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     actions: h('div', { dataset: { panneau: 'actions' } }),
     recap: h('div', { dataset: { panneau: 'recap' } }),
     resultats: h('div', { dataset: { panneau: 'resultats' } }),
-    raisons: h('div', { dataset: { panneau: 'raisons' } }),
-    tickets: h('div', { dataset: { panneau: 'tickets' } })
+    raisons: h('div', { dataset: { panneau: 'raisons' } })
   };
-  const libelles = { fiche: 'Fiche', actions: 'Actions', recap: 'Récap du mois', resultats: 'Résultats', raisons: 'Raisons sociales', tickets: 'Tickets' };
-  const visibles = enJeu.length ? Object.keys(panneaux) : ['tickets'];
+  const libelles = { fiche: 'Fiche', actions: 'Actions', recap: 'Récap du mois', resultats: 'Résultats', raisons: 'Raisons sociales' };
   const app = h('div', {},
-    h('div', { class: 'cam-onglets' }, visibles.map((k) => h('button', { type: 'button', dataset: { onglet: k } }, libelles[k]))),
-    visibles.map((k) => panneaux[k]));
+    h('div', { class: 'cam-onglets' }, Object.keys(panneaux).map((k) => h('button', { type: 'button', dataset: { onglet: k } }, libelles[k]))),
+    Object.values(panneaux));
 
-  const encart = encartCalendrier(cal);
-  if (encart) racine.append(encart);
-  if (enJeu.length) {
-    racine.append(h('div', { class: 'cam-bloc' },
-      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Personnage en jeu'), choixPerso)),
-      enJeu.length > 1 ? h('p', { class: 'sous-titre' }, 'Vous avez plusieurs personnages en jeu : choisissez celui pour lequel vous agissez.') : ''));
-  } else {
-    racine.append(h('div', { class: 'cam-encart alerte' },
-      'Aucun de vos personnages n\'est « en jeu ». Créez une fiche dans ',
-      h('a', { href: '/membres/fiches/' }, 'Mes fiches de personnage'),
-      ' et faites-la valider puis mettre en jeu par un conteur pour pouvoir utiliser vos influences. Les tickets restent disponibles.'));
-  }
+  racine.append(h('div', { class: 'cam-bloc' },
+    h('div', { class: 'cam-incarne' },
+      h('span', {}, 'Vous agissez en tant que'), h('span', { class: 'nom' }, perso.nom),
+      h('button', { type: 'button', class: 'petit secondaire', onclick: () => fenetreChoixPersonnage(uid) }, 'Changer de personnage'))));
   racine.append(app);
-  const activer = onglets(app);
+  const activer = onglets(app, (nom) => { if (nom === 'resultats') marquerVu(uid, 'influences'); });
   const ongletDemande = location.hash.slice(1);
-  activer(!enJeu.length ? 'tickets' : (panneaux[ongletDemande] ? ongletDemande : 'fiche'));
+  activer(panneaux[ongletDemande] ? ongletDemande : 'fiche');
 
   // ===================================================================
   // Fiche (lecture seule : la fiche se modifie dans « Mes fiches »)
@@ -122,25 +133,32 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     const maj = () => { info.textContent = lieu ? texteLieu(lieu) : 'Aucun lieu choisi'; retirer.style.display = lieu ? '' : 'none'; };
     retirer.addEventListener('click', () => { lieu = null; maj(); });
     const bouton = h('button', { type: 'button', class: 'petit secondaire' }, '📍 Choisir sur la carte');
-    bouton.addEventListener('click', async () => {
-      const r = await choisirLieu({ initial: lieu, titre: 'Lieu de l\'action — ' + (perso ? perso.nom : '') });
-      if (r) { lieu = r; maj(); }
-    });
-    maj();
-    return {
+    const objet = {
       el: h('div', { class: 'cam-lieu' }, bouton, info, retirer),
       get valeur() { return lieu; },
-      vider() { lieu = null; maj(); }
+      vider() { lieu = null; maj(); },
+      surChoix: null
     };
+    bouton.addEventListener('click', async () => {
+      const r = await choisirLieu({ initial: lieu, titre: 'Lieu de l\'action — ' + perso.nom, territoires });
+      if (r) { lieu = r; maj(); if (objet.surChoix) objet.surChoix(r); }
+    });
+    maj();
+    return objet;
   }
 
-  function champsCommuns() {
-    return {
+  function champsCommuns(lieuInitial = lieuDemande) {
+    const c = {
       date: h('input', { type: 'date', value: aujourdhui() }),
-      ville: options(h('select', {}), VILLES, perso ? perso.ville : ''),
-      zone: options(h('select', {}), ZONES),
-      lieu: champLieu(lieuDemande)
+      ville: options(h('select', {}), VILLES, 'Grenoble'),
+      zone: options(h('select', {}), OPTIONS_ZONES),
+      lieu: champLieu(lieuInitial)
     };
+    // Le lieu choisi sur la carte remplit la zone (zones officielles tracées par les conteurs).
+    const zoneAuto = (l) => { const z = zoneDuPoint(territoires, [l.lng, l.lat]); if (z) c.zone.value = z; };
+    c.lieu.surChoix = zoneAuto;
+    if (lieuInitial) territoiresPrets.then(() => zoneAuto(lieuInitial));
+    return c;
   }
   const ligneCommune = (c) => [h('div', { class: 'cam-ligne' },
     h('div', {}, h('label', {}, 'Date'), c.date), h('div', {}, h('label', {}, 'Ville'), c.ville), h('div', {}, h('label', {}, 'Zone (district)'), c.zone)),
@@ -444,11 +462,12 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
   // Modification d'une action pas encore traitée (fenêtre ouverte)
   function editerAction(a, zone) {
     if (zone.childNodes.length) { zone.replaceChildren(); return; }
-    const c = champsCommuns();
+    const c = champsCommuns(null);
+    c.lieu = champLieu(a.lieu || null);
+    c.lieu.surChoix = (l) => { const z = zoneDuPoint(territoires, [l.lng, l.lat]); if (z) c.zone.value = z; };
     c.date.value = a.date || '';
     options(c.ville, VILLES, a.ville || '');
-    options(c.zone, ZONES, a.zone || '');
-    c.lieu = champLieu(a.lieu || null);
+    options(c.zone, OPTIONS_ZONES, a.zone || '');
     const raison = options(h('select', {}), raisons.map((r) => r.nom).concat(raisons.some((r) => r.nom === a.raisonSociale) || !a.raisonSociale ? [] : [a.raisonSociale]), a.raisonSociale);
     const cible = h('input', { type: 'text', maxlength: 150, value: a.cible || '' });
     const descriptif = h('textarea', { maxlength: 4000 }, a.descriptif || '');
@@ -495,8 +514,8 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
 
   function dessinerRaisons() {
     const nom = h('input', { type: 'text', maxlength: 150, placeholder: 'Ex : Agence France-Presse Isère' });
-    const ville = options(h('select', {}), VILLES, perso.ville);
-    const zone = options(h('select', {}), ZONES);
+    const ville = options(h('select', {}), VILLES, 'Grenoble');
+    const zone = options(h('select', {}), OPTIONS_ZONES);
     const categorie = options(h('select', {}), CATEGORIES_RAISON_SOCIALE);
     const description = h('textarea', { maxlength: 3000, placeholder: 'Contexte, historique, comment le personnage y a accès…' });
     const msg = h('div', { class: 'cam-msg' });
@@ -520,7 +539,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
       h('label', {}, 'Description (facultatif)'), description, btn, msg,
       h('h3', {}, 'Raisons sociales de ' + perso.nom),
       ...(raisons.length ? raisons.map((r) => h('div', { class: 'cam-element' },
-        h('div', { class: 'meta' }, h('span', { class: 'cam-tag ' + classeCat(r.categorie) }, r.categorie), (r.ville || '') + ' — Zone ' + (r.zone || '')),
+        h('div', { class: 'meta' }, h('span', { class: 'cam-tag ' + classeCat(r.categorie) }, r.categorie), (r.ville || '') + ' — zone ' + libelleZone(r.zone)),
         h('strong', {}, r.nom), r.description ? h('div', { class: 'texte' }, r.description) : '',
         h('button', {
           type: 'button', class: 'petit danger', onclick: async () => {
@@ -531,91 +550,9 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
   }
 
   // ===================================================================
-  // Tickets
+  // Démarrage
   // ===================================================================
-  async function dessinerTickets() {
-    const categorie = options(h('select', {}), CATEGORIES_TICKET);
-    const persoTicket = options(h('select', {}), [['', 'Aucun / question générale'], ...tousPersos.map((p) => [p.id, p.nom])], perso ? perso.id : '');
-    const sujet = h('input', { type: 'text', maxlength: 150, placeholder: 'Ex : Scène avec le Prince' });
-    const description = h('textarea', { maxlength: 6000, placeholder: 'Détaillez votre demande le plus précisément possible.' });
-    const msg = h('div', { class: 'cam-msg' });
-    const liste = h('div', {}, h('p', { class: 'sous-titre' }, 'Chargement…'));
-    const btn = h('button', { type: 'button' }, 'Envoyer le ticket');
-    btn.addEventListener('click', async () => {
-      if (!sujet.value.trim() || !description.value.trim()) { message(msg, 'Le sujet et la description sont obligatoires.', 'err'); return; }
-      const p = tousPersos.find((x) => x.id === persoTicket.value);
-      try {
-        await fs.addDoc(fs.collection(db, 'tickets'), {
-          proprietaire: uid, proprietaireNom: profil.nom, personnageId: p ? p.id : '', personnageNom: p ? p.nom : '',
-          categorie: categorie.value, sujet: sujet.value.trim(), description: compresser(description.value.trim()),
-          statut: 'En attente', resultat: '', creeLe: fs.serverTimestamp()
-        });
-        sujet.value = ''; description.value = '';
-        message(msg, 'Ticket envoyé.', 'ok');
-        chargerListe();
-      } catch (e) { message(msg, messageErreur(e), 'err'); }
-    });
-    panneaux.tickets.replaceChildren(
-      h('div', { class: 'cam-bloc' },
-        h('h2', {}, 'Nouveau ticket'),
-        h('p', { class: 'sous-titre' }, 'Demande adressée aux conteurs : modification de fiche, scène, contact avec un antagoniste, dépense d\'XP, question de règles, signalement…'),
-        h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Catégorie'), categorie), h('div', {}, h('label', {}, 'Personnage concerné'), persoTicket)),
-        h('label', {}, 'Sujet *'), sujet, h('label', {}, 'Description *'), description, btn, msg),
-      h('div', { class: 'cam-bloc' }, h('h2', {}, 'Mes tickets'), liste));
-
-    async function chargerListe() {
-      try {
-        const s = await fs.getDocs(fs.query(fs.collection(db, 'tickets'), fs.where('proprietaire', '==', uid)));
-        const tickets = s.docs.map(donneesDoc).sort((a, b) => millis(b.creeLe) - millis(a.creeLe));
-        liste.replaceChildren(...(tickets.length ? tickets.map(ticketEl) : [h('p', { class: 'sous-titre' }, 'Aucun ticket.')]));
-      } catch (e) { liste.replaceChildren(h('div', { class: 'cam-msg err' }, messageErreur(e))); }
-    }
-
-    function ticketEl(t) {
-      const msgT = h('div', { class: 'cam-msg' });
-      const complement = h('textarea', { maxlength: 2000, placeholder: 'Votre réponse au conteur…', style: 'min-height:3rem' });
-      return h('div', { class: 'cam-element' },
-        h('div', { class: 'meta' },
-          h('span', { class: 'cam-tag ' + (CLASSE_TICKET[t.statut] || 'attente') }, t.statut),
-          h('span', { class: 'cam-tag' }, t.categorie),
-          dateFr(t.creeLe), t.personnageNom ? ' — ' + t.personnageNom : ''),
-        h('strong', {}, t.sujet), h('div', { class: 'texte' }, t.description),
-        h('div', { class: 'reponse' + (t.resultat ? '' : ' vide') }, t.resultat ? ['Réponse du conteur : ', t.resultat] : 'En attente du traitement par un conteur…'),
-        t.statut === 'Informations demandées' ? h('div', {}, h('label', {}, 'Compléter ma demande'), complement,
-          h('button', {
-            type: 'button', class: 'petit', onclick: async () => {
-              if (!complement.value.trim()) return;
-              try {
-                const desc = (t.description + '\n\n— Complément du ' + new Date().toLocaleDateString('fr-FR') + ' —\n' + complement.value.trim()).slice(0, 8000);
-                await fs.updateDoc(fs.doc(db, 'tickets', t.id), { description: compresser(desc), statut: 'En attente', majLe: fs.serverTimestamp() });
-                chargerListe();
-              } catch (e) { message(msgT, messageErreur(e), 'err'); }
-            }
-          }, 'Envoyer le complément')) : '',
-        t.statut === 'En attente' || t.statut === 'Informations demandées' ? h('button', {
-          type: 'button', class: 'petit secondaire', onclick: async () => {
-            if (!confirmer('Annuler ce ticket ?')) return;
-            try { await fs.updateDoc(fs.doc(db, 'tickets', t.id), { statut: 'Annulé', majLe: fs.serverTimestamp() }); chargerListe(); }
-            catch (e) { message(msgT, messageErreur(e), 'err'); }
-          }
-        }, 'Annuler le ticket') : '',
-        msgT);
-    }
-    chargerListe();
-  }
-
-  // ===================================================================
-  // Changement de personnage
-  // ===================================================================
-  async function selectionner() {
-    perso = enJeu.find((p) => p.id === choixPerso.value) || null;
-    if (perso) {
-      await chargerRaisons();
-      dessinerFiche(); dessinerActions(); dessinerRaisons();
-      dessinerRecap(); dessinerResultats();
-    }
-    dessinerTickets();
-  }
-  choixPerso.addEventListener('change', selectionner);
-  await selectionner();
+  await chargerRaisons();
+  dessinerFiche(); dessinerActions(); dessinerRaisons();
+  dessinerRecap(); dessinerResultats();
 });

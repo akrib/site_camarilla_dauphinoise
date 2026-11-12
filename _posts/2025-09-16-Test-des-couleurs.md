@@ -1,4 +1,5 @@
 ---
+published: false   # brouillon : n'est plus publié sur le site
 layout: post-centered
 title: "Test des couleurs du futur site"
 categories:

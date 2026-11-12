@@ -12,7 +12,7 @@
 // - Les règles Firestore vérifient de leur côté, à chaque écriture, que le
 //   personnage appartient bien au membre et qu'il est validé.
 // =====================================================================
-import { h, db, fs, estConteur, messageErreur, sessionCourante } from './core.js';
+import { h, db, fs, estActif, estConteur, messageErreur, sessionCourante } from './core.js';
 
 export const STATUTS_INCARNABLES = ['validee', 'active'];
 export const estIncarnable = (p) => !!p && STATUTS_INCARNABLES.includes(p.statut);
@@ -102,7 +102,7 @@ function resume(p) {
  * Bloc de choix du personnage. `apresChoix(p)` est appelé après le choix
  * (p = null si le membre choisit de ne plus incarner personne).
  */
-export function blocChoixPersonnage(uid, { titre = 'Choisissez votre personnage', texte, apresChoix, avecQuitter = false } = {}) {
+export function blocChoixPersonnage(uid, { titre = 'Choisissez votre personnage', texte, apresChoix, avecQuitter = false, filtre = null, vide = null } = {}) {
   const msg = h('div', { class: 'cam-msg' });
   const liste = h('div', { class: 'cam-grille' }, h('p', { class: 'sous-titre' }, 'Chargement de vos personnages…'));
   const actuel = incarnationMemorisee(uid);
@@ -110,11 +110,11 @@ export function blocChoixPersonnage(uid, { titre = 'Choisissez votre personnage'
     h('h2', {}, titre),
     h('p', {}, texte || 'Le panneau d\'affichage et le tableau d\'enquête sont des outils de jeu : on y agit en tant que personnage. Choisissez lequel de vos personnages validés vous incarnez.'),
     liste, msg);
-  mesPersonnagesIncarnables(uid).then((persos) => {
+  mesPersonnagesIncarnables(uid).then((tous) => {
+    const persos = filtre ? tous.filter(filtre) : tous;
     if (!persos.length) {
-      liste.replaceChildren(h('div', { class: 'cam-encart alerte' },
-        'Aucune de vos fiches n\'est encore validée par un conteur. Créez ou complétez-la dans ',
-        h('a', { href: '/membres/fiches/' }, 'Mes fiches de personnage'), ', puis soumettez-la.'));
+      liste.replaceChildren(h('div', { class: 'cam-encart alerte' }, ...(vide || ['Aucune de vos fiches n\'est encore validée par un conteur. Créez ou complétez-la dans ',
+        h('a', { href: '/membres/fiches/' }, 'Mes fiches de personnage'), ', puis soumettez-la.'])));
       return;
     }
     liste.replaceChildren(...persos.map((p) => {
@@ -167,4 +167,37 @@ export async function exigerPersonnage(zone, session = sessionCourante(), { outi
     apresChoix: () => location.reload()
   }));
   return null;
+}
+
+// ---------------------------------------------------------------------
+// Écran de garde plein écran des outils de jeu (élément #cam-garde des
+// pages carte et tableau d'enquête)
+// ---------------------------------------------------------------------
+export function afficherGarde(garde, ...contenu) {
+  garde.hidden = false;
+  garde.replaceChildren(h('div', { class: 'cam-garde-boite' }, ...contenu,
+    h('p', { class: 'sous-titre', style: 'margin-top:1rem' }, h('a', { href: '/membres/' }, '← Espace membres'))));
+}
+
+/**
+ * Vérifie l'accès à un outil de jeu : connexion, compte actif, personnage
+ * incarné (ou conteur). Renvoie { perso } / { perso: null, conteur: true },
+ * ou null (l'écran de garde explique quoi faire). La garde est masquée en cas de succès.
+ */
+export async function accesOutil(garde, session, { outil, reserve }) {
+  const retour = encodeURIComponent(location.pathname + location.search);
+  if (!session.user) {
+    afficherGarde(garde, h('h2', {}, 'Connexion requise'), h('p', {}, reserve),
+      h('a', { class: 'cam-btn', href: '/connexion/?retour=' + retour }, 'Se connecter'));
+    return null;
+  }
+  if (!estActif(session.profil)) {
+    afficherGarde(garde, h('h2', {}, 'Compte pas encore actif'), h('p', {}, 'Un conteur doit activer votre compte avant que vous puissiez utiliser ' + outil + '.'));
+    return null;
+  }
+  const zone = h('div', {}, h('p', { class: 'sous-titre' }, 'Vérification de votre personnage…'));
+  afficherGarde(garde, zone);
+  const acces = await exigerPersonnage(zone, session, { outil });
+  if (acces) garde.hidden = true;
+  return acces;
 }

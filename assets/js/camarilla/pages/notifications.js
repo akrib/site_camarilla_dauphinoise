@@ -1,9 +1,11 @@
 // =====================================================================
 // Page /membres/notifications/
-// - Conteurs : fiches soumises à valider, résultats des challenges envoyés.
-// - Joueurs  : résultat de leurs demandes de validation (avec le message du
-//   conteur), tableaux d'enquête partagés avec leurs personnages, challenges
-//   demandés par les conteurs.
+// - Tous     : fenêtre des influences (calendrier), rappel avant la limite.
+// - Conteurs : travail en attente (actions sans réponse, tickets ouverts),
+//   fiches soumises à valider, résultats des challenges envoyés.
+// - Joueurs  : nouvelles réponses des conteurs (actions, tickets), résultat
+//   de leurs demandes de validation (avec le message du conteur), tableaux
+//   d'enquête partagés avec leurs personnages, challenges demandés.
 // Les notifications sont de petits documents (collection notifications),
 // supprimés dès que le joueur les a lus, pour ne pas encombrer la base.
 // =====================================================================
@@ -13,6 +15,8 @@ import {
 import { incarnationMemorisee, incarner } from '../incarnation.js';
 import { descriptionChallenge, normaliserChallenge, bilan, detailManches } from '../defis.js';
 import { donneesDoc } from '../compression.js';
+import { chargerCalendrier, libelleMois } from '../calendrier.js';
+import { nouvellesReponses, travailConteur, rappelCalendrier } from '../suivi.js';
 
 const racine = document.getElementById('cam-notifications');
 barreMembre(document.getElementById('cam-barre'));
@@ -51,27 +55,37 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
   async function charger() {
     zones.replaceChildren(h('p', { class: 'sous-titre' }, 'Chargement…'));
     try {
-      const [notifsSnap, mesDefisSnap, soumisesSnap, tousDefisSnap] = await Promise.all([
+      const cal = await chargerCalendrier().catch(() => null);
+      const [notifsSnap, mesDefisSnap, soumisesSnap, tousDefisSnap, reponses, travail] = await Promise.all([
         fs.getDocs(fs.query(fs.collection(db, 'notifications'), fs.where('destinataire', '==', uid))),
         fs.getDocs(fs.query(fs.collection(db, 'defis'), fs.where('destinataire', '==', uid))),
         conteur ? fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('statut', '==', 'soumise'))) : null,
-        conteur ? fs.getDocs(fs.collection(db, 'defis')) : null
+        conteur ? fs.getDocs(fs.collection(db, 'defis')) : null,
+        nouvellesReponses(uid, cal).catch((e) => { console.warn(e); return { influences: [], tickets: [] }; }),
+        conteur ? travailConteur() : null
       ]);
       const recent = (a, b) => millis(b.creeLe) - millis(a.creeLe);
       const notifs = notifsSnap.docs.map(donneesDoc).sort(recent);
       const mesDefis = mesDefisSnap.docs.map(donneesDoc).sort(recent);
       const blocs = [];
 
+      const rappel = rappelCalendrier(cal);
+      if (rappel) {
+        blocs.push(h('div', { class: 'cam-encart cam-calendrier ' + (rappel.urgent ? 'erreur' : 'ok') },
+          rappel.texte, ' ', h('a', { href: '/influences/#actions' }, 'Mes influences')));
+      }
       if (conteur) {
+        blocs.push(blocTravail(travail));
         const soumises = soumisesSnap.docs.map(donneesDoc).sort((a, b) => millis(a.majLe) - millis(b.majLe));
         blocs.push(blocFichesAValider(soumises));
         blocs.push(blocDefisEnvoyes(tousDefisSnap.docs.map(donneesDoc).sort(recent)));
       }
+      blocs.push(blocReponses(reponses));
       blocs.push(blocResultatsFiches(notifs.filter((n) => n.type === 'fiche')));
       blocs.push(blocTableaux(notifs.filter((n) => n.type === 'tableau')));
       blocs.push(blocDefisDemandes(mesDefis));
       zones.replaceChildren(...blocs.filter(Boolean));
-      if (!zones.children.length) zones.append(h('div', { class: 'cam-bloc' }, h('p', { class: 'sous-titre', style: 'margin:0' }, 'Rien de nouveau.')));
+      if (!zones.querySelector('.cam-bloc')) zones.append(h('div', { class: 'cam-bloc' }, h('p', { class: 'sous-titre', style: 'margin:0' }, 'Rien de nouveau.')));
     } catch (e) {
       console.error(e);
       zones.replaceChildren();
@@ -82,6 +96,15 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
   // -------------------------------------------------------------------
   // Conteurs
   // -------------------------------------------------------------------
+  function blocTravail(t) {
+    const ligne = (n, texte, href, lien) => h('div', { class: 'cam-travail' },
+      h('span', { class: 'cam-tag ' + (n ? 'soumise' : '') }, String(n)), ' ', texte, ' ', h('a', { href }, lien));
+    return h('div', { class: 'cam-bloc' },
+      h('h2', {}, 'À traiter'),
+      ligne(t.actions, 'action(s) d\'influence sans réponse', '/influences/conteur/#actions', 'Répondre'),
+      ligne(t.tickets, 'ticket(s) ouvert(s)', '/membres/tickets/#joueurs', 'Voir les tickets'));
+  }
+
   function blocFichesAValider(soumises) {
     return h('div', { class: 'cam-bloc' },
       h('h2', {}, 'Fiches à valider ', soumises.length ? h('span', { class: 'cam-tag soumise' }, String(soumises.length)) : ''),
@@ -105,6 +128,29 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
   // -------------------------------------------------------------------
   // Joueurs
   // -------------------------------------------------------------------
+  // Réponses arrivées depuis la dernière visite (calculées, rien n'est écrit) :
+  // elles disparaissent d'ici une fois la page Résultats ou Tickets ouverte.
+  function blocReponses({ influences, tickets }) {
+    if (!influences.length && !tickets.length) return null;
+    return h('div', { class: 'cam-bloc' },
+      h('h2', {}, 'Nouvelles réponses des conteurs ', h('span', { class: 'cam-tag soumise' }, String(influences.length + tickets.length))),
+      influences.map((a) => {
+        const perso = { id: a.personnageId, nom: a.personnageNom };
+        return h('div', { class: 'cam-notif' },
+          h('div', { class: 'cam-notif-tete' },
+            h('span', {}, 'Action ', h('strong', {}, '« ' + a.nomAction + ' »'), ' de ' + a.personnageNom + ' (' + libelleMois(a.mois).toLowerCase() + ')'),
+            h('small', { class: 'sous-titre' }, 'répondu le ' + dateFr(a.reponduLe, true))),
+          h('div', { class: 'cam-actions' },
+            h('button', { type: 'button', class: 'petit', onclick: () => enTantQue(perso, '/influences/?action=' + encodeURIComponent(a.id) + '#resultats') },
+              'Lire la réponse' + libelleEnTantQue(perso))));
+      }),
+      tickets.map((t) => h('div', { class: 'cam-notif' },
+        h('div', { class: 'cam-notif-tete' },
+          h('span', {}, 'Ticket ', h('strong', {}, '« ' + t.sujet + ' »'), ' ', h('span', { class: 'cam-tag' }, t.statut)),
+          h('small', { class: 'sous-titre' }, 'répondu le ' + dateFr(t.reponduLe, true))),
+        h('div', { class: 'cam-actions' }, h('a', { class: 'cam-btn petit', href: '/membres/tickets/#ticket-' + t.id }, 'Lire la réponse')))));
+  }
+
   function blocResultatsFiches(liste) {
     if (!liste.length) return null;
     return h('div', { class: 'cam-bloc' },

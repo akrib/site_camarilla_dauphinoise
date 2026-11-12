@@ -1,5 +1,8 @@
 // =====================================================================
-// Carte de Grenoble — page /utils/carte (outil de jeu, personnage incarné)
+// Carte de Grenoble
+//   - page /utils/carte (mode « jeu ») : outil de jeu du personnage incarné ;
+//   - page /membres/territoires/ (mode « territoires ») : outil des conteurs
+//     pour tracer les territoires officiels (zones 1 à 24, domaines…), en 2D.
 //
 // Carte : MapLibre GL JS (libre) + tuiles vectorielles OpenFreeMap, faites à
 // partir des données OpenStreetMap (gratuites, sans clé ni inscription).
@@ -8,8 +11,10 @@
 //                    (données OSM : render_height). Le passage d'une vue à
 //                    l'autre garde le centre, le zoom et tous les tracés.
 // Éléments de jeu :
-//   - territoires (polygones : dessin, points déplaçables, agrandir/réduire,
-//     déplacer, couleur, transparence, nom, description) ;
+//   - territoires officiels : tracés par les conteurs (polygones : dessin,
+//     points déplaçables, agrandir/réduire, déplacer, couleur, transparence,
+//     nom, numéro de zone, description) ; affichés aux joueurs par la case
+//     « Territoires » (lecture seule) ;
 //   - havres (marqueurs déplaçables, icône, couleur, nom, description) ;
 //   - zones de chasse : un cercle autour du marqueur, rayon réglable (curseur
 //     ou poignée sur le bord du cercle) ;
@@ -18,17 +23,28 @@
 //     affichées, placées et déplacées tant que la fenêtre d'influences de la
 //     partie est ouverte ; outil « Influence » = nouvelle action à cet endroit.
 //     Un conteur voit toutes les actions du mois choisi (lecture seule).
-// Sauvegarde : dans le navigateur, une carte par personnage, + export /
-// import JSON pour passer d'un appareil à l'autre. Les actions d'influence,
-// elles, sont dans Firestore (collection influences, champ lieu).
+// Sauvegarde :
+//   - carte d'un personnage : Firestore cartes/{idPersonnage} (JSON compressé,
+//     envoyé 2 s après la dernière modification), copie dans le navigateur ;
+//     un conteur peut la consulter (?carte=ID), en lecture seule ;
+//   - carte personnelle d'un conteur sans personnage : dans le navigateur ;
+//   - territoires officiels : Firestore territoires/officiels (bouton
+//     « Enregistrer » de l'outil des conteurs) ;
+//   - actions d'influence : Firestore (collection influences, champ lieu).
+// Export / import JSON dans tous les cas.
 // =====================================================================
 import * as maplibregl from 'https://unpkg.com/maplibre-gl@6.18.0/dist/maplibre-gl.mjs';
-import { h, db, fs, surSession, estActif, messageErreur, dateFr, millis } from '../core.js';
-import { exigerPersonnage, fenetreChoixPersonnage } from '../incarnation.js';
-import { GRENOBLE, FONDS, ATTRIBUTION, couleurInfluence, versPoint, versLieu } from '../carte-base.js';
-import { donneesDoc } from '../compression.js';
+import { h, db, fs, surSession, estConteur, messageErreur, dateFr, millis } from '../core.js';
+import { accesOutil, afficherGarde as garder, fenetreChoixPersonnage } from '../incarnation.js';
+import { GRENOBLE, FONDS, ATTRIBUTION, couleurInfluence, versPoint, versLieu, chargerTerritoires } from '../carte-base.js';
+import { donneesDoc, compresserJson, decompresserJson } from '../compression.js';
 import { chargerCalendrier, modifiable, moisParDefaut, partie, etat, libelleMois, libellePartie, resumeEtat, LIBELLES_ETAT } from '../calendrier.js';
-import { TYPES_ACTION } from '../donnees.js';
+import { TYPES_ACTION, NOMS_ZONES, DOMAINES_VOISINS, libelleZone } from '../donnees.js';
+import { personnagesValides } from '../annuaire.js';
+
+// Mode de la page : « jeu » (/utils/carte) ou « territoires » (outil des conteurs)
+const MODE = document.body.dataset.mode === 'territoires' ? 'territoires' : 'jeu';
+const EN_JEU = MODE === 'jeu';
 
 // ---------------------------------------------------------------------
 // Constantes
@@ -45,15 +61,8 @@ const NOMS = { territoire: 'Territoire', havre: 'Havre', chasse: 'Zone de chasse
 const ONGLET_DE = { territoire: 'territoires', havre: 'havres', chasse: 'chasses', ronde: 'rondes', influence: 'influences' };
 
 // Zones de jeu de la Camarilla dauphinoise (cartes de référence)
-const ZONES = [
-  ['1', 'Grenoble centre'], ['2', 'La Tronche · Corenc · Meylan'], ['3', 'Seyssinet-Pariset · Seyssins'],
-  ['4', 'Grenoble sud · Échirolles'], ['5', 'Saint-Martin-d\'Hères'], ['6', 'Eybens · Poisat'], ['7', 'Fontaine · Sassenage'],
-  ['8', 'Voironnais – Chartreuse'], ['9', 'Sud Grésivaudan'], ['10', 'Vals du Dauphiné'], ['11', 'Le Pont-de-Beauvoisin'],
-  ['12', 'Bièvre Valloire'], ['13', 'La Côte-Saint-André'], ['14', 'La Porte des Alpes'], ['15', 'Crémieu'],
-  ['16', 'Haut Rhône Dauphinois'], ['17', 'Grésivaudan'], ['18', 'Oisans'], ['19', 'Matheysine'], ['20', 'Trièves'],
-  ['21', 'Vallée des Écrins'], ['22', 'Vercors'], ['23', 'Belledonne'], ['24', 'Chartreuse']
-];
-const DOMAINES = ['Domaine de Lyon', 'Domaine de Vienne', 'Domaine de Valence', 'Domaine des 2 Savoies', 'Domaine de Marseille'];
+const ZONES = Object.entries(NOMS_ZONES);
+const DOMAINES = DOMAINES_VOISINS;
 
 // Icônes (SVG, couleur = currentColor)
 const SVG = (d, extra = '') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${d}</svg>`;
@@ -111,13 +120,25 @@ let influences = [];           // actions du mois affiché
 let moisInfl = '';             // mois affiché ('' : couche masquée)
 let placement = null;          // id de l'action à placer au prochain clic
 const marqueursInfl = new Map();
+// Lecture seule : conteur qui consulte la carte d'un personnage
+let lectureSeule = false;
+let carteDe = null;            // { id, nom } : carte de personnage consultée par un conteur
+// Territoires officiels (mode jeu : affichés si la case est cochée)
+let officiels = [];
+let afficherOfficiels = false;
+// Envoi vers Firestore
+let attenteEnvoi = null;
+let dernierEnvoi = null;       // dernier contenu enregistré dans la base (JSON)
+let modifieNonEnregistre = false;
 
 function vide() {
-  return { version: 1, vue: { centre: GRENOBLE.centre, zoom: GRENOBLE.zoom, mode: 'plan', fond: 'nuit' }, territoires: [], havres: [], chasses: [], rondes: [] };
+  return { version: 1, vue: { centre: GRENOBLE.centre, zoom: GRENOBLE.zoom, mode: 'plan', fond: 'nuit', territoires: false }, territoires: [], havres: [], chasses: [], rondes: [] };
 }
 const nouvelId = () => 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const $ = (id) => document.getElementById(id);
-const liste = (type) => (type === 'influence' ? influences : donnees[ONGLET_DE[type]]);
+const liste = (type) => (type === 'influence' ? influences : (type === 'territoire' && EN_JEU ? officiels : donnees[ONGLET_DE[type]]));
+const territoiresAffiches = () => (EN_JEU ? (afficherOfficiels ? officiels : []) : donnees.territoires);
+const editable = (type) => !lectureSeule && (type === 'territoire' ? !EN_JEU : EN_JEU);
 const trouver = (type, id) => liste(type).find((x) => x.id === id);
 
 // ---------------------------------------------------------------------
@@ -137,12 +158,15 @@ function normaliser(d) {
       centre: point(d.vue.centre) || GRENOBLE.centre,
       zoom: Number.isFinite(+d.vue.zoom) ? Math.min(20, Math.max(3, +d.vue.zoom)) : GRENOBLE.zoom,
       mode: d.vue.mode === '3d' ? '3d' : 'plan',
-      fond: FONDS[d.vue.fond] ? d.vue.fond : 'nuit'
+      fond: FONDS[d.vue.fond] ? d.vue.fond : 'nuit',
+      territoires: d.vue.territoires === true
     };
   }
-  r.territoires = (Array.isArray(d.territoires) ? d.territoires : []).map((x) => ({
+  // Les territoires ne sont tracés que par les conteurs (mode territoires).
+  r.territoires = EN_JEU ? [] : (Array.isArray(d.territoires) ? d.territoires : []).map((x) => ({
     ...base(x, 'territoire'), couleur: couleur(x.couleur, DEFAUTS.territoire.couleur),
     opacite: Number.isFinite(+x.opacite) ? Math.min(0.9, Math.max(0, +x.opacite)) : DEFAUTS.territoire.opacite,
+    zone: NOMS_ZONES[x.zone] ? String(x.zone) : '',
     coords: points(x.coords)
   })).filter((x) => x.coords.length >= 3);
   r.havres = (Array.isArray(d.havres) ? d.havres : []).map((x) => ({
@@ -165,15 +189,103 @@ function normaliser(d) {
 // Sauvegarde locale (une carte par personnage)
 // ---------------------------------------------------------------------
 let attenteSauvegarde = null;
-function sauvegarder() {
+// contenu = ce qui part dans la base (sans la vue : centre, zoom, fond)
+function sauvegarder({ contenu = true } = {}) {
+  if (lectureSeule) return;
   clearTimeout(attenteSauvegarde);
   attenteSauvegarde = setTimeout(() => {
-    try { localStorage.setItem(cle, JSON.stringify(donnees)); }
+    try { localStorage.setItem(cle, JSON.stringify(EN_JEU ? donnees : { vue: donnees.vue })); }
     catch (e) { aide('Sauvegarde impossible dans ce navigateur (' + e.name + '). Exportez votre carte en JSON.', 6000); }
   }, 250);
+  if (contenu) planifierEnvoi();
 }
-function charger() {
-  try { donnees = normaliser(JSON.parse(localStorage.getItem(cle) || 'null')); } catch (e) { donnees = vide(); }
+function lireLocal() {
+  try { return normaliser(JSON.parse(localStorage.getItem(cle) || 'null')); } catch (e) { return vide(); }
+}
+
+// --- Base de données ---------------------------------------------------
+const contenuDistant = () => JSON.stringify(EN_JEU
+  ? { version: 1, havres: donnees.havres, chasses: donnees.chasses, rondes: donnees.rondes }
+  : { version: 1, territoires: donnees.territoires });
+function etatSauvegarde(texte, classe = '') {
+  const el = $('sauve');
+  if (el) { el.textContent = texte; el.className = 'carte-sauve ' + classe; }
+}
+function planifierEnvoi() {
+  if (EN_JEU && !perso) return;   // carte personnelle d'un conteur : navigateur seulement
+  if (!EN_JEU) {                  // territoires : bouton « Enregistrer »
+    modifieNonEnregistre = contenuDistant() !== dernierEnvoi;
+    etatSauvegarde(modifieNonEnregistre ? '● modifications non enregistrées' : '✓ enregistré', modifieNonEnregistre ? 'attente' : 'ok');
+    return;
+  }
+  clearTimeout(attenteEnvoi);
+  if (contenuDistant() === dernierEnvoi) return;
+  etatSauvegarde('● modifications en cours…', 'attente');
+  attenteEnvoi = setTimeout(envoyer, 2000);
+}
+async function envoyer() {
+  clearTimeout(attenteEnvoi); attenteEnvoi = null;
+  const json = contenuDistant();
+  if (json === dernierEnvoi) return true;
+  etatSauvegarde('↑ enregistrement…', 'attente');
+  try {
+    if (EN_JEU) {
+      await fs.setDoc(fs.doc(db, 'cartes', perso.id), {
+        proprietaire: session.user.uid, personnage: perso.id, nom: perso.nom,
+        donnees: await compresserJson(json), majLe: fs.serverTimestamp()
+      });
+    } else {
+      await fs.setDoc(fs.doc(db, 'territoires', 'officiels'), {
+        donnees: await compresserJson(json), majLe: fs.serverTimestamp(), majPar: session.user.uid, majParNom: session.profil.nom
+      });
+    }
+    dernierEnvoi = json;
+    modifieNonEnregistre = false;
+    etatSauvegarde('✓ enregistré', 'ok');
+    return true;
+  } catch (e) {
+    console.error(e);
+    etatSauvegarde('⚠ non enregistré : ' + messageErreur(e), 'erreur');
+    return false;
+  }
+}
+
+async function charger() {
+  if (!EN_JEU) {                   // territoires officiels
+    const vue = lireLocal().vue;
+    donnees = vide();
+    donnees.vue = vue;
+    const s = await fs.getDoc(fs.doc(db, 'territoires', 'officiels'));
+    if (s.exists()) donnees.territoires = normaliser(JSON.parse(await decompresserJson(s.data().donnees) || '{}')).territoires;
+    dernierEnvoi = contenuDistant();
+    etatSauvegarde(s.exists() ? '✓ enregistré le ' + dateFr(s.data().majLe, true) + (s.data().majParNom ? ' par ' + s.data().majParNom : '') : 'aucun territoire enregistré', 'ok');
+    return;
+  }
+  if (carteDe) {                   // conteur : carte d'un personnage, en lecture seule
+    lectureSeule = true;
+    const s = await fs.getDoc(fs.doc(db, 'cartes', carteDe.id));
+    donnees = s.exists() ? normaliser(JSON.parse(await decompresserJson(s.data().donnees) || '{}')) : vide();
+    etatSauvegarde(s.exists() ? 'carte de ' + carteDe.nom + ', enregistrée le ' + dateFr(s.data().majLe, true) : carteDe.nom + ' n\'a pas encore de carte', 'lecture');
+    return;
+  }
+  const local = lireLocal();
+  donnees = local;
+  if (!perso) { etatSauvegarde('carte gardée dans ce navigateur', ''); return; }
+  try {
+    const s = await fs.getDoc(fs.doc(db, 'cartes', perso.id));
+    if (s.exists()) {
+      donnees = { ...normaliser(JSON.parse(await decompresserJson(s.data().donnees) || '{}')), vue: local.vue };
+      dernierEnvoi = contenuDistant();
+      etatSauvegarde('✓ enregistré', 'ok');
+    } else {
+      // Première fois : la carte gardée dans ce navigateur part dans la base.
+      dernierEnvoi = JSON.stringify({ version: 1, havres: [], chasses: [], rondes: [] });
+      if (contenuDistant() !== dernierEnvoi) planifierEnvoi(); else etatSauvegarde('✓ enregistré', 'ok');
+    }
+  } catch (e) {
+    console.error(e);
+    etatSauvegarde('⚠ hors ligne : carte de ce navigateur', 'erreur');
+  }
 }
 
 // ---------------------------------------------------------------------
@@ -295,12 +407,12 @@ function ajouterCouches() {
 function dessinerCouches() {
   if (!map || !map.getSource('cam-territoires')) return;
   const sel = (type, id) => !!selection && selection.type === type && selection.id === id;
-  map.getSource('cam-territoires').setData(FC(donnees.territoires.map((t) => ({
+  map.getSource('cam-territoires').setData(FC(territoiresAffiches().map((t) => ({
     type: 'Feature', id: undefined,
     properties: { id: t.id, couleur: t.couleur, opacite: t.opacite, sel: sel('territoire', t.id) },
     geometry: { type: 'Polygon', coordinates: [anneau(t.coords)] }
   }))));
-  map.getSource('cam-etiquettes').setData(FC(donnees.territoires.map((t) => ({
+  map.getSource('cam-etiquettes').setData(FC(territoiresAffiches().map((t) => ({
     type: 'Feature', properties: { nom: t.nom }, geometry: { type: 'Point', coordinates: centre(t.coords) }
   }))));
   map.getSource('cam-rondes').setData(FC(donnees.rondes.map((r) => ({
@@ -316,7 +428,7 @@ function dessinerCouches() {
   map.getSource('cam-brouillon').setData(FC([...lignes, ...brouillon.map((p) => ({ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: p } }))]));
   // Poignées de modification
   const poignees = [];
-  if (edition && selection && (selection.type === 'territoire' || selection.type === 'ronde')) {
+  if (edition && selection && (selection.type === 'territoire' || selection.type === 'ronde') && editable(selection.type)) {
     const el = trouver(selection.type, selection.id);
     if (el) {
       const ferme = selection.type === 'territoire';
@@ -329,7 +441,7 @@ function dessinerCouches() {
     }
   }
   // Zone de chasse choisie : poignée sur le bord du cercle pour régler le rayon
-  if (selection && selection.type === 'chasse' && outil === 'naviguer') {
+  if (selection && selection.type === 'chasse' && outil === 'naviguer' && !lectureSeule) {
     const c = trouver('chasse', selection.id);
     if (c) poignees.push({ type: 'Feature', properties: { role: 'rayon', i: -1 }, geometry: { type: 'Point', coordinates: bordEst(c.position, c.rayon) } });
   }
@@ -369,7 +481,7 @@ function dessinerMarqueurs() {
       m.setLngLat(x.position);
       return;
     }
-    m = new maplibregl.Marker({ element: el, draggable: true, anchor: 'bottom' }).setLngLat(x.position).addTo(map);
+    m = new maplibregl.Marker({ element: el, draggable: !lectureSeule, anchor: 'bottom' }).setLngLat(x.position).addTo(map);
     el.addEventListener('click', (e) => {
       e.stopPropagation();
       const cible = trouver(type, x.id);
@@ -427,12 +539,14 @@ function aide(html, duree) {
 function afficherAideOutil() {
   if (placement) { const a = trouver('influence', placement); aide('Cliquez sur la carte pour placer <b>' + echapper(a ? a.nomAction : 'l\'action') + '</b>. <b>Échap</b> pour annuler.'); return; }
   if (AIDES[outil]) aide(AIDES[outil]);
+  else if (lectureSeule) aide('');
   else if (selection && selection.type === 'chasse') aide('Glissez le <b>point blanc</b> sur le bord du cercle pour régler le rayon de la zone de chasse, ou le marqueur pour la déplacer.', 5000);
   else if (edition) aide('Glissez les <b>points blancs</b> pour modifier le tracé, cliquez sur un <b>point gris</b> pour en ajouter un ; pour supprimer un point, <b>clic droit</b> dessus (ou touchez-le puis « Retirer ce point »)' + (selection && selection.type === 'territoire' ? ', glissez le <b>point doré</b> pour déplacer tout le territoire' : '') + '.');
   else aide('');
 }
 
 function choisirOutil(o) {
+  if (lectureSeule && o !== 'naviguer' && o !== 'influence') { aide('Carte en <b>lecture seule</b>.', 2500); o = 'naviguer'; }
   if (o === 'influence') {
     const refus = refusInfluence();
     if (refus) { aide(refus, 4500); o = 'naviguer'; }
@@ -460,7 +574,7 @@ function terminerTrace() {
   } else if (outil === 'territoire' && brouillon.length >= 3) {
     const t = {
       id: nouvelId(), nom: 'Territoire ' + (donnees.territoires.length + 1), description: '',
-      couleur: PALETTE[donnees.territoires.length % PALETTE.length], opacite: DEFAUTS.territoire.opacite, coords: brouillon.slice()
+      couleur: PALETTE[donnees.territoires.length % PALETTE.length], opacite: DEFAUTS.territoire.opacite, zone: '', coords: brouillon.slice()
     };
     donnees.territoires.push(t);
     brouillon = [];
@@ -484,9 +598,9 @@ function placerLieu(type, lngLat) {
 // Vue Plan / 3D et fond de carte
 // ---------------------------------------------------------------------
 function appliquerMode(anime = true) {
-  const en3d = donnees.vue.mode === '3d';
-  $('vuePlan').classList.toggle('actif', !en3d);
-  $('vue3d').classList.toggle('actif', en3d);
+  const en3d = EN_JEU && donnees.vue.mode === '3d';   // l'outil des territoires est en 2D
+  $('vuePlan')?.classList.toggle('actif', !en3d);
+  $('vue3d')?.classList.toggle('actif', en3d);
   if (!map) return;
   const style = map.isStyleLoaded() ? map.getStyle() : null;
   if (style) {
@@ -504,7 +618,7 @@ function appliquerMode(anime = true) {
 
 function changerFond(fond) {
   donnees.vue.fond = fond;
-  sauvegarder();
+  sauvegarder({ contenu: false });
   map.setStyle(FONDS[fond]);   // les couches de jeu sont ré-ajoutées à « style.load »
 }
 
@@ -541,15 +655,21 @@ function dessinerListe() {
   document.querySelector('[data-n="influences"]').textContent = influences.length;
   if (ongletActif === 'influences') { dessinerListeInfluences(); return; }
   const type = Object.keys(ONGLET_DE).find((t) => ONGLET_DE[t] === ongletActif);
-  const elements = donnees[ongletActif];
+  const elements = liste(type);
   const zone = $('liste');
+  if (EN_JEU && type === 'territoire' && !afficherOfficiels) {
+    zone.replaceChildren(h('div', { class: 'carte-vide' }, 'Cochez « Territoires » dans la barre du haut pour afficher les territoires de la ville, tracés par les conteurs.'));
+    return;
+  }
   if (!elements.length) {
     const outilBouton = { territoires: 'Territoire', havres: 'Havre', chasses: 'Chasse', rondes: 'Ronde' }[ongletActif];
-    zone.replaceChildren(h('div', { class: 'carte-vide' }, 'Rien pour le moment. Choisissez l\'outil « ' + outilBouton + ' » dans la barre du haut, puis cliquez sur la carte.'));
+    zone.replaceChildren(h('div', { class: 'carte-vide' }, EN_JEU && type === 'territoire'
+      ? 'Les conteurs n\'ont pas encore tracé de territoire.'
+      : (lectureSeule ? 'Rien sur cette carte.' : 'Rien pour le moment. Choisissez l\'outil « ' + outilBouton + ' » dans la barre du haut, puis cliquez sur la carte.')));
     return;
   }
   zone.replaceChildren(...elements.map((x) => {
-    const info = type === 'territoire' ? x.coords.length + ' sommets'
+    const info = type === 'territoire' ? (x.zone ? 'zone ' + x.zone : x.coords.length + ' sommets')
       : type === 'ronde' ? x.coords.length + ' points'
         : type === 'chasse' && x.rayon ? 'rayon ' + x.rayon + ' m' : '';
     const item = h('div', { class: 'carte-item' + (selection && selection.id === x.id ? ' sel' : ''), title: x.description || x.nom },
@@ -557,14 +677,14 @@ function dessinerListe() {
       h('span', { class: 'nom' }, x.nom),
       info ? h('span', { class: 'info' }, info) : '',
       h('button', { type: 'button', title: 'Localiser', onclick: (e) => { e.stopPropagation(); localiser(type, x.id); } }, '◎'),
-      h('button', { type: 'button', title: 'Supprimer', onclick: (e) => { e.stopPropagation(); supprimer(type, x.id); } }, '×'));
+      editable(type) ? h('button', { type: 'button', title: 'Supprimer', onclick: (e) => { e.stopPropagation(); supprimer(type, x.id); } }, '×') : '');
     item.addEventListener('click', () => selectionner(type, x.id, { centrer: true }));
     return item;
   }));
 }
 
 function supprimer(type, id) {
-  if (type === 'influence') return;   // une action se retire depuis la gestion des influences
+  if (type === 'influence' || !editable(type)) return;   // une action se retire depuis la gestion des influences
   const x = trouver(type, id);
   if (!x || !confirm('Supprimer « ' + x.nom + ' » ?')) return;
   donnees[ONGLET_DE[type]] = liste(type).filter((y) => y.id !== id);
@@ -578,6 +698,7 @@ function majEditeur() {
   if (!x) { zone.hidden = true; zone.replaceChildren(); return; }
   const type = selection.type;
   if (type === 'influence') { majEditeurInfluence(zone, x); return; }
+  if (!editable(type)) { majEditeurLecture(zone, type, x); return; }
   const changer = (champ, valeur, redessin = true) => {
     x[champ] = valeur;
     sauvegarder();
@@ -606,6 +727,15 @@ function majEditeur() {
   ];
 
   if (type === 'territoire') {
+    // Numéro de zone officielle : sert à remplir la zone des actions d'influence d'après leur lieu.
+    const zoneSel = h('select', {}, h('option', { value: '' }, '— Aucune (autre territoire) —'),
+      ...ZONES.map(([n, libelle]) => h('option', { value: n, selected: x.zone === n }, n + ' — ' + libelle)));
+    zoneSel.addEventListener('change', () => {
+      const ancien = x.zone ? 'Zone ' + x.zone + ' — ' + NOMS_ZONES[x.zone] : null;
+      if (zoneSel.value && (x.nom === ancien || /^Territoire \d+$/.test(x.nom))) { nom.value = 'Zone ' + zoneSel.value + ' — ' + NOMS_ZONES[zoneSel.value]; x.nom = nom.value; }
+      changer('zone', zoneSel.value);
+    });
+    champs.push(h('label', { class: 'carte-champ' }, h('span', {}, 'Zone officielle'), zoneSel));
     const sortie = h('output', {}, Math.round(x.opacite * 100) + ' %');
     const opa = h('input', { type: 'range', min: 0, max: 90, step: 1, value: Math.round(x.opacite * 100) });
     opa.addEventListener('input', () => { sortie.textContent = opa.value + ' %'; changer('opacite', +opa.value / 100); });
@@ -655,6 +785,23 @@ function majEditeur() {
     ...champs, actions);
 }
 
+// Éditeur en lecture seule (territoire officiel vu par un joueur, carte
+// d'un personnage consultée par un conteur)
+function majEditeurLecture(zone, type, x) {
+  const ligne = (lib, val) => (val ? h('div', { class: 'carte-infl-ligne' }, h('span', {}, lib), h('b', {}, String(val))) : '');
+  zone.hidden = false;
+  zone.replaceChildren(
+    h('h2', {}, NOMS[type], h('button', { type: 'button', title: 'Fermer', onclick: () => selectionner(null) }, '×')),
+    h('div', { class: 'carte-infl' },
+      h('div', { class: 'carte-lecture-nom' }, h('span', { class: 'pastille', style: 'background:' + x.couleur }), x.nom),
+      type === 'territoire' ? ligne('Zone officielle', x.zone ? libelleZone(x.zone) : '') : '',
+      type === 'chasse' ? ligne('Rayon', x.rayon + ' m') : '',
+      type === 'ronde' ? ligne('Points', x.coords.length) : '',
+      x.description ? h('p', { class: 'carte-infl-texte' }, x.description) : '',
+      h('p', { class: 'carte-note' }, type === 'territoire' && EN_JEU ? 'Territoire tracé par les conteurs.' : 'Lecture seule.')),
+    h('div', { class: 'carte-actions' }, h('button', { type: 'button', class: 'carte-btn', onclick: () => localiser(type, x.id) }, '◎ Localiser')));
+}
+
 // ---------------------------------------------------------------------
 // Événements de la carte
 // ---------------------------------------------------------------------
@@ -681,6 +828,7 @@ function brancherCarte() {
       return;
     }
     if (poignee) return;
+    if (!map.getLayer('cam-rondes')) return;
     const ronde = map.queryRenderedFeatures([[e.point.x - 4, e.point.y - 4], [e.point.x + 4, e.point.y + 4]], { layers: ['cam-rondes'] })[0];
     if (ronde) { selectionner('ronde', ronde.properties.id); return; }
     const chasse = map.queryRenderedFeatures(e.point, { layers: ['cam-rayons-fond'] });
@@ -749,7 +897,7 @@ function brancherCarte() {
     const c = map.getCenter();
     donnees.vue.centre = [+c.lng.toFixed(6), +c.lat.toFixed(6)];
     donnees.vue.zoom = +map.getZoom().toFixed(2);
-    sauvegarder();
+    sauvegarder({ contenu: false });   // la vue reste dans ce navigateur
   });
   map.on('style.load', ajouterCouches);
 }
@@ -786,21 +934,25 @@ function deplacerPoignee(lngLat) {
 // Export / import / références
 // ---------------------------------------------------------------------
 function exporter() {
-  const contenu = JSON.stringify({ app: 'carte-grenoble', version: 1, personnage: perso ? perso.nom : null, exporteLe: new Date().toISOString(), ...donnees }, null, 2);
+  const qui = carteDe ? carteDe.nom : (perso ? perso.nom : null);
+  const contenu = JSON.stringify({ app: EN_JEU ? 'carte-grenoble' : 'territoires-grenoble', version: 1, personnage: EN_JEU ? qui : null, exporteLe: new Date().toISOString(), ...donnees }, null, 2);
   const url = URL.createObjectURL(new Blob([contenu], { type: 'application/json' }));
-  const a = h('a', { href: url, download: 'carte-grenoble' + (perso ? '-' + perso.nom.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '') + '-' + new Date().toISOString().slice(0, 10) + '.json' });
+  const nom = EN_JEU ? 'carte-grenoble' + (qui ? '-' + qui.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-') : '') : 'territoires-grenoble';
+  const a = h('a', { href: url, download: nom + '-' + new Date().toISOString().slice(0, 10) + '.json' });
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
 async function importer(fichier) {
+  if (lectureSeule) return;
   try {
     const brut = JSON.parse(await fichier.text());
     const d = normaliser(brut);
     const total = d.territoires.length + d.havres.length + d.chasses.length + d.rondes.length;
+    const detail = EN_JEU ? d.havres.length + ' havre(s), ' + d.chasses.length + ' zone(s) de chasse, ' + d.rondes.length + ' ronde(s)'
+      : d.territoires.length + ' territoire(s)';
     if (!total && !confirm('Ce fichier ne contient aucun élément. Vider la carte quand même ?')) return;
-    if (total && !confirm('Remplacer la carte actuelle par celle du fichier (' + d.territoires.length + ' territoire(s), '
-      + d.havres.length + ' havre(s), ' + d.chasses.length + ' zone(s) de chasse, ' + d.rondes.length + ' ronde(s)) ?')) return;
+    if (total && !confirm('Remplacer la carte actuelle par celle du fichier (' + detail + ') ?')) return;
     d.vue.fond = donnees.vue.fond;
     donnees = d;
     selection = null; edition = false;
@@ -1049,12 +1201,7 @@ function majEditeurInfluence(zone, a) {
 // ---------------------------------------------------------------------
 // Démarrage
 // ---------------------------------------------------------------------
-function afficherGarde(...contenu) {
-  const garde = $('cam-garde');
-  garde.hidden = false;
-  garde.replaceChildren(h('div', { class: 'cam-garde-boite' }, ...contenu,
-    h('p', { class: 'sous-titre', style: 'margin-top:1rem' }, h('a', { href: '/membres/' }, '← Espace membres'))));
-}
+const afficherGarde = (...contenu) => garder($('cam-garde'), ...contenu);
 
 let demarre = false;
 surSession(async (s) => {
@@ -1062,33 +1209,101 @@ surSession(async (s) => {
   demarre = true;
   session = s;
   const retour = encodeURIComponent(location.pathname + location.search);
-  if (!s.user) {
-    afficherGarde(h('h2', {}, 'Connexion requise'), h('p', {}, 'La carte de Grenoble est réservée aux personnages des membres de l\'association.'),
+  if (!EN_JEU && !s.user) {
+    afficherGarde(h('h2', {}, 'Connexion requise'), h('p', {}, 'L\'outil des territoires est réservé aux conteurs.'),
       h('a', { class: 'cam-btn', href: '/connexion/?retour=' + retour }, 'Se connecter'));
     return;
   }
-  if (!estActif(s.profil)) {
-    afficherGarde(h('h2', {}, 'Compte pas encore actif'), h('p', {}, 'Un conteur doit activer votre compte avant que vous puissiez utiliser la carte.'));
+  try {
+    if (!EN_JEU) {
+      // Outil des territoires : conteurs et administrateurs
+      if (!estConteur(s.profil)) {
+        afficherGarde(h('h2', {}, 'Réservé aux conteurs'), h('p', {}, 'Les territoires de la ville sont tracés par les conteurs. Vous les voyez sur la ',
+          h('a', { href: '/utils/carte' }, 'carte de Grenoble'), ' (case « Territoires »).'));
+        return;
+      }
+      cle = 'cam-territoires-vue';
+      await charger();
+    } else {
+      const acces = await accesOutil($('cam-garde'), s, {
+        outil: 'la carte de Grenoble',
+        reserve: 'La carte de Grenoble est réservée aux personnages des membres de l\'association.'
+      });
+      if (!acces) return;
+      $('cam-garde').hidden = false;   // reste affichée pendant le chargement de la carte
+      perso = acces.perso;
+      // Conteur : consulter la carte d'un personnage (?carte=ID), en lecture seule
+      const demande = new URLSearchParams(location.search).get('carte');
+      if (demande && estConteur(s.profil)) {
+        const p = (await personnagesValides().catch(() => [])).find((x) => x.id === demande);
+        carteDe = { id: demande, nom: p ? p.nom : 'personnage' };
+      }
+      cle = perso ? 'cam-carte-' + perso.id : 'cam-carte-conteur-' + s.user.uid;
+      $('btnPerso').textContent = '☺ ' + (perso ? perso.nom : 'Conteur');
+      $('btnPerso').title = perso ? 'Carte de ' + perso.nom + ' (cliquer pour changer de personnage)' : 'Carte du conteur (cliquer pour incarner un personnage)';
+      await charger();
+      if (estConteur(s.profil)) preparerChoixCarte();
+    }
+  } catch (e) {
+    console.error(e);
+    afficherGarde(h('h2', {}, 'Chargement impossible'), h('p', {}, messageErreur(e)));
     return;
   }
-  const zone = h('div', {}, h('p', { class: 'sous-titre' }, 'Vérification de votre personnage…'));
-  afficherGarde(zone);
-  const acces = await exigerPersonnage(zone, s, { outil: 'la carte de Grenoble' });
-  if (!acces) return;
-  perso = acces.perso;
   $('cam-garde').hidden = true;
-  cle = perso ? 'cam-carte-' + perso.id : 'cam-carte-conteur-' + s.user.uid;
-  $('btnPerso').textContent = '☺ ' + (perso ? perso.nom : 'Conteur');
-  $('btnPerso').title = perso ? 'Carte de ' + perso.nom + ' (cliquer pour changer de personnage)' : 'Carte du conteur (cliquer pour incarner un personnage)';
-  charger();
+  if (lectureSeule) document.body.classList.add('lecture-seule');
   demarrerCarte();
 });
+
+// Conteurs : liste des personnages dont on peut consulter la carte
+async function preparerChoixCarte() {
+  const sel = $('vueCarte');
+  if (!sel) return;
+  const persos = await personnagesValides().catch(() => []);
+  sel.replaceChildren(h('option', { value: '' }, perso ? 'Carte de ' + perso.nom : 'Ma carte (conteur)'),
+    ...persos.filter((p) => !perso || p.id !== perso.id).map((p) => h('option', { value: p.id }, p.nom + (p.joueur ? ' (' + p.joueur + ')' : ''))));
+  sel.value = carteDe ? carteDe.id : '';
+  sel.hidden = false;
+  sel.addEventListener('change', () => {
+    const u = new URL(location.href);
+    if (sel.value) u.searchParams.set('carte', sel.value); else u.searchParams.delete('carte');
+    u.searchParams.delete('action');
+    location.href = u.toString();
+  });
+}
+
+// Territoires officiels sur la carte d'un personnage (case « Territoires »)
+async function basculerOfficiels(afficher) {
+  afficherOfficiels = afficher;
+  donnees.vue.territoires = afficher;
+  sauvegarder({ contenu: false });
+  if (afficher && !officiels.length) {
+    try { officiels = normaliserOfficiels(await chargerTerritoires()); }
+    catch (e) { aide('Territoires indisponibles : ' + echapper(messageErreur(e)), 4000); }
+  }
+  if (!afficher && selection && selection.type === 'territoire') { selection = null; majEditeur(); }
+  dessinerCouches(); dessinerListe();
+}
+function normaliserOfficiels(liste) {
+  // Mêmes contrôles que pour une carte, sans dépendre du mode de la page.
+  const couleur = (c) => (typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c) ? c : DEFAUTS.territoire.couleur);
+  return (liste || []).map((t) => ({
+    id: String(t.id || nouvelId()), nom: String(t.nom || 'Territoire').slice(0, 120), description: String(t.description || '').slice(0, 4000),
+    couleur: couleur(t.couleur), opacite: Number.isFinite(+t.opacite) ? Math.min(0.9, Math.max(0, +t.opacite)) : DEFAUTS.territoire.opacite,
+    zone: NOMS_ZONES[t.zone] ? String(t.zone) : '',
+    coords: (t.coords || []).filter((q) => Array.isArray(q) && Number.isFinite(+q[0]) && Number.isFinite(+q[1])).map((q) => [+q[0], +q[1]])
+  })).filter((t) => t.coords.length >= 3);
+}
 
 function demarrerCarte() {
   // Icônes de la barre, zones proposées pour nommer les territoires
   document.querySelectorAll('[data-ico]').forEach((el) => { el.innerHTML = ICONES[el.dataset.ico] || ''; });
   $('zonesConnues').replaceChildren(...ZONES.map(([n, nom]) => h('option', { value: 'Zone ' + n + ' — ' + nom })), ...DOMAINES.map((d) => h('option', { value: d })));
   $('fond').value = donnees.vue.fond;
+  if (lectureSeule) {
+    // Carte d'un personnage consultée par un conteur : seuls Naviguer et Influence restent.
+    document.querySelectorAll('#outils [data-outil]').forEach((b) => { if (!['naviguer', 'influence'].includes(b.dataset.outil)) b.hidden = true; });
+    $('btnImport').hidden = true;
+  }
 
   try {
     map = new maplibregl.Map({
@@ -1097,7 +1312,8 @@ function demarrerCarte() {
       center: donnees.vue.centre,
       zoom: donnees.vue.zoom,
       pitch: 0,
-      maxPitch: 75,
+      maxPitch: EN_JEU ? 75 : 0,
+      dragRotate: EN_JEU,
       attributionControl: { compact: true, customAttribution: ATTRIBUTION }
     });
   } catch (e) {
@@ -1105,27 +1321,40 @@ function demarrerCarte() {
     $('carte').append(h('div', { class: 'carte-erreur' }, 'La carte ne peut pas s\'afficher sur ce navigateur (WebGL indisponible) : ' + messageErreur(e)));
     return;
   }
-  map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-left');
+  map.addControl(new maplibregl.NavigationControl({ visualizePitch: EN_JEU, showCompass: EN_JEU }), 'top-left');
   map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
   brancherCarte();
   window.CarteGrenoble = { map, donnees: () => donnees, influences: () => influences };   // utile pour déboguer depuis la console
 
   // Barre d'outils
   document.querySelectorAll('#outils [data-outil]').forEach((b) => b.addEventListener('click', () => { choisirOutil(b.dataset.outil); b.blur(); }));
-  $('vuePlan').addEventListener('click', () => { donnees.vue.mode = 'plan'; sauvegarder(); appliquerMode(); });
-  $('vue3d').addEventListener('click', () => { donnees.vue.mode = '3d'; sauvegarder(); appliquerMode(); });
+  $('vuePlan')?.addEventListener('click', () => { donnees.vue.mode = 'plan'; sauvegarder({ contenu: false }); appliquerMode(); });
+  $('vue3d')?.addEventListener('click', () => { donnees.vue.mode = '3d'; sauvegarder({ contenu: false }); appliquerMode(); });
   $('fond').addEventListener('change', () => changerFond($('fond').value));
   $('btnCentrer').addEventListener('click', () => map.flyTo({ center: GRENOBLE.centre, zoom: GRENOBLE.zoom, duration: 1200 }));
   $('btnRefs').addEventListener('click', fenetreReferences);
   $('btnExport').addEventListener('click', exporter);
   $('btnImport').addEventListener('click', () => $('fichierImport').click());
   $('fichierImport').addEventListener('change', () => { const f = $('fichierImport').files[0]; $('fichierImport').value = ''; if (f) importer(f); });
-  $('btnPerso').addEventListener('click', () => fenetreChoixPersonnage(session.user.uid));
+  $('btnPerso')?.addEventListener('click', () => fenetreChoixPersonnage(session.user.uid));
   $('btnPanneau').addEventListener('click', () => $('panneau').classList.toggle('ouvert'));
-  $('moisInfl').addEventListener('change', () => afficherMois($('moisInfl').value));
+  $('moisInfl')?.addEventListener('change', () => afficherMois($('moisInfl').value));
+  if ($('voirTerritoires')) {
+    $('voirTerritoires').checked = !!donnees.vue.territoires;
+    $('voirTerritoires').addEventListener('change', () => basculerOfficiels($('voirTerritoires').checked));
+    if (donnees.vue.territoires) basculerOfficiels(true);
+  }
+  $('btnEnregistrer')?.addEventListener('click', () => envoyer());
+  // Carte d'un personnage : envoi immédiat si l'on quitte la page ; territoires : avertissement.
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && attenteEnvoi) envoyer(); });
+  window.addEventListener('beforeunload', (e) => {
+    if (attenteEnvoi) envoyer();
+    if (!EN_JEU && modifieNonEnregistre) { e.preventDefault(); e.returnValue = ''; }
+  });
   document.querySelectorAll('#onglets [data-onglet]').forEach((b) => b.addEventListener('click', () => ouvrirOnglet(b.dataset.onglet)));
 
   document.addEventListener('keydown', (e) => {
+    if (!EN_JEU && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); envoyer(); return; }
     const t = (e.target.tagName || '').toLowerCase();
     if (t === 'input' || t === 'textarea' || t === 'select') return;
     if (e.key === 'Escape') {
@@ -1144,8 +1373,13 @@ function demarrerCarte() {
     }
   });
 
+  if (!EN_JEU) ouvrirOnglet('territoires', false);
   dessinerMarqueurs();
   dessinerListe();
   appliquerMode(false);   // boutons Plan / 3D ; les couches suivent à « style.load »
-  demarrerInfluences();
+  if (EN_JEU && $('moisInfl')) demarrerInfluences();
+  if (lectureSeule && (donnees.havres.length || donnees.chasses.length || donnees.rondes.length)) {
+    const pts = [...donnees.havres.map((x) => x.position), ...donnees.chasses.map((x) => x.position), ...donnees.rondes.flatMap((x) => x.coords)];
+    map.once('load', () => map.fitBounds(emprise(pts), { padding: 80, maxZoom: 15, duration: 0 }));
+  }
 }

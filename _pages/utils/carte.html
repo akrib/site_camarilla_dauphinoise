@@ -29,11 +29,11 @@ sitemap: false
     <button class="carte-btn" data-outil="havre" title="Placer un havre (cliquer sur la carte)"><span class="ico" data-ico="havre"></span><span class="txt">Havre</span></button>
     <button class="carte-btn" data-outil="chasse" title="Placer une zone de chasse"><span class="ico" data-ico="chasse"></span><span class="txt">Chasse</span></button>
     <button class="carte-btn" data-outil="ronde" title="Tracer un parcours de ronde"><span class="ico" data-ico="ronde"></span><span class="txt">Ronde</span></button>
-    <button class="carte-btn" data-outil="territoire" title="Dessiner un territoire"><span class="ico" data-ico="territoire"></span><span class="txt">Territoire</span></button>
     <button class="carte-btn" data-outil="influence" title="Nouvelle action d'influence à l'endroit cliqué"><span class="ico" data-ico="influence"></span><span class="txt">Influence</span></button>
   </div>
 
   <div class="carte-groupe">
+    <label class="carte-case" title="Territoires de la ville, tracés par les conteurs"><input type="checkbox" id="voirTerritoires"> Territoires</label>
     <label class="carte-libelle" for="moisInfl">Influences</label>
     <select id="moisInfl" class="carte-select" title="Actions d'influence du mois (partie)">
       <option value="">…</option>
@@ -58,6 +58,7 @@ sitemap: false
     <button class="carte-btn discret" id="btnRefs" title="Cartes de référence des zones"><span class="ico" data-ico="carte"></span><span class="txt">Zones</span></button>
     <button class="carte-btn discret" id="btnExport" title="Exporter la carte en JSON"><span class="ico" data-ico="export"></span><span class="txt">Export</span></button>
     <button class="carte-btn discret" id="btnImport" title="Importer une carte JSON"><span class="ico" data-ico="import"></span><span class="txt">Import</span></button>
+    <select id="vueCarte" class="carte-select" title="Conteurs : consulter la carte d'un personnage" hidden></select>
     <button class="carte-btn discret" id="btnPerso" title="Personnage incarné">☺ …</button>
     <button class="carte-btn carte-bascule-panneau" id="btnPanneau" title="Lieux et territoires">☰</button>
   </div>
@@ -67,6 +68,7 @@ sitemap: false
   <main id="carte" aria-label="Carte de Grenoble">
     <div class="carte-aide" id="aide" hidden></div>
     <div class="carte-coords" id="coords"></div>
+    <div class="carte-sauve" id="sauve"></div>
   </main>
 
   <aside class="carte-panneau" id="panneau" aria-label="Lieux et territoires">

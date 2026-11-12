@@ -1,0 +1,76 @@
+---
+layout: null
+title: "Territoires — outil des conteurs"
+permalink: /membres/territoires/
+sitemap: false
+---
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0c0f">
+  <title>Territoires — Camarilla Dauphinoise</title>
+  <!-- MapLibre GL JS (libre, sans clé) : affichage de la carte vectorielle et des bâtiments en 3D -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.18.0/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="{{ '/assets/css/membres.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/carte.css' | relative_url }}">
+</head>
+<body class="carte-page" data-mode="territoires">
+
+<header class="carte-barre">
+  <div class="carte-marque">
+    <div class="sceau">✠</div>
+    <div><h1>Territoires</h1><small>Outil des conteurs — visibles par les joueurs</small></div>
+  </div>
+
+  <div class="carte-groupe" id="outils" role="toolbar" aria-label="Outils">
+    <button class="carte-btn actif" data-outil="naviguer" title="Naviguer et sélectionner (Échap)"><span class="ico" data-ico="main"></span><span class="txt">Naviguer</span></button>
+    <button class="carte-btn" data-outil="territoire" title="Dessiner un territoire"><span class="ico" data-ico="territoire"></span><span class="txt">Territoire</span></button>
+  </div>
+
+  <div class="carte-groupe">
+    <select id="fond" class="carte-select" title="Fond de carte">
+      <option value="nuit">Nuit</option>
+      <option value="jour">Jour</option>
+    </select>
+    <button class="carte-btn actif" id="btnEnregistrer" title="Enregistrer les territoires (Ctrl+S)">Enregistrer</button>
+  </div>
+
+  <div class="carte-espace"></div>
+
+  <div class="carte-groupe">
+    <button class="carte-btn discret" id="btnCentrer" title="Recentrer sur Grenoble"><span class="ico" data-ico="cible"></span><span class="txt">Grenoble</span></button>
+    <button class="carte-btn discret" id="btnRefs" title="Cartes de référence des zones"><span class="ico" data-ico="carte"></span><span class="txt">Zones</span></button>
+    <button class="carte-btn discret" id="btnExport" title="Exporter la carte en JSON"><span class="ico" data-ico="export"></span><span class="txt">Export</span></button>
+    <button class="carte-btn discret" id="btnImport" title="Importer une carte JSON"><span class="ico" data-ico="import"></span><span class="txt">Import</span></button>
+    <a class="carte-btn discret" href="/utils/carte" title="Carte de jeu">Carte de jeu</a>
+    <button class="carte-btn carte-bascule-panneau" id="btnPanneau" title="Lieux et territoires">☰</button>
+  </div>
+</header>
+
+<div class="carte-corps">
+  <main id="carte" aria-label="Carte de Grenoble">
+    <div class="carte-aide" id="aide" hidden></div>
+    <div class="carte-coords" id="coords"></div>
+    <div class="carte-sauve" id="sauve"></div>
+  </main>
+
+  <aside class="carte-panneau" id="panneau" aria-label="Lieux et territoires">
+    <nav class="carte-panneau-tete" id="onglets">
+      <button class="carte-onglet actif" data-onglet="territoires">Territoires<span class="n" data-n="territoires">0</span></button>
+      <span hidden><span data-n="havres"></span><span data-n="chasses"></span><span data-n="rondes"></span><span data-n="influences"></span></span>
+    </nav>
+    <div class="carte-liste" id="liste"></div>
+    <section class="carte-editeur" id="editeur" hidden></section>
+  </aside>
+</div>
+
+<input type="file" id="fichierImport" accept="application/json,.json" hidden>
+<datalist id="zonesConnues"></datalist>
+
+<div id="cam-garde" class="cam-app cam-garde"><div class="cam-garde-boite"><p>Chargement…</p><noscript><p>Cette page nécessite JavaScript.</p></noscript></div></div>
+
+<script type="module" src="{{ '/assets/js/camarilla/pages/carte.js' | relative_url }}"></script>
+</body>
+</html>

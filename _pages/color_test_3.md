@@ -1,4 +1,5 @@
 ---
+published: false   # brouillon : n'est plus publié sur le site
 layout: single
 title: "color_test_3"
 permalink: /color_test_3/

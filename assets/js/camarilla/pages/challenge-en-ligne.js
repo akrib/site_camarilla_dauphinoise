@@ -13,6 +13,7 @@ import { h, db, fs, surSession, estActif, estConteur, messageErreur, dateFr, mil
 import { personnageIncarne, incarner } from '../incarnation.js';
 import { normaliserChallenge, descriptionChallenge, resultat, bilan, MAX_CHALLENGES } from '../defis.js';
 import { compresser, donneesDoc } from '../compression.js';
+import { personnagesValides } from '../annuaire.js';
 
 const C = window.ChallengeDuJeu;
 const zoneJoueur = document.getElementById('cam-defis');
@@ -168,10 +169,9 @@ async function afficherComposeur(session) {
 
   let persos = [];
   try {
-    const snap = await fs.getDocs(fs.collection(db, 'repertoire'));
-    persos = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (a.nom || '').localeCompare(b.nom || '', 'fr'));
+    persos = await personnagesValides();
     cible.replaceChildren(h('option', { value: '' }, persos.length ? '— Choisir —' : 'Aucun personnage validé'),
-      ...persos.map((p) => h('option', { value: p.id }, p.nom)));
+      ...persos.map((p) => h('option', { value: p.id }, p.nom + (p.joueur ? ' (' + p.joueur + ')' : ''))));
   } catch (e) { etat(msg, messageErreur(e), 'err'); }
 
   envoyer.addEventListener('click', async () => {

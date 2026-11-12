@@ -1,9 +1,18 @@
 // Page /membres/comptes/ : validation des inscriptions, rôles, maintenance.
 import {
   h, db, fs, pageProtegee, barreMembre, estAdmin, ROLES, STATUTS_COMPTE,
-  message, messageErreur, dateFr, millis, onglets, confirmer, options
+  message, messageErreur, dateFr, millis, onglets, confirmer, options, telecharger
 } from '../core.js';
 import { collecterRefs } from '../images.js';
+import { estCompresse, decompresserJson, compresserJson } from '../compression.js';
+
+// Données d'un document avec ses textes et JSON compressés remis en clair.
+async function enClair(d) {
+  const r = {};
+  for (const [k, v] of Object.entries(d)) r[k] = estCompresse(v) ? await decompresserJson(v) : v;
+  return r;
+}
+const refDetail = (id) => fs.doc(db, 'personnages', id, 'detail', 'fiche');
 
 const racine = document.getElementById('cam-comptes');
 barreMembre(document.getElementById('cam-barre'));
@@ -159,7 +168,13 @@ function panneauMaintenance() {
         fs.getDocs(fs.collection(db, 'tableaux'))
       ]);
       const utilisees = new Set();
-      [persos, tableaux].forEach((s) => s.docs.forEach((d) => collecterRefs(d.data(), utilisees)));
+      for (const d of [...persos.docs, ...tableaux.docs]) collecterRefs(await enClair(d.data()), utilisees);
+      // Détail des fiches (fiche MET et données complémentaires, compressées)
+      for (const d of persos.docs) {
+        if (d.data().fiche) continue;   // ancien format : déjà lu
+        const x = await fs.getDoc(refDetail(d.id));
+        if (x.exists()) collecterRefs(await enClair(x.data()), utilisees);
+      }
       const uneSemaine = Date.now() - 7 * 24 * 3600 * 1000;
       let total = 0;
       orphelines = [];
@@ -193,7 +208,82 @@ function panneauMaintenance() {
     } catch (e) { message(sortie, messageErreur(e), 'err'); }
   });
 
+  // --- Migration des fiches : document léger + détail compressé ---
+  const sortieMig = h('div', { class: 'cam-msg' });
+  const migrer = h('button', { type: 'button', class: 'secondaire' }, 'Migrer les fiches');
+  migrer.addEventListener('click', async () => {
+    migrer.disabled = true;
+    try {
+      const persos = await fs.getDocs(fs.collection(db, 'personnages'));
+      const anciennes = persos.docs.filter((d) => d.data().fiche);
+      let n = 0;
+      for (const d of anciennes) {
+        const x = d.data();
+        const lot = fs.writeBatch(db);
+        lot.update(d.ref, { fiche: fs.deleteField(), contenuJson: fs.deleteField(), majLe: fs.serverTimestamp() });
+        lot.set(refDetail(d.id), {
+          fiche: await compresserJson(JSON.stringify(x.fiche)),
+          contenuJson: await compresserJson(typeof x.contenuJson === 'string' ? x.contenuJson : '{}'),
+          majLe: fs.serverTimestamp()
+        });
+        await lot.commit();
+        message(sortieMig, 'Migration… ' + (++n) + ' / ' + anciennes.length, 'info');
+      }
+      message(sortieMig, anciennes.length ? n + ' fiche(s) migrée(s).' : 'Toutes les fiches sont déjà au nouveau format.', 'ok');
+    } catch (e) { message(sortieMig, messageErreur(e), 'err'); }
+    finally { migrer.disabled = false; }
+  });
+
+  // --- Sauvegarde complète en JSON ---
+  const sortieExp = h('div', { class: 'cam-msg' });
+  const avecImages = h('input', { type: 'checkbox' });
+  const exporter = h('button', { type: 'button', class: 'secondaire' }, 'Exporter toute la base (JSON)');
+  const COLLECTIONS = ['utilisateurs', 'annuaire', 'repertoire', 'personnages', 'tableaux', 'panneau', 'notifications', 'defis',
+    'calendrier', 'influences', 'raisons_sociales', 'tickets', 'cartes', 'territoires', 'images_index'];
+  const versJson = (v) => {
+    if (v && typeof v.toDate === 'function') return v.toDate().toISOString();
+    if (Array.isArray(v)) return v.map(versJson);
+    if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, versJson(x)]));
+    return v;
+  };
+  exporter.addEventListener('click', async () => {
+    exporter.disabled = true;
+    try {
+      const sortie = { app: 'camarilla-sauvegarde', version: 1, exporteLe: new Date().toISOString(), collections: {} };
+      const noms = COLLECTIONS.concat(avecImages.checked ? ['images'] : []);
+      let total = 0;
+      for (const nom of noms) {
+        message(sortieExp, 'Lecture de « ' + nom + ' »…', 'info');
+        const snap = await fs.getDocs(fs.collection(db, nom));
+        const c = {};
+        for (const d of snap.docs) c[d.id] = versJson(await enClair(d.data()));
+        if (nom === 'personnages') {
+          for (const d of snap.docs) {
+            if (d.data().fiche) continue;
+            const x = await fs.getDoc(refDetail(d.id));
+            if (x.exists()) {
+              const det = await enClair(x.data());
+              c[d.id].detail = { fiche: typeof det.fiche === 'string' ? JSON.parse(det.fiche || 'null') : det.fiche, contenuJson: det.contenuJson, majLe: versJson(det.majLe) };
+            }
+          }
+        }
+        sortie.collections[nom] = c;
+        total += snap.size;
+      }
+      telecharger(JSON.stringify(sortie), 'camarilla-sauvegarde-' + new Date().toISOString().slice(0, 10) + '.json');
+      message(sortieExp, total + ' document(s) exporté(s). Gardez ce fichier en lieu sûr : il contient les emails des membres.', 'ok');
+    } catch (e) { message(sortieExp, messageErreur(e), 'err'); }
+    finally { exporter.disabled = false; }
+  });
+
   return h('div', { dataset: { panneau: 'maintenance' } },
+    h('h3', {}, 'Sauvegarde complète'),
+    h('p', { class: 'sous-titre' }, 'Un fichier JSON avec toutes les données (comptes, fiches complètes, tableaux, panneau, influences, tickets, cartes, territoires…), textes en clair. Les descriptions des règles n\'y sont pas (elles se réimportent depuis le PDF). Une lecture par document : à faire de temps en temps, pas tous les jours.'),
+    h('label', { class: 'cam-coche' }, avecImages, 'Inclure les images (fichier beaucoup plus lourd)'),
+    h('div', { class: 'cam-actions' }, exporter), sortieExp,
+    h('h3', {}, 'Fiches : nouveau format'),
+    h('p', { class: 'sous-titre' }, 'Les fiches sont maintenant en deux parties : un petit document pour les listes, et le détail (fiche complète, données complémentaires) compressé à part. Les anciennes fiches passent au nouveau format à leur prochain enregistrement ; ce bouton les migre toutes d\'un coup.'),
+    h('div', { class: 'cam-actions' }, migrer), sortieMig,
     h('h3', {}, 'Images'),
     h('p', { class: 'sous-titre' }, 'Les images restent stockées même quand le tableau, la fiche ou le message qui les utilisait est supprimé. Cet outil mesure l\'espace utilisé (1 Go gratuit) et supprime celles qui ne servent plus.'),
     h('div', { class: 'cam-actions' }, bouton, nettoyer), sortie,

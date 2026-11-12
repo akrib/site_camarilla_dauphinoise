@@ -199,3 +199,5 @@ table.cam-table td textarea { min-height: 3rem; font-size: .82rem; }
 /* --- Modification d'une action d'influence ------------------------------ */
 .cam-edition { margin-top: .8rem; padding: .8rem 1rem; border: 1px dashed var(--ligne); border-radius: 6px; background: var(--panneau); }
 .cam-edition h3 { margin-top: 0; }
+.cam-travail { padding: .3rem 0; font-size: .9rem; }
+.cam-incarne .petit { margin-left: auto; }

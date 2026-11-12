@@ -9,7 +9,7 @@ import {
 } from '../images.js';
 import { STATUTS_FICHE, STATUTS_FICHE_EDITABLES } from '../donnees.js';
 import { majRepertoire, estIncarnable } from '../incarnation.js';
-import { compresser, donneesDoc } from '../compression.js';
+import { compresser, donneesDoc, compresserJson, decompresserJson, estCompresse } from '../compression.js';
 import { creerEditeur } from '../fiche/editeur.js';
 import { ficheVide as ficheMetVide, normaliser } from '../fiche/modele.js';
 import { lireFicheExcel } from '../fiche/import-excel.js';
@@ -62,7 +62,9 @@ async function route() {
       if (perimee()) return;
       if (!snap.exists()) { racine.replaceChildren(h('div', { class: 'cam-encart erreur' }, 'Fiche introuvable.')); return; }
       const avis = avisApresNavigation; avisApresNavigation = null;
-      afficherEditeur(donneesDoc(snap), null, avis);
+      const d = await chargerDetail(donneesDoc(snap));
+      if (perimee()) return;
+      afficherEditeur(d, null, avis);
     } else if (hash === 'nouvelle') {
       afficherEditeur(null);
     } else {
@@ -163,6 +165,42 @@ function afficherListes(ongletInitial) {
       zoneToutes));
   racine.replaceChildren(bloc);
   onglets(bloc, (nom) => { history.replaceState(null, '', nom === 'mes' ? location.pathname : '#' + nom); })(ongletInitial);
+}
+
+// ---------------------------------------------------------------------
+// Stockage : document léger + détail
+// personnages/{id}               champs des listes (nom, clan, influences, PX,
+//                                statut…) : lu par les listes, les influences,
+//                                l'incarnation ;
+// personnages/{id}/detail/fiche  fiche MET complète et données
+//                                complémentaires, compressées (deflate) : lu
+//                                seulement à l'ouverture de la fiche.
+// Les deux sont écrits ensemble (lot). Les anciennes fiches (tout dans le
+// document) restent lisibles et passent au nouveau format à leur prochain
+// enregistrement, ou d'un coup par Comptes > Maintenance > Migrer les fiches.
+// ---------------------------------------------------------------------
+const refDetail = (id) => fs.doc(db, 'personnages', id, 'detail', 'fiche');
+
+async function chargerDetail(d) {
+  if (d.fiche) return { ...d, ancienFormat: true };
+  const s = await fs.getDoc(refDetail(d.id));
+  if (!s.exists()) return { ...d, fiche: null, contenuJson: '{}' };
+  const x = s.data();
+  const fiche = x.fiche && typeof x.fiche === 'object' && !estCompresse(x.fiche) ? x.fiche : JSON.parse(await decompresserJson(x.fiche) || 'null');
+  return { ...d, fiche, contenuJson: (await decompresserJson(x.contenuJson)) || '{}' };
+}
+
+/** Écrit le document léger et le détail dans un même lot. */
+async function ecrireFiche(ref, leger, detail, { creation = false, ancienFormat = false } = {}) {
+  const lot = fs.writeBatch(db);
+  if (creation) lot.set(ref, leger);
+  else lot.update(ref, ancienFormat ? { ...leger, fiche: fs.deleteField(), contenuJson: fs.deleteField() } : leger);
+  lot.set(refDetail(ref.id), {
+    fiche: await compresserJson(JSON.stringify(detail.fiche)),
+    contenuJson: await compresserJson(detail.contenuJson || '{}'),
+    majLe: fs.serverTimestamp()
+  });
+  await lot.commit();
 }
 
 // ---------------------------------------------------------------------
@@ -338,23 +376,24 @@ function afficherEditeur(existante, preRemplie, avis) {
     const contenuJson = JSON.stringify(libre);
     if (contenuJson.length > LIMITE_JSON) throw new Error('Données complémentaires trop volumineuses (' + Math.round(contenuJson.length / 1024) + ' Ko, maximum ' + Math.round(LIMITE_JSON / 1024) + ' Ko).');
     if (portraitRef.startsWith('data:')) portraitRef = await enregistrerImage(portraitRef);
-    const data = { ...champsDerives(f, R), fiche: f, portrait: portraitRef, contenuJson, statut, majLe: fs.serverTimestamp() };
-    const taille = new Blob([JSON.stringify(data)]).size;
+    const data = { ...champsDerives(f, R), portrait: portraitRef, statut, majLe: fs.serverTimestamp() };
+    const detail = { fiche: f, contenuJson };
+    const taille = new Blob([JSON.stringify(detail)]).size;
     if (taille > LIMITE_DOC) throw new Error('Fiche trop volumineuse (' + Math.round(taille / 1024) + ' Ko) : raccourcissez les textes ou les données complémentaires.');
-    return data;
+    return { data, detail };
   }
 
   async function enregistrer(statut, texteOk) {
     message(msg, 'Enregistrement…', 'info');
     actions.querySelectorAll('button').forEach((b) => { b.disabled = true; });
     try {
-      const data = await construire(statut);
+      const { data, detail } = await construire(statut);
       if (nouvelle) {
         const ref = fs.doc(fs.collection(db, 'personnages'));
-        await fs.setDoc(ref, {
+        await ecrireFiche(ref, {
           ...data, statut: 'brouillon', proprietaire: uid, proprietaireNom: session.profil.nom,
           commentaireConteur: '', creeLe: fs.serverTimestamp()
-        });
+        }, detail, { creation: true });
         if (statut === 'soumise') await fs.updateDoc(ref, { statut: 'soumise', majLe: fs.serverTimestamp() });
         proteger(false);
         avisApresNavigation = texteOk || 'Fiche enregistrée.';
@@ -371,7 +410,7 @@ function afficherEditeur(existante, preRemplie, avis) {
             extra.commentaireConteur = '';
           }
           if (proprio) extra.proprietaireNom = session.profil.nom;
-          await fs.updateDoc(ref, { ...data, ...extra });
+          await ecrireFiche(ref, { ...data, ...extra }, detail, { ancienFormat: d.ancienFormat });
           // Répertoire des personnages validés (partage des tableaux d'enquête).
           if (estIncarnable(d) || estIncarnable({ statut })) {
             await majRepertoire({ id: d.id, nom: data.nom, proprietaire: d.proprietaire, statut }, estIncarnable(d) ? undefined : null);
@@ -387,7 +426,7 @@ function afficherEditeur(existante, preRemplie, avis) {
             } catch (e) { console.warn('Notification non envoyée', e); }
           }
         } else {
-          await fs.updateDoc(ref, { ...data, proprietaireNom: session.profil.nom });
+          await ecrireFiche(ref, { ...data, proprietaireNom: session.profil.nom }, detail, { ancienFormat: d.ancienFormat });
         }
         proteger(false);
         await route();
@@ -433,9 +472,9 @@ function afficherEditeur(existante, preRemplie, avis) {
       actions.append(bouton('Dupliquer', async () => {
         try {
           const ref = fs.doc(fs.collection(db, 'personnages'));
-          const data = await construire('brouillon');
-          data.nom = data.fiche.nom = (data.nom + ' (copie)').slice(0, 80);
-          await fs.setDoc(ref, { ...data, proprietaire: uid, proprietaireNom: session.profil.nom, commentaireConteur: '', creeLe: fs.serverTimestamp() });
+          const { data, detail } = await construire('brouillon');
+          data.nom = detail.fiche.nom = (data.nom + ' (copie)').slice(0, 80);
+          await ecrireFiche(ref, { ...data, proprietaire: uid, proprietaireNom: session.profil.nom, commentaireConteur: '', creeLe: fs.serverTimestamp() }, detail, { creation: true });
           proteger(false);
           location.hash = 'fiche-' + ref.id;
         } catch (e) { message(msg, messageErreur(e), 'err'); }
@@ -446,7 +485,10 @@ function afficherEditeur(existante, preRemplie, avis) {
       actions.append(bouton('Supprimer', async () => {
         if (!confirmer('Supprimer définitivement la fiche « ' + d.nom + ' » ?')) return;
         try {
-          await fs.deleteDoc(fs.doc(db, 'personnages', d.id));
+          const lot = fs.writeBatch(db);
+          lot.delete(fs.doc(db, 'personnages', d.id));
+          lot.delete(refDetail(d.id));
+          await lot.commit();
           if (estIncarnable(d)) await majRepertoire({ ...d, statut: 'archivee' }, undefined);
           proteger(false); retourListe();
         } catch (e) { message(msg, messageErreur(e), 'err'); }
@@ -511,7 +553,7 @@ function demanderModification(f) {
               sujet: sujet.value.trim() || 'Modification de fiche', description: compresser(description.value.trim()),
               statut: 'En attente', resultat: '', creeLe: fs.serverTimestamp()
             });
-            message(msg, 'Demande envoyée. Suivez-la dans Influences > Tickets.', 'ok');
+            message(msg, 'Demande envoyée. Suivez-la dans la page Tickets (espace membres).', 'ok');
             setTimeout(fermer, 1500);
           } catch (e) { message(msg, messageErreur(e), 'err'); }
         }

@@ -201,3 +201,18 @@ body.carte-page {
   .carte-bascule-panneau { display: inline-flex; }
 }
 .carte-actions a.carte-btn { text-decoration: none; }
+
+/* ---------- Territoires officiels, enregistrement, lecture seule ---------- */
+.carte-page [hidden] { display: none !important; }
+.carte-case { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--c-texte); cursor: pointer; margin-right: 8px; white-space: nowrap; }
+.carte-case input { accent-color: var(--c-sang-vif); }
+.carte-sauve { position: absolute; left: 10px; bottom: 30px; z-index: 2; padding: 3px 8px; border-radius: 3px; background: rgba(10,11,14,.8); color: var(--c-pale); font-size: 11px; pointer-events: none; }
+.carte-sauve:empty { display: none; }
+.carte-sauve.ok { color: #9fd0a9; }
+.carte-sauve.attente { color: var(--c-laiton); }
+.carte-sauve.erreur { color: #f0b6be; }
+.carte-sauve.lecture { color: #b9c7e6; }
+.carte-lecture-nom { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.carte-lecture-nom .pastille { width: 12px; height: 12px; border-radius: 3px; }
+body.lecture-seule .carte-marque small::after { content: " — lecture seule"; color: var(--c-laiton); }
+a.carte-btn { text-decoration: none; }

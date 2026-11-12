@@ -5,7 +5,22 @@
 
 export const VILLES = ['Grenoble', 'Angers', 'Annecy', 'Bordeaux', 'Châteauroux', 'Evry', 'Lille', 'Lyon',
   'Melun', 'Montpellier', 'Orléans', 'Périgueux', 'Strasbourg', 'Ys', 'Autres'];
+// Zones de jeu de la Camarilla dauphinoise (cartes de référence) : 1 à 7
+// Grenoble et sa proche banlieue, 8 à 24 le reste de l'Isère.
+export const NOMS_ZONES = {
+  1: 'Grenoble centre', 2: 'La Tronche · Corenc · Meylan', 3: 'Seyssinet-Pariset · Seyssins',
+  4: 'Grenoble sud · Échirolles', 5: 'Saint-Martin-d\'Hères', 6: 'Eybens · Poisat', 7: 'Fontaine · Sassenage',
+  8: 'Voironnais – Chartreuse', 9: 'Sud Grésivaudan', 10: 'Vals du Dauphiné', 11: 'Le Pont-de-Beauvoisin',
+  12: 'Bièvre Valloire', 13: 'La Côte-Saint-André', 14: 'La Porte des Alpes', 15: 'Crémieu',
+  16: 'Haut Rhône Dauphinois', 17: 'Grésivaudan', 18: 'Oisans', 19: 'Matheysine', 20: 'Trièves',
+  21: 'Vallée des Écrins', 22: 'Vercors', 23: 'Belledonne', 24: 'Chartreuse'
+};
+export const DOMAINES_VOISINS = ['Domaine de Lyon', 'Domaine de Vienne', 'Domaine de Valence', 'Domaine des 2 Savoies', 'Domaine de Marseille'];
 export const ZONES = Array.from({ length: 24 }, (_, i) => String(i + 1)).concat(['Extérieur']);
+/** Libellé d'une zone : « 3 — Seyssinet-Pariset · Seyssins ». */
+export const libelleZone = (z) => (NOMS_ZONES[z] ? z + ' — ' + NOMS_ZONES[z] : String(z || ''));
+/** [valeur, libellé] pour remplir une liste déroulante de zones. */
+export const OPTIONS_ZONES = ZONES.map((z) => [z, libelleZone(z)]);
 export const POINTS = [1, 2, 3, 4, 5];
 export const SPECIALISATIONS = ['Bureaucratie', 'Crime', 'Éducation', 'Finance', 'Haute Société', 'Industrie',
   'Loi', 'Média', 'Occulte', 'Police', 'Politique', 'Religion', 'Rue', 'Santé', 'Transport'];
@@ -56,6 +71,12 @@ export const CATEGORIES_TICKET = [
   'Signalement (Bris de Mascarade, comportement...)', 'Demande d\'objet / artefact', 'Autre'
 ];
 export const STATUTS_TICKET = ['En attente', 'En cours', 'Informations demandées', 'Complété', 'Refusé', 'Annulé'];
+// Classe CSS de l'étiquette d'un statut de ticket, et d'une catégorie d'influence
+export const CLASSE_TICKET = {
+  'En attente': 'attente', 'En cours': 'encours', 'Informations demandées': 'infos',
+  'Complété': 'complete', 'Refusé': 'refuse', 'Annulé': 'annule'
+};
+export const classeCat = (c) => ((c || '').includes('Gotha') ? 'gotha' : ((c || '').includes('Pègre') ? 'pegre' : ''));
 
 // Fiches de personnage
 export const STATUTS_FICHE = {
@@ -67,6 +88,3 @@ export const STATUTS_FICHE = {
   archivee: 'Archivée'
 };
 export const STATUTS_FICHE_EDITABLES = ['brouillon', 'refusee', 'soumise'];
-
-// Tableau d'affichage
-export const CATEGORIES_AFFICHAGE = { annonce: 'Annonce des conteurs', rp: 'En jeu (RP)', hrp: 'Hors jeu (HRP)' };
