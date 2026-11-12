@@ -1,5 +1,5 @@
 ---
-title: "Tableau d'affichage"
+title: "Panneau d'affichage"
 layout: full-width
 classes: wide
 permalink: /membres/affichage/
@@ -7,9 +7,136 @@ author_profile: false
 sitemap: false
 ---
 <link rel="stylesheet" href="{{ '/assets/css/membres.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/css/panneau.css' | relative_url }}">
+<style>
+  /* Le panneau a son propre titre : on masque celui de la page. */
+  #page-title { display: none; }
+</style>
+
 <div class="cam-app">
   <div id="cam-barre"></div>
   <div id="cam-affichage"><p class="sous-titre">Chargement…</p></div>
 </div>
+
+<div class="panneau" id="panneau" hidden>
+  <main class="app-shell">
+    <header class="pa-entete">
+      <h1>Panneau d'affichage</h1>
+      <div class="top-actions">
+        <span class="player-field">Joueur <span class="player-name" id="playerName">…</span></span>
+        <button class="primary-btn" id="openComposer" type="button">+ Ajouter</button>
+      </div>
+    </header>
+
+    <div class="board-heading"><h2>Tableau d'affichage</h2></div>
+    <section class="board-frame" aria-label="Tableau en liège">
+      <i class="screw tl" aria-hidden="true"></i><i class="screw tr" aria-hidden="true"></i><i class="screw bl" aria-hidden="true"></i><i class="screw br" aria-hidden="true"></i>
+      <div class="cork-board" id="board" aria-label="Notes épinglées. Sélectionnez une note pour vous y intéresser.">
+        <div class="board-loading">Chargement du tableau…</div>
+      </div>
+    </section>
+    <div class="board-footer"><span><strong id="noteCount">0</strong> note(s)</span></div>
+
+    <section class="memory-log" aria-labelledby="logTitle">
+      <header class="log-header">
+        <h2 id="logTitle">Ce que les goules se souviennent d'avoir vu</h2>
+        <button class="subtle-btn" id="clearLog" type="button" hidden title="Réservé aux conteurs">Effacer les souvenirs</button>
+      </header>
+      <ol class="log-list" id="logList" aria-live="polite"></ol>
+      <div class="log-count" id="logCount"></div>
+    </section>
+  </main>
+</div>
+
+<!-- Fenêtres : déplacées dans <body> au démarrage pour passer au-dessus du thème. -->
+<div class="panneau panneau-couches" id="panneauCouches" hidden>
+  <!-- Fenêtre d'ajout : elle reste fermée jusqu'au clic sur « Ajouter ». -->
+  <div class="modal-backdrop" id="composerModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="composerTitle">
+      <header class="modal-header"><h2 id="composerTitle">Ajouter une note</h2><button class="close-btn" type="button" data-close="composerModal" aria-label="Fermer">×</button></header>
+      <div class="create-layout">
+        <div class="create-fields">
+          <label class="field-label">Texte de la note
+            <textarea id="noteInput" maxlength="1200" placeholder="Écris ce que tu souhaites épingler…"></textarea>
+            <span class="field-count" id="noteInputCount">0 / 1200</span>
+          </label>
+          <label class="field-label">Type de papier
+            <select id="noteType">
+              <option value="paper">Bout de papier</option>
+              <option value="postit">Post-it</option>
+              <option value="parchment">Vélin ouvragé</option>
+              <option value="newspaper">Article de journal</option>
+              <option value="napkin">Serviette de table</option>
+              <option value="businesscard">Carte de visite</option>
+              <option value="expense">Note de frais</option>
+              <option value="invoice">Facture</option>
+              <option value="receipt">Ticket / reçu</option>
+            </select>
+          </label>
+          <label class="field-label">Police d'écriture
+            <select id="noteFont">
+              <option value="georgia">Georgia — élégante</option>
+              <option value="serif">Times New Roman — classique</option>
+              <option value="arial">Arial — sobre</option>
+              <option value="verdana">Verdana — nette</option>
+              <option value="mono">Courier New — machine</option>
+              <option value="trebuchet">Trebuchet MS — ronde</option>
+            </select>
+          </label>
+        </div>
+        <div class="preview-area">
+          <div class="preview-caption">Aperçu avant épinglage</div>
+          <article id="createPreview" class="note-sheet type-paper" aria-label="Aperçu de la note">
+            <div class="sheet-heading">Brouillon</div>
+            <div class="sheet-content placeholder" id="previewText">Le texte apparaîtra ici…</div>
+            <div class="sheet-bottom">APERÇU</div>
+          </article>
+        </div>
+      </div>
+      <footer class="modal-actions"><button class="subtle-btn" type="button" data-close="composerModal">Annuler</button><button class="primary-btn" id="addNote" type="button">Épingler la note</button></footer>
+    </section>
+  </div>
+
+  <!-- Fenêtre d'examen : même page, note agrandie et outils sur le côté. -->
+  <div class="modal-backdrop" id="detailModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+      <header class="modal-header"><h2 id="detailTitle">Examen de la note</h2><button class="close-btn" type="button" data-close="detailModal" aria-label="Fermer">×</button></header>
+      <div class="detail-layout">
+        <div class="detail-paper-wrap"><article id="detailPaper" class="note-sheet type-paper">
+          <div class="sheet-heading" id="detailKind">NOTE</div>
+          <div class="sheet-content" id="detailText"></div>
+          <div class="sheet-bottom">PIÈCE ÉPINGLÉE</div>
+        </article></div>
+        <aside class="detail-side" aria-label="Actions sur la note">
+          <h3>Interventions</h3>
+          <button class="action-btn" id="redactNote" type="button">▰ Caviarder un passage</button>
+          <button class="action-btn" id="scribbleNote" type="button">✎ Colorier un passage</button>
+          <button class="action-btn" id="showTear" type="button">✂ Déchirer…</button>
+          <div class="tear-panel" id="tearPanel" hidden>
+            <p class="tear-instruction">Faites glisser les ciseaux sur le texte jusqu'au mot où couper.</p>
+            <button class="primary-btn" id="confirmTear" type="button" hidden>Valider la déchirure</button>
+          </div>
+          <button class="action-btn danger" id="removeNote" type="button">× Enlever la note</button>
+          <div class="detail-note-state" id="detailState"></div>
+        </aside>
+        <div class="tool-hint" id="toolHint" hidden></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="confirm-backdrop" id="actionConfirm" hidden>
+    <section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmDescription">
+      <h3 id="confirmTitle">Confirmer l'intervention</h3>
+      <p id="confirmDescription">Confirmez cette modification de la note.</p>
+      <div class="selection-preview" id="selectionPreview"></div>
+      <div class="confirm-actions">
+        <button class="subtle-btn" id="cancelAction" type="button">Annuler</button>
+        <button class="primary-btn" id="acceptAction" type="button">Confirmer</button>
+      </div>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" hidden></div>
+</div>
+
 <noscript><p>Cette page nécessite JavaScript.</p></noscript>
 <script type="module" src="{{ '/assets/js/camarilla/pages/affichage.js' | relative_url }}"></script>
