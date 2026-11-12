@@ -151,3 +151,15 @@ table.cam-table td textarea { min-height: 3rem; font-size: .82rem; }
   .cam-barre span { width: 100%; }
 }
 .cam-app button { text-transform: none; letter-spacing: normal; }
+
+/* Incarnation : choix du personnage joué dans les outils de jeu */
+.cam-app button.cam-tuile.cam-perso {
+  display: block; width: 100%; margin: 0; text-align: left; font-weight: normal;
+  background: #fff; color: var(--encre) !important; border: 1px solid #e3ddd0; border-radius: 6px; padding: 1rem;
+}
+.cam-app button.cam-tuile.cam-perso:hover { background: #fdfaf4; border-color: var(--accent); }
+.cam-app button.cam-tuile.cam-perso.choisi { border: 2px solid var(--accent); background: #fbf3f4; }
+.cam-app button.cam-tuile.cam-perso.quitter strong { color: var(--encre-pale); }
+.cam-incarne { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; }
+.cam-incarne .nom { font-size: 1.15rem; font-weight: 700; color: var(--accent); }
+.cam-tuile.verrou { opacity: .55; pointer-events: none; }

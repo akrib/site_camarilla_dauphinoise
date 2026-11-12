@@ -13,7 +13,7 @@ import {
 } from '@firebase/rules-unit-testing';
 import {
   doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs,
-  serverTimestamp, Timestamp, writeBatch
+  serverTimestamp, Timestamp, writeBatch, arrayUnion, deleteField
 } from 'firebase/firestore';
 
 const ici = dirname(fileURLToPath(import.meta.url));
@@ -57,13 +57,26 @@ function fiche(proprietaire, extra = {}) {
 function nouvelleFiche(proprietaire, extra = {}) {
   return { ...fiche(proprietaire), creeLe: serverTimestamp(), majLe: serverTimestamp(), ...extra };
 }
-function tableau(proprietaire, acces, droits, extra = {}) {
+// Tableau d'enquête d'un personnage (document tableaux/{idPersonnage})
+const PERSOS = { pA: ['alice', 'Amarok'], pAv: ['alice', 'Réserve'], pB: ['bob', 'Bastien'], pD: ['dan', 'Damien'] };
+function tableau(idPerso, invites = {}, extra = {}) {
+  const [proprietaire, nom] = PERSOS[idPerso];
+  const acces = [proprietaire];
+  const droits = {};
+  for (const [id, droit] of Object.entries(invites)) {
+    const compte = PERSOS[id][0];
+    if (!acces.includes(compte)) acces.push(compte);
+    droits[compte] = droit;
+  }
+  const inv = Object.fromEntries(Object.entries(invites).map(([id, droit]) => [id, { nom: PERSOS[id][1], droit }]));
   return {
-    proprietaire, proprietaireNom: COMPTES[proprietaire].nom, titre: 'Enquête',
-    acces, droits, contenuJson: '{"boards":[]}', version: 1,
-    creeLe: passe, majLe: passe, majPar: proprietaire, majParNom: COMPTES[proprietaire].nom, ...extra
+    proprietaire, personnage: idPerso, proprietaireNom: nom, titre: 'Enquête de ' + nom,
+    acces, droits, invites: inv, contenuJson: '{"boards":[]}', version: 1,
+    creeLe: passe, majLe: passe, majPar: proprietaire, majPerso: idPerso, majParNom: nom, ...extra
   };
 }
+// Signature d'une sauvegarde par le personnage idPerso
+const signe = (idPerso) => ({ majPar: PERSOS[idPerso][0], majPerso: idPerso, majParNom: PERSOS[idPerso][1] });
 function action(uid, personnageId, personnageNom, extra = {}) {
   return {
     proprietaire: uid, personnageId, personnageNom, type: 'globale', date: '2026-11-10', mois: '2026-11',
@@ -79,11 +92,20 @@ function ticket(uid, personnageId = '', personnageNom = '', extra = {}) {
     creeLe: serverTimestamp(), ...extra
   };
 }
-function message(uid, extra = {}) {
-  return {
-    auteur: uid, auteurNom: COMPTES[uid].nom, auteurRole: COMPTES[uid].role, categorie: 'rp',
-    titre: 'Avis', texte: 'Recherche témoin.', image: '', epingle: false, creeLe: serverTimestamp(), ...extra
-  };
+// Panneau d'affichage
+const SEG = ['j0', 'j1', 'j2', 'j3', 'j4', 'j5'];
+// Une ligne du journal au nom du personnage idPerso, et l'« op » qui va avec
+const ligne = (idPerso, a, t = Date.now()) => ({ t, n: PERSOS[idPerso][1], a });
+const op = (a, id, idPerso) => ({ a, id, p: idPerso });
+function note(extra = {}) {
+  return { texte: 'Ne fais confiance à personne.', type: 'postit', police: 'georgia', x: 0.5, y: 0.25,
+    rotation: 1.2, epingle: '#b94335', r: [], g: [], dechiree: false, ...extra };
+}
+function panneau(extra = {}) {
+  const d = { notes: { n1: note() }, courant: 'j0', op: op('ajout', 'n1', 'pA') };
+  SEG.forEach((j) => { d[j] = []; });
+  d.j0 = [ligne('pA', 'visite', 1767225600000), ligne('pA', 'ajout', 1767225600001)];
+  return { ...d, ...extra };
 }
 
 before(async () => {
@@ -105,9 +127,14 @@ beforeEach(async () => {
     await setDoc(doc(d, 'personnages', 'pA2'), fiche('alice', { nom: 'Brouillon' }));
     await setDoc(doc(d, 'personnages', 'pAv'), fiche('alice', { nom: 'Réserve', statut: 'validee' }));
     await setDoc(doc(d, 'personnages', 'pB'), fiche('bob', { nom: 'Bastien', statut: 'active' }));
-    await setDoc(doc(d, 'tableaux', 'tLecture'), tableau('alice', ['alice', 'bob'], { bob: 'lecture' }));
-    await setDoc(doc(d, 'tableaux', 'tEcriture'), tableau('alice', ['alice', 'bob'], { bob: 'ecriture' }));
-    await setDoc(doc(d, 'affichage', 'm1'), { ...message('alice'), creeLe: passe });
+    await setDoc(doc(d, 'personnages', 'pD'), fiche('dan', { nom: 'Damien', statut: 'validee' }));
+    // Amarok partage en lecture avec Bastien ; Réserve partage en modification avec Bastien.
+    await setDoc(doc(d, 'tableaux', 'pA'), tableau('pA', { pB: 'lecture' }));
+    await setDoc(doc(d, 'tableaux', 'pAv'), tableau('pAv', { pB: 'ecriture' }));
+    // Ancien enregistrement rattaché au compte (avant les personnages)
+    await setDoc(doc(d, 'tableaux', 'ancien'), { proprietaire: 'alice', proprietaireNom: 'Alice', titre: 'Vieux', acces: ['alice'], droits: {},
+      contenuJson: '{}', version: 1, creeLe: passe, majLe: passe, majPar: 'alice', majParNom: 'Alice' });
+    await setDoc(doc(d, 'panneau', 'principal'), panneau());
     await setDoc(doc(d, 'influences', 'iA'), { ...action('alice', 'pA', 'Amarok'), creeLe: passe });
     await setDoc(doc(d, 'influences', 'iB'), { ...action('bob', 'pB', 'Bastien'), creeLe: passe });
     await setDoc(doc(d, 'tickets', 'kA'), { ...ticket('alice'), creeLe: passe });
@@ -153,8 +180,8 @@ describe('Comptes', () => {
     await assertFails(updateDoc(doc(db('admin'), 'utilisateurs', 'admin'), { statut: 'suspendu' }));
   });
   test('un compte suspendu ou en attente ne sert à rien', async () => {
-    await assertFails(getDocs(collection(db('sam'), 'affichage')));
-    await assertFails(getDoc(doc(db('eve'), 'affichage', 'm1')));
+    await assertFails(getDoc(doc(db('sam'), 'panneau', 'principal')));
+    await assertFails(getDoc(doc(db('eve'), 'panneau', 'principal')));
     await assertFails(updateDoc(doc(db('sam'), 'utilisateurs', 'bob'), { statut: 'actif' }));
   });
   test('un joueur ne peut pas se faire passer pour conteur via le statut', async () => {
@@ -171,6 +198,27 @@ describe('Annuaire', () => {
     await assertFails(setDoc(doc(db('alice'), 'annuaire', 'alice'), { nom: 'Alice', role: 'conteur' }));
     await assertFails(setDoc(doc(db('alice'), 'annuaire', 'bob'), { nom: 'Bob', role: 'joueur' }));
     await assertFails(setDoc(doc(db('eve'), 'annuaire', 'eve'), { nom: 'Eve', role: 'joueur' }));
+  });
+  test('un conteur inscrit les comptes actifs, avec leur vrai nom et leur vrai rôle', async () => {
+    await assertSucceeds(setDoc(doc(db('conteur'), 'annuaire', 'bob'), { nom: 'Bob', role: 'joueur' }));
+    await assertSucceeds(setDoc(doc(db('conteur'), 'annuaire', 'conteur2'), { nom: 'Conteur2', role: 'conteur' }));
+    await assertFails(setDoc(doc(db('conteur'), 'annuaire', 'dan'), { nom: 'Le Prince', role: 'joueur' }));
+    await assertFails(setDoc(doc(db('conteur'), 'annuaire', 'dan'), { nom: 'Dan', role: 'admin' }));
+    await assertFails(setDoc(doc(db('conteur'), 'annuaire', 'eve'), { nom: 'Eve', role: 'joueur' }));
+    await assertFails(setDoc(doc(db('conteur'), 'annuaire', 'inconnu'), { nom: 'X', role: 'joueur' }));
+    await assertFails(setDoc(doc(db('conteur'), 'annuaire', 'bob'), { nom: 'Bob', role: 'joueur', email: 'bob@test.fr' }));
+  });
+  test('activation et inscription à l\'annuaire dans le même lot', async () => {
+    const d = db('conteur');
+    const lot = writeBatch(d);
+    lot.update(doc(d, 'utilisateurs', 'eve'), { statut: 'actif' });
+    lot.set(doc(d, 'annuaire', 'eve'), { nom: 'Eve', role: 'joueur' });
+    await assertSucceeds(lot.commit());
+  });
+  test('un conteur retire un compte suspendu ; un joueur ne retire que lui-même', async () => {
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'annuaire', 'sam'), { nom: 'Sam', role: 'joueur' }));
+    await assertFails(deleteDoc(doc(db('alice'), 'annuaire', 'sam')));
+    await assertSucceeds(deleteDoc(doc(db('conteur'), 'annuaire', 'sam')));
   });
 });
 
@@ -302,72 +350,165 @@ describe('Images', () => {
   });
 });
 
-describe('Tableaux d\'enquête', () => {
-  test('les invités lisent, les autres non', async () => {
-    await assertSucceeds(getDoc(doc(db('bob'), 'tableaux', 'tLecture')));
-    await assertFails(getDoc(doc(db('dan'), 'tableaux', 'tLecture')));
-    await assertSucceeds(getDoc(doc(db('conteur'), 'tableaux', 'tLecture')));
+describe('Tableaux d\'enquête (réservés aux personnages)', () => {
+  const nouveau = (idPerso, extra = {}) => ({ ...tableau(idPerso), creeLe: serverTimestamp(), ...extra });
+  test('les comptes des personnages invités lisent, les autres non', async () => {
+    await assertSucceeds(getDoc(doc(db('bob'), 'tableaux', 'pA')));
+    await assertFails(getDoc(doc(db('dan'), 'tableaux', 'pA')));
+    await assertSucceeds(getDoc(doc(db('conteur'), 'tableaux', 'pA')));
   });
-  test('liste : uniquement les tableaux où l\'on est invité', async () => {
+  test('liste : uniquement les tableaux où son compte est invité', async () => {
     await assertSucceeds(getDocs(query(collection(db('bob'), 'tableaux'), where('acces', 'array-contains', 'bob'))));
     await assertFails(getDocs(collection(db('bob'), 'tableaux')));
   });
-  test('création avec version 1 et soi-même dans les accès', async () => {
-    const t = { ...tableau('dan', ['dan'], {}), creeLe: serverTimestamp() };
-    await assertSucceeds(setDoc(doc(db('dan'), 'tableaux', 'tDan'), t));
-    await assertFails(setDoc(doc(db('dan'), 'tableaux', 'tDan2'), { ...t, acces: ['bob'] }));
-    await assertFails(setDoc(doc(db('dan'), 'tableaux', 'tDan3'), { ...t, proprietaire: 'bob' }));
-    await assertFails(setDoc(doc(db('dan'), 'tableaux', 'tDan4'), { ...t, majParNom: 'Conteur' }));
+  test('création : un tableau par personnage validé, à son identifiant, signé par lui', async () => {
+    await assertFails(setDoc(doc(db('dan'), 'tableaux', 'dan'), { ...nouveau('pD'), personnage: 'dan' }));   // le compte, pas un personnage
+    await assertFails(setDoc(doc(db('dan'), 'tableaux', 'pB'), { ...nouveau('pB'), proprietaire: 'dan', majPar: 'dan' }));   // personnage d'un autre
+    await assertFails(setDoc(doc(db('dan'), 'tableaux', 'pD'), nouveau('pD', { majParNom: 'Dan' })));   // signé du nom du joueur
+    await assertFails(setDoc(doc(db('dan'), 'tableaux', 'pD'), nouveau('pD', { proprietaireNom: 'Autre' })));
+    await assertFails(setDoc(doc(db('dan'), 'tableaux', 'pD'), nouveau('pD', { version: 2 })));
+    await assertFails(setDoc(doc(db('dan'), 'tableaux', 'autre'), nouveau('pD')));   // identifiant différent du personnage
+    await assertSucceeds(setDoc(doc(db('dan'), 'tableaux', 'pD'), nouveau('pD')));
+    // Le document existe : une nouvelle « création » est une mise à jour, refusée sans version + 1.
+    await assertFails(setDoc(doc(db('dan'), 'tableaux', 'pD'), nouveau('pD')));
+  });
+  test('une fiche non validée (brouillon, archivée) n\'a pas de tableau', async () => {
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'personnages', 'pA2'), fiche('alice', { nom: 'Brouillon' })));
+    const t = { ...nouveau('pA'), personnage: 'pA2', proprietaireNom: 'Brouillon', majPerso: 'pA2', majParNom: 'Brouillon' };
+    await assertFails(setDoc(doc(db('alice'), 'tableaux', 'pA2'), t));
+    await env.withSecurityRulesDisabled((ctx) => updateDoc(doc(ctx.firestore(), 'personnages', 'pD'), { statut: 'archivee' }));
+    await assertFails(setDoc(doc(db('dan'), 'tableaux', 'pD'), nouveau('pD')));
   });
   test('invité en lecture : pas de modification', async () => {
-    await assertFails(updateDoc(doc(db('bob'), 'tableaux', 'tLecture'), {
-      contenuJson: '{}', version: 2, majPar: 'bob', majParNom: 'Bob'
-    }));
+    await assertFails(updateDoc(doc(db('bob'), 'tableaux', 'pA'), { contenuJson: '{}', version: 2, ...signe('pB') }));
   });
-  test('invité en écriture : contenu oui, partage non, version obligatoire', async () => {
-    const ref = doc(db('bob'), 'tableaux', 'tEcriture');
-    await assertFails(updateDoc(ref, { contenuJson: '{"a":1}', version: 1, majPar: 'bob', majParNom: 'Bob' }));
-    await assertFails(updateDoc(ref, { acces: ['alice', 'bob', 'dan'], version: 2, majPar: 'bob', majParNom: 'Bob' }));
-    await assertSucceeds(updateDoc(ref, { contenuJson: '{"a":1}', version: 2, majPar: 'bob', majParNom: 'Bob' }));
+  test('invité en modification : contenu oui (au nom du personnage invité), partage non', async () => {
+    const ref = doc(db('bob'), 'tableaux', 'pAv');
+    await assertFails(updateDoc(ref, { contenuJson: '{"a":1}', version: 1, ...signe('pB') }));
+    await assertFails(updateDoc(ref, { contenuJson: '{"a":1}', version: 2, majPar: 'bob', majPerso: '', majParNom: 'Bob' }));
+    await assertFails(updateDoc(ref, { invites: {}, version: 2, ...signe('pB') }));
+    await assertSucceeds(updateDoc(ref, { contenuJson: '{"a":1}', version: 2, ...signe('pB') }));
     // Une seconde écriture qui repart de la version 1 est refusée (conflit détecté).
-    await assertFails(updateDoc(ref, { contenuJson: '{"a":2}', version: 2, majPar: 'bob', majParNom: 'Bob' }));
+    await assertFails(updateDoc(ref, { contenuJson: '{"a":2}', version: 2, ...signe('pB') }));
+    // Personnage invité archivé : plus de modification.
+    await env.withSecurityRulesDisabled((ctx) => updateDoc(doc(ctx.firestore(), 'personnages', 'pB'), { statut: 'archivee' }));
+    await assertFails(updateDoc(ref, { contenuJson: '{"a":3}', version: 3, ...signe('pB') }));
   });
-  test('le propriétaire partage et retire des accès', async () => {
-    await assertSucceeds(updateDoc(doc(db('alice'), 'tableaux', 'tLecture'), {
-      acces: ['alice', 'dan'], droits: { dan: 'ecriture' }, version: 2, majPar: 'alice', majParNom: 'Alice'
+  test('le personnage propriétaire partage, retire des accès ; pas un autre de ses personnages', async () => {
+    await assertFails(updateDoc(doc(db('alice'), 'tableaux', 'pA'), {
+      acces: ['alice', 'dan'], droits: { dan: 'ecriture' }, invites: { pD: { nom: 'Damien', droit: 'ecriture' } }, version: 2, ...signe('pAv')
     }));
-    await assertFails(getDoc(doc(db('bob'), 'tableaux', 'tLecture')));
+    await assertSucceeds(updateDoc(doc(db('alice'), 'tableaux', 'pA'), {
+      acces: ['alice', 'dan'], droits: { dan: 'ecriture' }, invites: { pD: { nom: 'Damien', droit: 'ecriture' } }, version: 2, ...signe('pA')
+    }));
+    await assertFails(getDoc(doc(db('bob'), 'tableaux', 'pA')));
+    await assertSucceeds(getDoc(doc(db('dan'), 'tableaux', 'pA')));
   });
-  test('seul le propriétaire supprime', async () => {
-    await assertFails(deleteDoc(doc(db('bob'), 'tableaux', 'tEcriture')));
-    await assertSucceeds(deleteDoc(doc(db('alice'), 'tableaux', 'tEcriture')));
+  test('anciens enregistrements : lisibles et supprimables, plus modifiables', async () => {
+    await assertSucceeds(getDoc(doc(db('alice'), 'tableaux', 'ancien')));
+    await assertFails(updateDoc(doc(db('alice'), 'tableaux', 'ancien'), { contenuJson: '{"x":1}', version: 2, invites: {}, ...signe('pA') }));
+    await assertSucceeds(deleteDoc(doc(db('alice'), 'tableaux', 'ancien')));
+  });
+  test('seul le propriétaire (ou un conteur) supprime', async () => {
+    await assertFails(deleteDoc(doc(db('bob'), 'tableaux', 'pAv')));
+    await assertSucceeds(deleteDoc(doc(db('alice'), 'tableaux', 'pAv')));
+    await assertSucceeds(deleteDoc(doc(db('conteur'), 'tableaux', 'pA')));
   });
 });
 
-describe('Tableau d\'affichage', () => {
-  test('un joueur publie en RP/HRP, pas d\'annonce ni d\'épinglage', async () => {
-    await assertSucceeds(setDoc(doc(db('bob'), 'affichage', 'n1'), message('bob')));
-    await assertFails(setDoc(doc(db('bob'), 'affichage', 'n2'), message('bob', { categorie: 'annonce' })));
-    await assertFails(setDoc(doc(db('bob'), 'affichage', 'n3'), message('bob', { epingle: true })));
-    await assertFails(setDoc(doc(db('bob'), 'affichage', 'n4'), message('bob', { auteurNom: 'Le Prince' })));
-    await assertFails(setDoc(doc(db('bob'), 'affichage', 'n5'), message('bob', { auteurRole: 'conteur' })));
+describe('Répertoire des personnages', () => {
+  test('un joueur inscrit ses propres personnages validés, tels que sur la fiche', async () => {
+    await assertSucceeds(setDoc(doc(db('alice'), 'repertoire', 'pA'), { nom: 'Amarok', proprietaire: 'alice' }));
+    await assertSucceeds(setDoc(doc(db('alice'), 'repertoire', 'pAv'), { nom: 'Réserve', proprietaire: 'alice' }));
+    await assertFails(setDoc(doc(db('alice'), 'repertoire', 'pA2'), { nom: 'Brouillon', proprietaire: 'alice' }));
+    await assertFails(setDoc(doc(db('alice'), 'repertoire', 'pB'), { nom: 'Bastien', proprietaire: 'bob' }));
+    await assertFails(setDoc(doc(db('alice'), 'repertoire', 'pA'), { nom: 'Le Prince', proprietaire: 'alice' }));
   });
-  test('un conteur publie une annonce épinglée', async () => {
-    await assertSucceeds(setDoc(doc(db('conteur'), 'affichage', 'a1'), message('conteur', { categorie: 'annonce', epingle: true })));
+  test('un conteur inscrit n\'importe quel personnage validé ; lecture par les membres actifs', async () => {
+    await assertSucceeds(setDoc(doc(db('conteur'), 'repertoire', 'pB'), { nom: 'Bastien', proprietaire: 'bob' }));
+    await assertSucceeds(getDoc(doc(db('dan'), 'repertoire', 'pB')));
+    await assertFails(getDoc(doc(db('eve'), 'repertoire', 'pB')));
+    await assertFails(deleteDoc(doc(db('alice'), 'repertoire', 'pB')));
+    await assertSucceeds(deleteDoc(doc(db('bob'), 'repertoire', 'pB')));
   });
-  test('chacun modifie ses messages ; le conteur modère', async () => {
-    await assertSucceeds(updateDoc(doc(db('alice'), 'affichage', 'm1'), { texte: 'Modifié' }));
-    await assertFails(updateDoc(doc(db('alice'), 'affichage', 'm1'), { epingle: true }));
-    await assertFails(updateDoc(doc(db('bob'), 'affichage', 'm1'), { texte: 'Piraté' }));
-    await assertSucceeds(updateDoc(doc(db('conteur'), 'affichage', 'm1'), { epingle: true }));
-    await assertFails(deleteDoc(doc(db('bob'), 'affichage', 'm1')));
-    await assertSucceeds(deleteDoc(doc(db('conteur'), 'affichage', 'm1')));
+});
+
+describe('Panneau d\'affichage', () => {
+  const ref = (uid) => doc(db(uid), 'panneau', 'principal');
+  const vider = () => env.withSecurityRulesDisabled((ctx) => deleteDoc(doc(ctx.firestore(), 'panneau', 'principal')));
+
+  test('lecture réservée aux membres actifs', async () => {
+    await assertSucceeds(getDoc(ref('bob')));
+    await assertFails(getDoc(ref('eve')));
+    await assertFails(getDoc(ref(null)));
   });
-  test('réponses : à son nom uniquement', async () => {
-    const rep = { auteur: 'bob', auteurNom: 'Bob', auteurRole: 'joueur', texte: 'Moi !', creeLe: serverTimestamp() };
-    await assertSucceeds(setDoc(doc(db('bob'), 'affichage', 'm1', 'reponses', 'r1'), rep));
-    await assertFails(setDoc(doc(db('bob'), 'affichage', 'm1', 'reponses', 'r2'), { ...rep, auteurNom: 'Alice' }));
-    await assertFails(setDoc(doc(db('eve'), 'affichage', 'm1', 'reponses', 'r3'), { ...rep, auteur: 'eve', auteurNom: 'Eve' }));
+  test('création : panneau vide, une seule ligne de visite à son nom', async () => {
+    await vider();
+    const neuf = () => { const d = { notes: {}, courant: 'j0', op: op('visite', '', 'pB') }; SEG.forEach((j) => { d[j] = []; }); d.j0 = [ligne('pB', 'visite')]; return d; };
+    await assertFails(setDoc(ref('bob'), { ...neuf(), j0: [{ t: Date.now(), n: 'Bob', a: 'visite' }] }));   // nom du joueur, pas du personnage
+    await assertFails(setDoc(ref('bob'), { ...neuf(), notes: { n1: note() } }));
+    await assertFails(setDoc(ref('bob'), { ...neuf(), j0: [ligne('pA', 'visite')], op: op('visite', '', 'pA') }));   // personnage d'un autre
+    await assertFails(setDoc(ref('eve'), { ...neuf(), j0: [{ t: Date.now(), n: 'Eve', a: 'visite' }], op: op('visite', '', '') }));
+    await assertFails(setDoc(doc(db('bob'), 'panneau', 'autre'), neuf()));
+    await assertSucceeds(setDoc(ref('bob'), neuf()));
+  });
+  test('une action sans ligne de journal, ou avec une ligne au nom d\'un autre, est refusée', async () => {
+    await assertFails(updateDoc(ref('bob'), { 'notes.n2': note(), op: op('ajout', 'n2', 'pB') }));
+    await assertFails(updateDoc(ref('bob'), { 'notes.n2': note(), op: op('ajout', 'n2', 'pA'), j0: arrayUnion(ligne('pA', 'ajout')) }));
+    await assertFails(updateDoc(ref('bob'), { 'notes.n2': note(), op: op('ajout', 'n2', 'pB'), j0: arrayUnion({ ...ligne('pB', 'ajout'), t: 1000 }) }));
+    await assertSucceeds(updateDoc(ref('bob'), { 'notes.n2': note(), op: op('ajout', 'n2', 'pB'), j0: arrayUnion(ligne('pB', 'ajout')) }));
+  });
+  test('réservé aux personnages validés du membre ; un conteur peut agir sous son nom', async () => {
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'personnages', 'pA2'), fiche('alice', { nom: 'Brouillon' })));
+    await assertFails(updateDoc(ref('alice'), { op: op('visite', '', 'pA2'), j0: arrayUnion({ t: Date.now(), n: 'Brouillon', a: 'visite' }) }));
+    await assertFails(updateDoc(ref('alice'), { op: op('visite', '', ''), j0: arrayUnion({ t: Date.now(), n: 'Alice', a: 'visite' }) }));
+    await assertFails(updateDoc(ref('alice'), { op: op('visite', '', 'pA'), j0: arrayUnion({ t: Date.now(), n: 'Réserve', a: 'visite' }) }));
+    await assertSucceeds(updateDoc(ref('alice'), { op: op('visite', '', 'pAv'), j0: arrayUnion(ligne('pAv', 'visite')) }));
+    await assertSucceeds(updateDoc(ref('conteur'), { op: op('visite', '', ''), j0: arrayUnion({ t: Date.now(), n: 'Conteur', a: 'visite' }) }));
+  });
+  test('l\'action annoncée doit correspondre à la modification', async () => {
+    // « visite » qui modifie une note
+    await assertFails(updateDoc(ref('bob'), { 'notes.n1.x': 0.9, op: op('visite', '', 'pB'), j0: arrayUnion(ligne('pB', 'visite')) }));
+    // « déplacement » qui change le texte
+    await assertFails(updateDoc(ref('bob'), { 'notes.n1.texte': 'Autre texte', op: op('deplacement', 'n1', 'pB'), j0: arrayUnion(ligne('pB', 'deplacement')) }));
+    // « déplacement » hors du liège
+    await assertFails(updateDoc(ref('bob'), { 'notes.n1.x': 1.5, op: op('deplacement', 'n1', 'pB'), j0: arrayUnion(ligne('pB', 'deplacement')) }));
+    await assertSucceeds(updateDoc(ref('bob'), { 'notes.n1.x': 0.9, 'notes.n1.y': 0.1, op: op('deplacement', 'n1', 'pB'), j0: arrayUnion(ligne('pB', 'deplacement')) }));
+    await assertSucceeds(updateDoc(ref('bob'), { op: op('interet', '', 'pB'), j0: arrayUnion(ligne('pB', 'interet')) }));
+  });
+  test('caviardage, coloriage, déchirure, retrait', async () => {
+    await assertFails(updateDoc(ref('bob'), { 'notes.n1.texte': '███ fais confiance à personne.', op: op('caviardage', 'n1', 'pB'), j0: arrayUnion(ligne('pB', 'caviardage')) }));
+    await assertSucceeds(updateDoc(ref('bob'), { 'notes.n1.texte': '███ fais confiance à personne.', 'notes.n1.r': arrayUnion({ s: 0, e: 3 }), op: op('caviardage', 'n1', 'pB'), j0: arrayUnion(ligne('pB', 'caviardage')) }));
+    await assertSucceeds(updateDoc(ref('alice'), { 'notes.n1.texte': '███ ████ confiance à personne.', 'notes.n1.g': arrayUnion({ s: 4, e: 8 }), op: op('coloriage', 'n1', 'pA'), j0: arrayUnion(ligne('pA', 'coloriage', Date.now() + 1)) }));
+    await assertFails(updateDoc(ref('bob'), { 'notes.n1.dechiree': true, op: op('dechirure', 'n1', 'pB'), j0: arrayUnion(ligne('pB', 'dechirure')) }));
+    await assertSucceeds(updateDoc(ref('bob'), { 'notes.n1.texte': '███ ████', 'notes.n1.dechiree': true, op: op('dechirure', 'n1', 'pB'), j0: arrayUnion(ligne('pB', 'dechirure', Date.now() + 2)) }));
+    await assertFails(updateDoc(ref('bob'), { 'notes.n1.texte': '███', op: op('dechirure', 'n1', 'pB'), j0: arrayUnion(ligne('pB', 'dechirure', Date.now() + 3)) }));
+    await assertSucceeds(updateDoc(ref('dan'), { 'notes.n1': deleteField(), op: op('retrait', 'n1', 'pD'), j0: arrayUnion(ligne('pD', 'retrait')) }));
+  });
+  test('le journal ne se réécrit pas et ne s\'efface pas (sauf par un conteur)', async () => {
+    await assertFails(updateDoc(ref('bob'), { j0: [ligne('pB', 'visite')], op: op('visite', '', 'pB') }));
+    await assertFails(updateDoc(ref('bob'), { j0: [ligne('pA', 'visite', 1767225600000), ligne('pB', 'visite')], op: op('visite', '', 'pB') }));
+    await assertFails(updateDoc(ref('bob'), { j1: arrayUnion(ligne('pB', 'visite')), op: op('visite', '', 'pB') }));
+    const vide = { courant: 'j0', op: op('effacement', '', 'pB') }; SEG.forEach((j) => { vide[j] = []; });
+    await assertFails(updateDoc(ref('bob'), vide));
+    await assertSucceeds(updateDoc(ref('conteur'), vide));
+  });
+  test('segment plein : on passe au suivant (vidé), pas avant, pas ailleurs', async () => {
+    const plein = Array.from({ length: 100 }, (_, i) => ligne('pA', 'visite', 1767225600000 + i));
+    await env.withSecurityRulesDisabled((ctx) => updateDoc(doc(ctx.firestore(), 'panneau', 'principal'), { j0: plein, j1: [ligne('pA', 'visite', 1700000000000)] }));
+    await assertFails(updateDoc(ref('bob'), { courant: 'j2', j2: [ligne('pB', 'visite')], op: op('visite', '', 'pB') }));
+    await assertFails(updateDoc(ref('bob'), { courant: 'j1', j1: [ligne('pB', 'visite')], j0: [], op: op('visite', '', 'pB') }));
+    await assertSucceeds(updateDoc(ref('bob'), { courant: 'j1', j1: [ligne('pB', 'visite')], op: op('visite', '', 'pB') }));
+    // j1 n'a qu'une ligne : impossible de repasser déjà au segment suivant.
+    await assertFails(updateDoc(ref('bob'), { courant: 'j2', j2: [ligne('pB', 'interet')], op: op('interet', '', 'pB') }));
+  });
+  test('au plus 80 notes, texte limité, seuls les types prévus', async () => {
+    await assertFails(updateDoc(ref('bob'), { 'notes.n9': note({ texte: 'x'.repeat(1201) }), op: op('ajout', 'n9', 'pB'), j0: arrayUnion(ligne('pB', 'ajout')) }));
+    await assertFails(updateDoc(ref('bob'), { 'notes.n9': note({ type: 'affiche' }), op: op('ajout', 'n9', 'pB'), j0: arrayUnion(ligne('pB', 'ajout')) }));
+    await assertFails(updateDoc(ref('bob'), { 'notes.n9': note({ dechiree: true }), op: op('ajout', 'n9', 'pB'), j0: arrayUnion(ligne('pB', 'ajout')) }));
+    const beaucoup = {}; for (let i = 0; i < 80; i++) beaucoup['m' + i] = note();
+    await env.withSecurityRulesDisabled((ctx) => updateDoc(doc(ctx.firestore(), 'panneau', 'principal'), { notes: beaucoup }));
+    await assertFails(updateDoc(ref('bob'), { 'notes.n9': note(), op: op('ajout', 'n9', 'pB'), j0: arrayUnion(ligne('pB', 'ajout')) }));
   });
 });
 

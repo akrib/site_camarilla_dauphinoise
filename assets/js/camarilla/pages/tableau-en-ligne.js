@@ -1,52 +1,71 @@
 // Tableau d'enquête : sauvegarde en ligne, partage, ouverture.
 // S'appuie sur le pont window.TableauEnquete défini dans _pages/utils/tableau.md.
 //
-// Chaque membre a UN seul tableau en ligne : le document tableaux/{uid}, qui
-// contient les 3 tableaux de la page et qui est remplacé à chaque sauvegarde.
-// « Partager » ouvre ce même document à d'autres membres (lecture ou
-// modification). « Ouvrir » liste son tableau et ceux qu'on a partagés avec soi.
+// Réservé aux personnages : le membre doit incarner un de ses personnages
+// validés (voir incarnation.js). Chaque personnage a UN tableau en ligne,
+// le document tableaux/{idPersonnage}, qui contient les 3 tableaux de la page
+// et qui est remplacé à chaque sauvegarde. « Partager » l'ouvre à d'autres
+// personnages (lecture ou modification) ; « Ouvrir » liste le tableau du
+// personnage et ceux qu'on lui a partagés. Les conteurs peuvent consulter
+// tous les tableaux sans incarner de personnage.
+//
+// Document : proprietaire (compte), personnage (id), proprietaireNom (nom du
+// personnage), titre, contenuJson, version, acces (comptes qui peuvent lire),
+// droits ({ compte: 'lecture' | 'ecriture' }), invites ({ idPersonnage:
+// { nom, droit } }), majPar / majPerso / majParNom (dernier enregistrement).
 import {
   h, db, fs, surSession, estActif, estConteur, message, messageErreur, dateFr, millis, confirmer
 } from '../core.js';
 import { externaliser, internaliser } from '../images.js';
+import { exigerPersonnage, fenetreChoixPersonnage } from '../incarnation.js';
 
 const T = window.TableauEnquete;
-T.pris = true;            // le module décide désormais de ce qui s'affiche au démarrage
+T.pris = true;            // le module décide de ce qui s'affiche
 
 const LIMITE = 950000;
 const MAX_INVITES = 39;
-const INDICE = 'cam-tableau-perso';
 const statut = document.getElementById('cloudStatus');
+const garde = document.getElementById('cam-garde');
+const btnPerso = document.getElementById('btnPerso');
 
 let session = { user: null, profil: null };
-let courant = null;       // document affiché : { id, titre, proprietaire, proprietaireNom, acces, droits, version }
+let perso = null;         // personnage incarné { id, nom, ... } (null : conteur sans personnage)
+let courant = null;       // document affiché : { id, titre, proprietaire, personnage, proprietaireNom, acces, droits, invites, version }
 let reference = null;     // contenu affiché au dernier chargement / enregistrement
 let dernierJson = null;   // contenuJson (images externalisées) du dernier chargement / enregistrement
 let enEcriture = null;    // contenuJson en cours d'envoi (pour reconnaître notre propre écriture)
 let arretEcoute = null;
 let enCours = false;
+let pret = false;
 let uidDemarre;           // undefined tant que le démarrage n'a pas eu lieu
 let confirmeJusqua = 0;   // affiche « ✓ » quelques secondes après une sauvegarde
 
 const uid = () => (session.user ? session.user.uid : null);
-const actif = () => !!session.user && estActif(session.profil);
-const monNom = () => (session.profil && session.profil.nom) || 'Joueur';
-const estMien = () => !!courant && courant.id === uid();
-const peutModifierCourant = () => !!courant && !estMien() && courant.proprietaire !== uid()
-  && (courant.droits || {})[uid()] === 'ecriture';
+const conteur = () => estConteur(session.profil);
+const monNom = () => (perso ? perso.nom : (session.profil && session.profil.nom) || 'Conteur');
+const estMien = () => !!courant && !!perso && courant.id === perso.id;
+const invitation = (d) => (perso && d && d.invites ? d.invites[perso.id] : null);
+const peutModifierCourant = () => !!courant && !estMien() && !!invitation(courant)
+  && invitation(courant).droit === 'ecriture' && (courant.droits || {})[uid()] === 'ecriture';
 const etatActuel = () => JSON.stringify(T.exporter());
 const modifie = () => etatActuel() !== (reference !== null ? reference : T.etatBase);
-const nbInvites = (d) => Math.max(0, (d.acces || []).filter((x) => x !== d.proprietaire).length);
+const nbInvites = (d) => Object.keys(d.invites || {}).length;
 const titreParDefaut = () => 'Enquête de ' + monNom();
-
-function indice(present) {
-  try { if (present) localStorage.setItem(INDICE, '1'); else localStorage.removeItem(INDICE); } catch (e) { /* navigation privée */ }
-}
+const signature = () => ({ majLe: fs.serverTimestamp(), majPar: uid(), majPerso: perso ? perso.id : '', majParNom: monNom() });
 
 function adresse(id) {
   const url = new URL(location.href);
-  if (id && id !== uid()) url.searchParams.set('tableau', id); else url.searchParams.delete('tableau');
+  if (id && (!perso || id !== perso.id)) url.searchParams.set('tableau', id); else url.searchParams.delete('tableau');
   history.replaceState(null, '', url);
+}
+
+// ---------------------------------------------------------------------
+// Garde : la page ne s'ouvre qu'à un personnage incarné (ou à un conteur)
+// ---------------------------------------------------------------------
+function afficherGarde(...contenu) {
+  garde.hidden = false;
+  garde.replaceChildren(h('div', { class: 'cam-garde-boite' }, ...contenu,
+    h('p', { class: 'sous-titre', style: 'margin-top:1rem' }, h('a', { href: '/membres/' }, '← Espace membres'))));
 }
 
 // ---------------------------------------------------------------------
@@ -57,19 +76,19 @@ function majStatut(texte) {
   statut.className = 'cloud-status';
   statut.title = '';
   if (texte) { statut.textContent = texte; return; }
-  if (!session.user) { statut.textContent = 'non connecté'; return; }
+  if (!pret) return;
   const point = modifie() ? ' ●' : '';
   if (point) statut.classList.add('modifie');
-  if (!courant) { statut.textContent = 'pas encore sauvegardé' + point; return; }
+  if (!courant) { statut.textContent = (perso ? 'pas encore sauvegardé' : 'mode conteur') + point; return; }
   const signe = Date.now() < confirmeJusqua ? '✓ ' : '☁ ';
   if (estMien()) {
     const n = nbInvites(courant);
-    statut.textContent = signe + 'Mon tableau' + (n ? ' · partagé (' + n + ')' : '') + point;
+    statut.textContent = signe + 'Tableau de ' + perso.nom + (n ? ' · partagé (' + n + ')' : '') + point;
     statut.title = courant.titre;
     return;
   }
   const lecture = !peutModifierCourant();
-  statut.textContent = signe + (courant.proprietaire === uid() ? 'Ancien enregistrement' : 'Tableau de ' + (courant.proprietaireNom || '?'))
+  statut.textContent = signe + (courant.personnage ? 'Tableau de ' + (courant.proprietaireNom || '?') : 'Ancien enregistrement')
     + (lecture ? ' (lecture seule)' : '') + point;
   statut.title = courant.titre;
   if (lecture && !point) statut.classList.add('lecture');
@@ -100,33 +119,41 @@ surSession((s) => {
 });
 
 async function demarrer() {
-  const demande = new URLSearchParams(location.search).get('tableau');
-  if (!actif()) {
-    indice(false);
-    if (demande) majStatut(session.user ? 'compte pas encore activé' : 'connectez-vous pour ouvrir ce tableau');
-    else { T.demo(); majStatut(); }
+  const retour = encodeURIComponent(location.pathname + location.search);
+  if (!session.user) {
+    afficherGarde(h('h2', {}, 'Connexion requise'),
+      h('p', {}, 'Le tableau d\'enquête est réservé aux personnages des membres de l\'association.'),
+      h('a', { class: 'cam-btn', href: '/connexion/?retour=' + retour }, 'Se connecter'));
     return;
   }
-  if (demande && demande !== uid()) { await ouvrir(demande); return; }
-  // Sans adresse particulière : on recharge son propre tableau s'il existe.
+  if (!estActif(session.profil)) {
+    afficherGarde(h('h2', {}, 'Compte pas encore actif'),
+      h('p', {}, 'Un conteur doit activer votre compte avant que vous puissiez utiliser le tableau d\'enquête.'));
+    return;
+  }
+  const zone = h('div');
+  afficherGarde(zone);
+  zone.append(h('p', { class: 'sous-titre' }, 'Vérification de votre personnage…'));
+  const acces = await exigerPersonnage(zone, session, { outil: 'ce tableau d\'enquête' });
+  if (!acces) return;
+  perso = acces.perso;
+  garde.hidden = true;
+  pret = true;
+  btnPerso.textContent = perso ? '☺ ' + perso.nom : '☺ Conteur';
+  btnPerso.title = perso ? 'Vous incarnez ' + perso.nom + ' (cliquer pour changer)' : 'Mode conteur : vous consultez sans personnage (cliquer pour en incarner un)';
+
+  const demande = new URLSearchParams(location.search).get('tableau');
+  if (demande && (!perso || demande !== perso.id)) { await ouvrir(demande); return; }
+  if (!perso) { adresse(null); majStatut(); return; }
+  // Sans adresse particulière : le tableau du personnage, s'il existe.
   majStatut('chargement…');
   try {
-    const snap = await fs.getDoc(fs.doc(db, 'tableaux', uid()));
-    if (snap.exists()) {
-      // La démo a pu s'afficher (et être modifiée) pendant le chargement.
-      if (!modifie() || confirmer('Remplacer le tableau affiché par votre tableau sauvegardé le '
-        + dateFr(snap.data().majLe, true) + ' ?')) {
-        await afficher(uid(), snap.data());
-        return;
-      }
-    } else {
-      indice(false);
-    }
+    const snap = await fs.getDoc(fs.doc(db, 'tableaux', perso.id));
+    if (snap.exists()) { await afficher(perso.id, snap.data()); return; }
   } catch (e) {
     console.error(e);
   }
   adresse(null);
-  T.demo();
   majStatut();
 }
 
@@ -136,11 +163,12 @@ async function demarrer() {
 document.getElementById('btnSave').addEventListener('click', () => sauvegarder());
 document.getElementById('btnShare').addEventListener('click', () => partager());
 document.getElementById('btnCloud').addEventListener('click', () => ouvrirPanneau());
+btnPerso.addEventListener('click', () => { if (pret) fenetreChoixPersonnage(uid()); });
 document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); sauvegarder(); }
 });
 window.addEventListener('beforeunload', (e) => {
-  if (actif() && modifie()) { e.preventDefault(); e.returnValue = ''; }
+  if (pret && perso && modifie()) { e.preventDefault(); e.returnValue = ''; }
 });
 
 // ---------------------------------------------------------------------
@@ -158,15 +186,15 @@ function modale(titre, ...contenu) {
   return { fond, boite, fermer };
 }
 
-function exigerCompte(titre) {
-  if (actif()) return true;
-  const { user } = session;
-  modale(titre,
-    h('p', {}, user
-      ? 'Votre compte doit être activé par un conteur pour sauvegarder et partager des tableaux en ligne.'
-      : 'Connectez-vous avec votre compte de membre pour sauvegarder votre tableau en ligne et le partager.'),
-    h('p', { class: 'sous-titre' }, 'Sans compte, l\'export / import JSON reste disponible.'),
-    !user ? h('a', { class: 'cam-btn', href: '/connexion/?retour=' + encodeURIComponent(location.pathname + location.search) }, 'Se connecter') : '');
+/** Un conteur sans personnage peut consulter, mais n'a pas de tableau à lui. */
+function exigerIncarnation(titre) {
+  if (!pret) return false;
+  if (perso) return true;
+  const m = modale(titre,
+    h('p', {}, 'Vous consultez les tableaux en tant que conteur. Pour avoir votre propre tableau et le partager, incarnez un de vos personnages (un PNJ, par exemple).'),
+    h('div', { class: 'cam-actions' },
+      h('button', { type: 'button', onclick: () => { m.fermer(); fenetreChoixPersonnage(uid()); } }, 'Incarner un personnage'),
+      h('button', { type: 'button', class: 'secondaire', onclick: () => m.fermer() }, 'Fermer')));
   return false;
 }
 
@@ -174,51 +202,47 @@ function exigerCompte(titre) {
 // Ouvrir
 // ---------------------------------------------------------------------
 async function ouvrirPanneau() {
-  if (!exigerCompte('Ouvrir un tableau')) return;
+  if (!pret) return;
   const msg = h('div', { class: 'cam-msg' });
-  const zoneMien = h('div', {}, h('p', { class: 'sous-titre' }, 'Chargement…'));
+  const zoneMien = h('div');
   const zonePartages = h('div');
   const zoneAnciens = h('div');
   const zoneTous = h('div');
-  const m = modale('Ouvrir un tableau',
+  const m = modale(perso ? 'Tableaux de ' + perso.nom : 'Tableaux des personnages',
     courant && !estMien()
       ? h('div', { class: 'cam-encart' }, 'Affiché : ', h('strong', {}, courant.titre), ' — ' + (courant.proprietaireNom || '?'),
         peutModifierCourant() ? ' (vous pouvez le modifier)' : ' (lecture seule)')
       : '',
-    h('h3', {}, 'Mon tableau'), zoneMien,
-    h('h3', {}, 'Partagés avec moi'), zonePartages,
-    zoneAnciens,
-    estConteur(session.profil) ? [h('h3', {}, 'Tous les tableaux (conteurs)'), zoneTous] : '',
+    perso ? [h('h3', {}, 'Son tableau'), zoneMien, h('h3', {}, 'Partagés avec ' + perso.nom), zonePartages, zoneAnciens] : '',
+    conteur() ? [h('h3', {}, 'Tous les tableaux (conteurs)'), zoneTous] : '',
     msg);
+  zoneMien.append(h('p', { class: 'sous-titre' }, 'Chargement…'));
 
   try {
-    const snap = await fs.getDocs(fs.query(fs.collection(db, 'tableaux'), fs.where('acces', 'array-contains', uid())));
-    const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => millis(b.majLe) - millis(a.majLe));
-    const mien = docs.find((d) => d.id === uid());
-
-    if (mien) {
-      remplir(zoneMien, [mien], '', m, { supprimer: true });
-    } else {
-      zoneMien.replaceChildren(h('p', { class: 'sous-titre' },
-        'Pas encore sauvegardé. « ☁ Sauvegarder » enregistre les 3 tableaux de la page.'));
+    if (perso) {
+      const snap = await fs.getDocs(fs.query(fs.collection(db, 'tableaux'), fs.where('acces', 'array-contains', uid())));
+      const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => millis(b.majLe) - millis(a.majLe));
+      const mien = docs.find((d) => d.id === perso.id);
+      if (mien) remplir(zoneMien, [mien], '', m, { supprimer: true });
+      else zoneMien.replaceChildren(h('p', { class: 'sous-titre' }, 'Pas encore sauvegardé. « ☁ Sauvegarder » enregistre les 3 tableaux de la page.'));
+      if (courant && !estMien()) {
+        zoneMien.append(h('button', { type: 'button', class: 'petit secondaire', onclick: () => { m.fermer(); revenirAuMien(); } },
+          mien ? 'Revenir au tableau de ' + perso.nom : 'Repartir d\'un tableau vide'));
+      }
+      // Seuls les tableaux partagés avec CE personnage (pas avec vos autres personnages).
+      remplir(zonePartages, docs.filter((d) => d.id !== perso.id && invitation(d)),
+        'Personne n\'a encore partagé de tableau avec ' + perso.nom + '.', m);
+      // Enregistrements d'avant les personnages (rattachés au compte).
+      const anciens = docs.filter((d) => d.proprietaire === uid() && !d.personnage);
+      if (anciens.length) {
+        zoneAnciens.append(h('h3', {}, 'Anciens enregistrements'),
+          h('p', { class: 'sous-titre' }, 'Enregistrés avant que les tableaux soient tenus par les personnages. Ouvrez-en un puis « ☁ Sauvegarder » pour le reprendre dans le tableau de ' + perso.nom + ', ou supprimez-le.'));
+        const liste = h('div');
+        zoneAnciens.append(liste);
+        remplir(liste, anciens, '', m, { supprimer: true });
+      }
     }
-    if (courant && !estMien()) {
-      zoneMien.append(h('button', { type: 'button', class: 'petit secondaire', onclick: () => { m.fermer(); revenirAuMien(); } },
-        mien ? 'Revenir à mon tableau' : 'Repartir d\'un tableau vide'));
-    }
-
-    remplir(zonePartages, docs.filter((d) => d.proprietaire !== uid()), 'Personne ne vous a encore partagé de tableau.', m);
-
-    const anciens = docs.filter((d) => d.proprietaire === uid() && d.id !== uid());
-    if (anciens.length) {
-      zoneAnciens.append(h('h3', {}, 'Anciens enregistrements'),
-        h('p', { class: 'sous-titre' }, 'Chaque membre n\'a plus qu\'un tableau en ligne. Ouvrez un ancien enregistrement puis « ☁ Sauvegarder » pour en faire votre tableau, ou supprimez-le pour libérer de la place.'));
-      const liste = h('div');
-      zoneAnciens.append(liste);
-      remplir(liste, anciens, '', m, { supprimer: true });
-    }
-
-    if (estConteur(session.profil)) {
+    if (conteur()) {
       const tous = await fs.getDocs(fs.collection(db, 'tableaux'));
       remplir(zoneTous, tous.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => millis(b.majLe) - millis(a.majLe)),
         'Aucun tableau.', m, { supprimer: true });
@@ -230,22 +254,23 @@ function remplir(zone, docs, vide, m, { supprimer = false } = {}) {
   if (!docs.length) { zone.replaceChildren(h('p', { class: 'sous-titre' }, vide)); return; }
   zone.replaceChildren(h('div', { class: 'cam-table-defil' }, h('table', { class: 'cam-table' },
     h('tbody', {}, docs.map((d) => {
-      const droit = d.proprietaire === uid()
-        ? (nbInvites(d) ? 'partagé avec ' + nbInvites(d) + ' membre' + (nbInvites(d) > 1 ? 's' : '') : 'non partagé')
-        : ((d.droits || {})[uid()] === 'ecriture' ? 'modification' : 'lecture');
+      const sien = perso && d.id === perso.id;
+      const inv = invitation(d);
+      const droit = sien || (d.proprietaire === uid() && !d.personnage)
+        ? (nbInvites(d) ? 'partagé avec ' + nbInvites(d) + ' personnage' + (nbInvites(d) > 1 ? 's' : '') : 'non partagé')
+        : (inv ? (inv.droit === 'ecriture' ? 'modification' : 'lecture') : 'conteur');
       const affiche = courant && courant.id === d.id;
       return h('tr', {},
-        h('td', {}, h('strong', {}, d.titre), h('br'), h('small', { class: 'sous-titre' }, 'par ' + (d.proprietaireNom || '?') + ' · ' + droit)),
+        h('td', {}, h('strong', {}, d.titre), h('br'), h('small', { class: 'sous-titre' }, (d.personnage ? 'de ' : 'compte de ') + (d.proprietaireNom || '?') + ' · ' + droit)),
         h('td', {}, h('small', {}, 'modifié le ' + dateFr(d.majLe, true), d.majParNom ? ' par ' + d.majParNom : '')),
         h('td', { style: 'white-space:nowrap' },
           affiche ? h('small', { class: 'sous-titre' }, 'affiché ')
             : h('button', { type: 'button', class: 'petit', onclick: () => { m.fermer(); ouvrir(d.id); } }, 'Ouvrir'),
-          supprimer && (d.proprietaire === uid() || estConteur(session.profil)) ? h('button', {
+          supprimer && (d.proprietaire === uid() || conteur()) ? h('button', {
             type: 'button', class: 'petit danger', onclick: async () => {
               if (!confirmer('Supprimer définitivement le tableau « ' + d.titre + ' » de ' + (d.proprietaireNom || '?') + ' ?')) return;
               try {
                 await fs.deleteDoc(fs.doc(db, 'tableaux', d.id));
-                if (d.id === uid()) indice(false);
                 if (courant && courant.id === d.id) detacher();
                 m.fermer(); ouvrirPanneau();
               } catch (e) { alert(messageErreur(e)); }
@@ -255,12 +280,17 @@ function remplir(zone, docs, vide, m, { supprimer = false } = {}) {
 }
 
 async function ouvrir(id) {
-  if (modifie() && !confirmer('Le tableau affiché a des modifications non sauvegardées. Les abandonner ?')) return;
+  if (perso && modifie() && !confirmer('Le tableau affiché a des modifications non sauvegardées. Les abandonner ?')) return;
   majStatut('ouverture…');
   try {
     const snap = await fs.getDoc(fs.doc(db, 'tableaux', id));
     if (!snap.exists()) throw new Error('Tableau introuvable (il a peut-être été supprimé).');
-    await afficher(id, snap.data());
+    const d = snap.data();
+    // Un tableau partagé avec un autre de vos personnages ne s'ouvre pas avec celui-ci.
+    if (perso && !conteur() && id !== perso.id && d.personnage && !invitation(d)) {
+      throw new Error('Ce tableau n\'est pas partagé avec ' + perso.nom + '.');
+    }
+    await afficher(id, d);
   } catch (e) {
     console.error(e);
     majStatut('ouverture impossible');
@@ -271,10 +301,12 @@ async function ouvrir(id) {
 async function afficher(id, d) {
   const contenu = await internaliser(JSON.parse(d.contenuJson || '{}'));
   T.charger(contenu.boards ? contenu : { version: 2, boards: [] });
-  courant = { id, titre: d.titre, proprietaire: d.proprietaire, proprietaireNom: d.proprietaireNom, acces: d.acces, droits: d.droits, version: d.version };
+  courant = {
+    id, titre: d.titre, proprietaire: d.proprietaire, personnage: d.personnage || '', proprietaireNom: d.proprietaireNom,
+    acces: d.acces, droits: d.droits, invites: d.invites || {}, version: d.version
+  };
   reference = etatActuel();
   dernierJson = d.contenuJson;
-  if (id === uid()) indice(true);
   adresse(id);
   document.getElementById('cam-bandeau-maj')?.remove();
   suivre(id);
@@ -291,8 +323,8 @@ function detacher() {
 async function revenirAuMien() {
   if (modifie() && !confirmer('Le tableau affiché a des modifications non sauvegardées. Les abandonner ?')) return;
   try {
-    const snap = await fs.getDoc(fs.doc(db, 'tableaux', uid()));
-    if (snap.exists()) { await afficher(uid(), snap.data()); return; }
+    const snap = await fs.getDoc(fs.doc(db, 'tableaux', perso.id));
+    if (snap.exists()) { await afficher(perso.id, snap.data()); return; }
   } catch (e) { console.error(e); }
   detacher();
   T.vider();
@@ -307,7 +339,7 @@ function suivre(id) {
     if (!snap.exists()) { majStatut('ce tableau a été supprimé'); courant = null; reference = null; return; }
     if (snap.metadata.hasPendingWrites) return;
     const d = snap.data();
-    courant.acces = d.acces; courant.droits = d.droits; courant.titre = d.titre;
+    courant.acces = d.acces; courant.droits = d.droits; courant.invites = d.invites || {}; courant.titre = d.titre;
     if (d.contenuJson === dernierJson || (enEcriture !== null && d.contenuJson === enEcriture)) {
       // Même contenu (notre propre sauvegarde, ou seul le partage a changé).
       courant.version = Math.max(courant.version, d.version);
@@ -319,8 +351,9 @@ function suivre(id) {
 }
 
 function bandeauMiseAJour(d) {
-  const qui = d.majPar === uid() ? 'Vous (depuis un autre appareil)' : (d.majParNom || 'Un autre membre');
-  majStatut('modifié par ' + (d.majPar === uid() ? 'un autre appareil' : (d.majParNom || 'un autre membre')));
+  const moiMeme = perso && d.majPerso === perso.id;
+  const qui = moiMeme ? perso.nom + ' (depuis un autre appareil)' : (d.majParNom || 'Un autre personnage');
+  majStatut('modifié par ' + (moiMeme ? 'un autre appareil' : (d.majParNom || 'un autre personnage')));
   statut.classList.add('modifie');
   if (document.getElementById('cam-bandeau-maj')) return;
   const bandeau = h('div', {
@@ -352,7 +385,7 @@ async function preparerContenu() {
 
 /** Bouton « Sauvegarder » / Ctrl+S. */
 async function sauvegarder() {
-  if (!exigerCompte('Sauvegarder en ligne')) return false;
+  if (!exigerIncarnation('Sauvegarder')) return false;
   if (enCours) return false;
   if ((estMien() || peutModifierCourant()) && !modifie()) {
     reussite(null);   // rien n'a changé depuis la dernière sauvegarde : aucune écriture
@@ -363,64 +396,63 @@ async function sauvegarder() {
 }
 
 /**
- * Enregistre le contenu affiché dans tableaux/{uid}, le seul tableau en ligne
- * du membre. `partage` ({ acces, droits, titre }) modifie aussi les invités.
+ * Enregistre le contenu affiché dans tableaux/{idPersonnage}, le seul tableau
+ * en ligne du personnage. `partage` ({ acces, droits, invites, titre }) modifie aussi les invités.
  */
 async function sauvegarderMien(partage = null, msg = null) {
   if (enCours) return false;
   enCours = true;
   majStatut('sauvegarde…');
   try {
-    const ref = fs.doc(db, 'tableaux', uid());
+    const ref = fs.doc(db, 'tableaux', perso.id);
     let existant = null;
     if (estMien()) {
       existant = courant;
     } else {
       const snap = await fs.getDoc(ref);
       existant = snap.exists() ? snap.data() : null;
-      // Le tableau affiché n'est pas (encore) le mien : prévenir avant de remplacer.
-      const deQui = courant && courant.proprietaire !== uid() ? (courant.proprietaireNom || 'un autre membre') : null;
+      // Le tableau affiché n'est pas (encore) celui du personnage : prévenir avant de remplacer.
+      const deQui = courant && courant.personnage && courant.id !== perso.id ? (courant.proprietaireNom || 'un autre personnage') : null;
       let question = null;
       if (existant && !partage) {
-        question = 'Vous n\'avez qu\'un tableau en ligne : ' + (deQui ? 'le tableau de ' + deQui : 'le tableau affiché')
+        question = perso.nom + ' n\'a qu\'un tableau en ligne : ' + (deQui ? 'le tableau de ' + deQui : 'le tableau affiché')
           + ' va remplacer « ' + existant.titre + ' », sauvegardé le ' + dateFr(existant.majLe, true) + '.\n\nContinuer ?';
       } else if (!existant && deQui) {
-        question = 'Ce tableau appartient à ' + deQui + '. En faire une copie comme votre tableau en ligne ?';
+        question = 'Ce tableau appartient à ' + deQui + '. En faire une copie comme tableau de ' + perso.nom + ' ?';
       }
       if (question && !confirmer(question)) { majStatut(); return false; }
     }
 
     const etat = etatActuel();
     const json = (!existant || !estMien() || modifie()) ? await preparerContenu() : null;
-    const signature = { majLe: fs.serverTimestamp(), majPar: uid(), majParNom: monNom() };
     enEcriture = json;
 
     if (!existant) {
       const titre = (partage && partage.titre) || titreParDefaut();
-      const acces = (partage && partage.acces) || [uid()];
-      const droits = (partage && partage.droits) || {};
+      const p = partage || { acces: [uid()], droits: {}, invites: {} };
       await fs.setDoc(ref, {
-        proprietaire: uid(), proprietaireNom: monNom(), titre, acces, droits,
-        contenuJson: json, version: 1, creeLe: fs.serverTimestamp(), ...signature
+        proprietaire: uid(), personnage: perso.id, proprietaireNom: perso.nom, titre,
+        acces: p.acces, droits: p.droits, invites: p.invites,
+        contenuJson: json, version: 1, creeLe: fs.serverTimestamp(), ...signature()
       });
-      courant = { id: uid(), titre, proprietaire: uid(), proprietaireNom: monNom(), acces, droits, version: 1 };
+      courant = { id: perso.id, titre, proprietaire: uid(), personnage: perso.id, proprietaireNom: perso.nom, acces: p.acces, droits: p.droits, invites: p.invites, version: 1 };
     } else {
-      const champs = { ...signature, proprietaireNom: monNom() };
+      const champs = { ...signature(), proprietaireNom: perso.nom };
       if (json !== null) champs.contenuJson = json;
       if (partage) Object.assign(champs, partage);
-      const r = await ecrireVersion(uid(), champs, existant.version);
-      if (typeof r === 'string') { enCours = false; return await apresConflit(r, uid()); }
+      const r = await ecrireVersion(perso.id, champs, existant.version);
+      if (typeof r === 'string') { enCours = false; return await apresConflit(r, perso.id); }
       courant = {
-        id: uid(), titre: champs.titre || existant.titre, proprietaire: uid(), proprietaireNom: monNom(),
-        acces: champs.acces || existant.acces || [uid()], droits: champs.droits || existant.droits || {}, version: r
+        id: perso.id, titre: champs.titre || existant.titre, proprietaire: uid(), personnage: perso.id, proprietaireNom: perso.nom,
+        acces: champs.acces || existant.acces || [uid()], droits: champs.droits || existant.droits || {},
+        invites: champs.invites || existant.invites || {}, version: r
       };
     }
     if (json !== null) dernierJson = json;
     reference = etat;
     T.charge = true;
-    indice(true);
-    adresse(uid());
-    suivre(uid());
+    adresse(perso.id);
+    suivre(perso.id);
     reussite(msg, partage ? 'Partage enregistré.' : 'Tableau sauvegardé.');
     return true;
   } catch (e) {
@@ -429,7 +461,7 @@ async function sauvegarderMien(partage = null, msg = null) {
   } finally { enCours = false; enEcriture = null; }
 }
 
-/** Sauvegarde dans le tableau d'un autre membre qui nous a donné le droit de modification. */
+/** Sauvegarde dans le tableau d'un autre personnage qui nous a donné le droit de modification. */
 async function sauvegarderPartage() {
   if (enCours) return false;
   enCours = true;
@@ -439,9 +471,7 @@ async function sauvegarderPartage() {
     const etat = etatActuel();
     const json = await preparerContenu();
     enEcriture = json;
-    const r = await ecrireVersion(id, {
-      contenuJson: json, majLe: fs.serverTimestamp(), majPar: uid(), majParNom: monNom()
-    }, courant.version);
+    const r = await ecrireVersion(id, { contenuJson: json, ...signature() }, courant.version);
     if (typeof r === 'string') { enCours = false; return await apresConflit(r, id); }
     courant.version = r;
     dernierJson = json;
@@ -475,7 +505,7 @@ async function ecrireVersion(id, champs, version) {
   } catch (e) { /* plus d'accès en lecture */ }
   if (!d) throw new Error('Vous n\'avez plus accès à ce tableau.');
   if (d.version === version) throw new Error('Vous n\'avez pas le droit de modifier ce tableau.');
-  const choix = await choisirConflit(d, id !== uid());
+  const choix = await choisirConflit(d, id !== perso.id);
   if (choix !== 'ecraser') return choix;
   await fs.updateDoc(ref, { ...champs, version: d.version + 1 });
   return d.version + 1;
@@ -493,11 +523,12 @@ function choisirConflit(d, chezUnAutre) {
   return new Promise((resolve) => {
     let fait = false;
     const choisir = (c) => { if (fait) return; fait = true; m.fermer(); resolve(c); };
-    const qui = d.majPar === uid() ? 'Vous avez' : (d.majParNom || 'Un autre membre') + ' a';
+    const moiMeme = d.majPerso === perso.id;
+    const qui = moiMeme ? perso.nom + ' a' : (d.majParNom || 'Un autre personnage') + ' a';
     const m = modale('Conflit de sauvegarde',
-      h('p', {}, qui + ' sauvegardé ce tableau le ' + dateFr(d.majLe, true) + (d.majPar === uid() ? ' depuis un autre appareil' : '') + ', après votre ouverture.'),
+      h('p', {}, qui + ' sauvegardé ce tableau le ' + dateFr(d.majLe, true) + (moiMeme ? ' depuis un autre appareil' : '') + ', après votre ouverture.'),
       h('div', { class: 'cam-actions' },
-        chezUnAutre ? h('button', { type: 'button', onclick: () => choisir('copie') }, 'Garder ma version dans mon propre tableau') : '',
+        chezUnAutre ? h('button', { type: 'button', onclick: () => choisir('copie') }, 'Garder ma version dans le tableau de ' + perso.nom) : '',
         h('button', { type: 'button', class: chezUnAutre ? 'secondaire' : '', onclick: () => choisir('recharger') }, 'Afficher sa version (perdre la mienne)'),
         h('button', { type: 'button', class: 'danger', onclick: () => choisir('ecraser') }, 'Écraser avec ma version')));
     const obs = new MutationObserver(() => { if (!m.fond.isConnected) { obs.disconnect(); choisir('annuler'); } });
@@ -519,40 +550,40 @@ function echec(e, msg) {
 }
 
 // ---------------------------------------------------------------------
-// Partager
+// Partager (avec d'autres personnages)
 // ---------------------------------------------------------------------
 async function partager() {
-  if (!exigerCompte('Partager un tableau')) return;
-  if (courant && !estMien() && courant.proprietaire !== uid()) {
+  if (!exigerIncarnation('Partager un tableau')) return;
+  if (courant && !estMien() && courant.personnage) {
     const m = modale('Partager',
-      h('p', {}, 'Vous consultez le tableau de ' + (courant.proprietaireNom || 'un autre membre') + ' : seul son propriétaire peut le partager.'),
+      h('p', {}, 'Vous consultez le tableau de ' + (courant.proprietaireNom || 'un autre personnage') + ' : seul son propriétaire peut le partager.'),
       h('div', { class: 'cam-actions' },
-        h('button', { type: 'button', onclick: () => { m.fermer(); revenirAuMien(); } }, 'Revenir à mon tableau'),
+        h('button', { type: 'button', onclick: () => { m.fermer(); revenirAuMien(); } }, 'Revenir au tableau de ' + perso.nom),
         h('button', { type: 'button', class: 'secondaire', onclick: () => m.fermer() }, 'Fermer')));
     return;
   }
 
-  // Partage actuel de mon tableau (s'il existe déjà en ligne).
+  // Partage actuel du tableau du personnage (s'il existe déjà en ligne).
   let actuel = estMien() ? courant : null;
   if (!actuel) {
     try {
-      const snap = await fs.getDoc(fs.doc(db, 'tableaux', uid()));
+      const snap = await fs.getDoc(fs.doc(db, 'tableaux', perso.id));
       if (snap.exists()) actuel = snap.data();
     } catch (e) { /* on part d'un partage vide */ }
   }
 
   const msg = h('div', { class: 'cam-msg' });
-  const corps = h('tbody', {}, h('tr', {}, h('td', {}, 'Chargement de la liste des membres…')));
-  const filtre = h('input', { type: 'search', placeholder: 'Rechercher un membre…' });
+  const corps = h('tbody', {}, h('tr', {}, h('td', {}, 'Chargement de la liste des personnages…')));
+  const filtre = h('input', { type: 'search', placeholder: 'Rechercher un personnage…' });
   const titre = h('input', { type: 'text', maxlength: 100, value: (actuel && actuel.titre) || titreParDefaut() });
-  const lien = location.origin + location.pathname + '?tableau=' + uid();
+  const lien = location.origin + location.pathname + '?tableau=' + perso.id;
   const enregistrerAussi = !estMien() || modifie();
-  const m = modale('Partager mon tableau',
-    h('p', { class: 'sous-titre' }, 'Les membres choisis verront vos 3 tableaux dans « ☰ Ouvrir > Partagés avec moi ». Les conteurs voient tous les tableaux.'),
+  const m = modale('Partager le tableau de ' + perso.nom,
+    h('p', { class: 'sous-titre' }, 'Les personnages choisis verront vos 3 tableaux dans « ☰ Ouvrir > Partagés avec… ». Les conteurs voient tous les tableaux.'),
     enregistrerAussi
       ? h('div', { class: 'cam-encart alerte' }, actuel
-        ? 'Le tableau affiché sera sauvegardé en même temps et remplacera votre tableau en ligne.'
-        : 'Votre tableau sera sauvegardé en ligne en même temps.')
+        ? 'Le tableau affiché sera sauvegardé en même temps et remplacera le tableau en ligne de ' + perso.nom + '.'
+        : 'Le tableau sera sauvegardé en ligne en même temps.')
       : '',
     h('label', {}, 'Titre vu par les invités'), titre,
     filtre,
@@ -563,45 +594,57 @@ async function partager() {
         type: 'button', class: 'secondaire', title: lien,
         onclick: async (e) => {
           try { await navigator.clipboard.writeText(lien); e.target.textContent = '✓ Lien copié'; }
-          catch (err) { prompt('Lien vers votre tableau :', lien); }
+          catch (err) { prompt('Lien vers ce tableau :', lien); }
         }
       }, 'Copier le lien') : '',
       h('button', { type: 'button', class: 'secondaire', onclick: () => m.fermer() }, 'Annuler')),
     msg);
 
+  // Personnages validés des autres membres (répertoire).
   const choix = new Map();
-  let membres = [];
+  let persos = [];
   try {
-    const snap = await fs.getDocs(fs.collection(db, 'annuaire'));
-    membres = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => x.id !== uid())
+    const snap = await fs.getDocs(fs.collection(db, 'repertoire'));
+    persos = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+      .filter((x) => x.proprietaire !== uid())
       .sort((a, b) => (a.nom || '').localeCompare(b.nom || '', 'fr'));
   } catch (e) { message(msg, messageErreur(e), 'err'); }
-  const droitsActuels = (actuel && actuel.droits) || {};
-  const accesActuels = (actuel && actuel.acces) || [];
-  membres.forEach((x) => choix.set(x.id, droitsActuels[x.id] || (accesActuels.includes(x.id) ? 'lecture' : '')));
+  const invitesActuels = (actuel && actuel.invites) || {};
+  persos.forEach((x) => choix.set(x.id, (invitesActuels[x.id] && invitesActuels[x.id].droit) || ''));
 
   const dessiner = () => {
     const f = filtre.value.trim().toLowerCase();
-    const liste = membres.filter((x) => !f || (x.nom || '').toLowerCase().includes(f));
+    const liste = persos.filter((x) => !f || (x.nom || '').toLowerCase().includes(f));
     corps.replaceChildren(...(liste.length ? liste.map((x) => {
       const sel = h('select', {},
         h('option', { value: '', selected: !choix.get(x.id) }, 'Pas d\'accès'),
         h('option', { value: 'lecture', selected: choix.get(x.id) === 'lecture' }, 'Lecture'),
         h('option', { value: 'ecriture', selected: choix.get(x.id) === 'ecriture' }, 'Modification'));
       sel.addEventListener('change', () => choix.set(x.id, sel.value));
-      return h('tr', {}, h('td', {}, x.nom, x.role && x.role !== 'joueur' ? h('span', { class: 'cam-tag ' + x.role, style: 'margin-left:.4rem' }, x.role) : ''), h('td', {}, sel));
-    }) : [h('tr', {}, h('td', {}, membres.length ? 'Aucun membre ne correspond.' : 'Aucun autre membre actif pour le moment.'))]));
+      return h('tr', {}, h('td', {}, x.nom), h('td', {}, sel));
+    }) : [h('tr', {}, h('td', {}, persos.length ? 'Aucun personnage ne correspond.' : 'Aucun autre personnage validé pour le moment.'))]));
   };
   filtre.addEventListener('input', dessiner);
   dessiner();
 
   async function valider() {
-    const acces = [uid()];
+    const invites = {};
     const droits = {};
-    choix.forEach((v, id) => { if (v) { acces.push(id); droits[id] = v; } });
-    if (acces.length > MAX_INVITES + 1) { message(msg, 'Maximum ' + MAX_INVITES + ' membres par tableau.', 'err'); return; }
+    const acces = [uid()];
+    choix.forEach((droit, id) => {
+      if (!droit) return;
+      const x = persos.find((p) => p.id === id);
+      if (!x) return;
+      invites[id] = { nom: x.nom, droit };
+      // Les règles raisonnent par compte : le droit le plus fort parmi ses personnages invités.
+      if (!acces.includes(x.proprietaire)) acces.push(x.proprietaire);
+      if (droits[x.proprietaire] !== 'ecriture') droits[x.proprietaire] = droit;
+    });
+    if (Object.keys(invites).length > MAX_INVITES || acces.length > MAX_INVITES + 1) {
+      message(msg, 'Maximum ' + MAX_INVITES + ' personnages par tableau.', 'err'); return;
+    }
     const t = titre.value.trim().slice(0, 100) || titreParDefaut();
-    const ok = await sauvegarderMien({ acces, droits, titre: t }, msg);
+    const ok = await sauvegarderMien({ acces, droits, invites, titre: t }, msg);
     if (ok) setTimeout(() => m.fermer(), 800);
   }
 }

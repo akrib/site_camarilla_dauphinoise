@@ -1,7 +1,7 @@
 # Espace membres — mise en place de Firebase
 
 Le site reste hébergé sur GitHub Pages. La connexion des membres et leurs données
-(fiches, tableaux d'enquête, tableau d'affichage, influences) passent par
+(fiches, tableaux d'enquête, panneau d'affichage, influences) passent par
 **Firebase**, le service de Google, dans son offre gratuite **Spark** (aucune carte
 bancaire demandée).
 
@@ -161,8 +161,8 @@ Cette étape empêche d'autres sites d'utiliser votre configuration.
 | Connexion / inscription | `/connexion/` | tout le monde |
 | Espace membres | `/membres/` | comptes connectés |
 | Fiches de personnage | `/membres/fiches/` | membres actifs |
-| Tableau d'enquête (en ligne + partage) | `/utils/tableau` | membres actifs (sans compte : export JSON seulement) |
-| Tableau d'affichage | `/membres/affichage/` | membres actifs |
+| Tableau d'enquête (sauvegarde en ligne + partage) | `/utils/tableau` | personnages validés (et conteurs) |
+| Panneau d'affichage | `/membres/affichage/` | personnages validés (et conteurs) |
 | Influences | `/influences/` | membres ayant un personnage « en jeu » |
 | Comptes | `/membres/comptes/` | conteurs (rôles : admin) |
 | Influences — conteur | `/influences/conteur/` | conteurs |
@@ -199,10 +199,78 @@ dérivées (sang, volonté, éthique, langues, scores de combat…).
 - Les champs Gotha, Pègre, génération et PX de la fiche sont recopiés dans le document
   pour la page Influences.
 
+### Personnage incarné
+
+Le panneau d'affichage et le tableau d'enquête sont des **outils de jeu** : seuls les
+personnages y ont accès, pas les membres en tant que tels.
+
+- Dans **Espace membres > Personnage incarné**, le joueur choisit lequel de ses
+  personnages validés il joue (fiche « Validée (en réserve) » ou « En jeu »). Les
+  deux outils n'apparaissent qu'ensuite. On change de personnage depuis la même
+  page, ou depuis le nom du personnage affiché dans chaque outil.
+- Le choix est mémorisé dans le navigateur, et revérifié dans la base à chaque
+  page : une fiche archivée ou repassée en brouillon ne s'incarne plus.
+- Tout ce qui se fait dans les outils est au nom du personnage : lignes du journal
+  du panneau, tableaux d'enquête, « modifié par … ».
+- Les règles Firestore vérifient à chaque écriture que le personnage appartient au
+  membre et qu'il est validé : impossible d'agir au nom du personnage d'un autre.
+- Les **conteurs** ont accès aux deux outils sans personnage (sous leur propre nom),
+  pour modérer. Ils peuvent aussi incarner un de leurs personnages (un PNJ).
+- Le **répertoire** (`repertoire/{idPersonnage}` : nom du personnage et compte du
+  joueur) liste les personnages validés, pour pouvoir partager un tableau avec eux.
+  Il est tenu à jour quand un conteur valide, met en jeu ou archive une fiche, quand
+  le joueur ouvre son espace membres, et la page **Comptes** en retire les
+  personnages des comptes suspendus.
+
+### Tableau d'enquête
+
+La page contient 3 tableaux. Chaque personnage a **un seul tableau en ligne**
+(document `tableaux/{idPersonnage}`), qui regroupe ces 3 tableaux et qui est remplacé
+à chaque sauvegarde : la base ne grossit pas au fil des enquêtes.
+
+- **☁ Sauvegarder** (ou Ctrl+S) : enregistre les 3 tableaux affichés. Le tableau du
+  personnage incarné est rechargé automatiquement à la visite suivante.
+- **⇄ Partager** : choisit, dans le répertoire, quels personnages peuvent consulter
+  (lecture) ou modifier (modification) ce tableau. Le lien
+  `/utils/tableau?tableau={idPersonnage}` ouvre directement le tableau d'un personnage.
+- **☰ Ouvrir** : le tableau du personnage, ceux partagés avec lui (pas ceux partagés
+  avec vos autres personnages), et pour les conteurs tous les tableaux. Si deux
+  personnes sauvegardent en même temps, la seconde choisit d'écraser, de recharger ou
+  de garder sa version dans son propre tableau.
+- **☺ (nom du personnage)** : changer de personnage.
+- Les tableaux enregistrés avant les personnages (rattachés au compte) apparaissent
+  dans « Anciens enregistrements » : les ouvrir pour les reprendre, ou les supprimer.
+- Sans compte, ou sans personnage validé, la page reste fermée (l'export / import
+  JSON n'est plus accessible aux visiteurs).
+
+### Panneau d'affichage
+
+Un liège partagé en temps réel entre les personnages : on y épingle des notes
+(9 types de papier, 6 polices), on peut les examiner, les déplacer, caviarder ou
+colorier un passage, les déchirer ou les enlever. Sous le liège, « Ce que les goules
+se souviennent d'avoir vu » : le journal daté des actions (quel personnage a fait quoi,
+jamais sur quelle note ni avec quel texte).
+
+- Tout tient dans **un seul document**, `panneau/principal` : une action = une
+  écriture, une lecture par personne connectée, une lecture à l'ouverture de la page.
+- Le journal est découpé en 6 segments de 100 lignes (`j0` … `j5`). Quand le segment
+  en cours est plein, on passe au suivant, qui est vidé : les **500 dernières lignes**
+  sont toujours là, et le document ne grossit pas.
+- Les règles Firestore imposent que chaque écriture d'un membre ajoute exactement une
+  ligne au journal, au nom d'un de ses personnages validés, et que la modification de la note corresponde à
+  l'action annoncée. Personne ne peut agir sans laisser de souvenir, ni effacer ou
+  réécrire le journal.
+- Caviarder ou colorier remplace vraiment les lettres du passage, et déchirer
+  supprime la fin du texte : ce qui est caché n'existe plus dans la base.
+- Une visite n'est notée qu'une fois par demi-heure, et relire la même note dans les
+  deux minutes n'est pas noté de nouveau.
+- Seuls les conteurs peuvent « Effacer les souvenirs ».
+- Limites : 80 notes, 1 200 caractères par note.
+
 ### Images
 
-Les images (portraits, photos du tableau d'enquête, images des messages, images en
-base64 dans les JSON importés) sont réduites dans le navigateur puis enregistrées à
+Les images (portraits, photos du tableau d'enquête, images en base64 dans les JSON
+importés) sont réduites dans le navigateur puis enregistrées à
 part dans Firestore (un document par image, 1 Mo maximum chacun). Les JSON exportés
 contiennent de nouveau les images en base64.
 
@@ -269,6 +337,7 @@ Puis ouvrez <http://localhost:4000/connexion/?emulateurs=1>. Le paramètre
 | `assets/js/camarilla/firebase-config.js` | configuration du projet |
 | `assets/js/camarilla/core.js` | connexion, profil, rôles, utilitaires |
 | `assets/js/camarilla/images.js` | compression et stockage des images |
+| `assets/js/camarilla/incarnation.js` | personnage incarné (choix, vérification, répertoire) |
 | `assets/js/camarilla/donnees.js` | listes de jeu (villes, actions d'influence…) |
 | `assets/js/camarilla/pages/*.js` | une page = un module |
 | `assets/js/camarilla/fiche/referentiel.js` | listes et coûts de la fiche MET (généré par `outils/fiche/extraire_excel.py`) |
@@ -276,7 +345,7 @@ Puis ouvrez <http://localhost:4000/connexion/?emulateurs=1>. Le paramètre
 | `assets/js/camarilla/fiche/calculs.js` | calculs de l'onglet « Calculs » (PX, sang, volonté…) |
 | `assets/js/camarilla/fiche/editeur.js` | éditeur (ordinateur et mobile) et résumé imprimable |
 | `assets/js/camarilla/fiche/descriptions.js` | chargement des textes de règles depuis Firestore |
-| `assets/css/membres.css`, `assets/css/fiche.css` | styles de l'espace membres et de la fiche |
+| `assets/css/membres.css`, `assets/css/fiche.css`, `assets/css/panneau.css` | styles de l'espace membres, de la fiche et du panneau d'affichage |
 | `firebase/firestore.rules` | règles de sécurité (à publier dans la console) |
 | `firebase/firestore.indexes.json` | exemptions d'index (gros champs) |
 | `firebase/tests/regles.test.mjs` | tests des règles |

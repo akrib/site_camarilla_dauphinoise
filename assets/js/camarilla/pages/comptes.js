@@ -68,8 +68,13 @@ pageProtegee(racine, 'conteur', async ({ user, profil }) => {
     try {
       if (c.statut === 'actif') {
         if (!actuel || actuel.nom !== c.nom || actuel.role !== c.role) await fs.setDoc(ref, { nom: c.nom, role: c.role });
-      } else if (actuel !== null) {
-        await fs.deleteDoc(ref);
+      } else {
+        if (actuel !== null) await fs.deleteDoc(ref);
+        // Compte suspendu : ses personnages sortent du répertoire (plus de partage avec eux).
+        if (actuel === undefined) {
+          const rep = await fs.getDocs(fs.query(fs.collection(db, 'repertoire'), fs.where('proprietaire', '==', c.id)));
+          for (const d of rep.docs) await fs.deleteDoc(d.ref);
+        }
       }
     } catch (e) { console.warn('Annuaire non mis à jour pour ' + c.nom, e); }
   }
@@ -86,6 +91,11 @@ pageProtegee(racine, 'conteur', async ({ user, profil }) => {
         presents.delete(c.id);
       }
       for (const id of presents.keys()) await fs.deleteDoc(fs.doc(db, 'annuaire', id));   // comptes supprimés
+      // Répertoire des personnages : on retire ceux des comptes qui ne sont plus actifs.
+      // (Il est tenu à jour par la validation des fiches et par les joueurs eux-mêmes.)
+      const actifs = new Set(comptes.filter((c) => c.statut === 'actif').map((c) => c.id));
+      const rep = await fs.getDocs(fs.collection(db, 'repertoire'));
+      for (const d of rep.docs) if (!actifs.has(d.data().proprietaire)) await fs.deleteDoc(d.ref);
     } catch (e) { console.warn('Vérification de l\'annuaire impossible', e); }
   }
 

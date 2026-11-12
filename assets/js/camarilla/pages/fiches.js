@@ -8,6 +8,7 @@ import {
   compresserFichier, enregistrerImage, baliseImage, externaliser, internaliser, collecterRefs
 } from '../images.js';
 import { STATUTS_FICHE, STATUTS_FICHE_EDITABLES } from '../donnees.js';
+import { majRepertoire, estIncarnable } from '../incarnation.js';
 import { creerEditeur } from '../fiche/editeur.js';
 import { ficheVide as ficheMetVide, normaliser } from '../fiche/modele.js';
 import { lireFicheExcel } from '../fiche/import-excel.js';
@@ -362,6 +363,10 @@ function afficherEditeur(existante, preRemplie, avis) {
           if ((statut === 'validee' || statut === 'active') && d.statut !== statut) { extra.validePar = uid; extra.valideLe = fs.serverTimestamp(); }
           if (proprio) extra.proprietaireNom = session.profil.nom;
           await fs.updateDoc(ref, { ...data, ...extra });
+          // Répertoire des personnages validés (partage des tableaux d'enquête).
+          if (estIncarnable(d) || estIncarnable({ statut })) {
+            await majRepertoire({ id: d.id, nom: data.nom, proprietaire: d.proprietaire, statut }, estIncarnable(d) ? undefined : null);
+          }
         } else {
           await fs.updateDoc(ref, { ...data, proprietaireNom: session.profil.nom });
         }
@@ -421,7 +426,11 @@ function afficherEditeur(existante, preRemplie, avis) {
     if (conteur || (proprio && ['brouillon', 'refusee'].includes(d.statut))) {
       actions.append(bouton('Supprimer', async () => {
         if (!confirmer('Supprimer définitivement la fiche « ' + d.nom + ' » ?')) return;
-        try { await fs.deleteDoc(fs.doc(db, 'personnages', d.id)); proteger(false); retourListe(); } catch (e) { message(msg, messageErreur(e), 'err'); }
+        try {
+          await fs.deleteDoc(fs.doc(db, 'personnages', d.id));
+          if (estIncarnable(d)) await majRepertoire({ ...d, statut: 'archivee' }, undefined);
+          proteger(false); retourListe();
+        } catch (e) { message(msg, messageErreur(e), 'err'); }
       }, 'danger'));
     }
   }

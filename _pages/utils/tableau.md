@@ -62,6 +62,12 @@ body{
 .cloud-status{font-size:10px;letter-spacing:.08em;color:#9a9a9a;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cloud-status.modifie{color:#e0b44a;}
 .cloud-status.lecture{color:#7fa7d6;}
+/* Garde : la page ne s'ouvre qu'à un personnage incarné (voir tableau-en-ligne.js) */
+.cam-garde{position:fixed;inset:0;z-index:9500;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:8vh 1rem;background:rgba(6,6,6,.97);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;}
+.cam-garde[hidden]{display:none;}
+.cam-garde-boite{width:min(760px,100%);background:#f7f4ee;color:#2b2b2b;border-radius:8px;padding:1.4rem 1.6rem;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.cam-garde-boite > p.sous-titre{color:#767267;}
+.cam-garde .cam-bloc{margin:0;}
 button{
   font-family:inherit;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
   background:#1c1c1c;color:#cfcfcf;border:1px solid #3d3d3d;
@@ -438,6 +444,7 @@ textarea.json:focus{outline:none;border-color:#7a7a7a;}
 
 <div class="grain"></div>
 <div class="vignette"></div>
+<div id="cam-garde" class="cam-app cam-garde"><div class="cam-garde-boite"><p>Chargement…</p><noscript><p>Cette page nécessite JavaScript.</p></noscript></div></div>
 
 <header class="toolbar">
   <div class="brand">
@@ -462,9 +469,10 @@ textarea.json:focus{outline:none;border-color:#7a7a7a;}
       <button id="btnZoomReset" title="Réinitialiser le zoom">⟲</button>
     </div>
     <div class="sep"></div>
-    <button id="btnSave" title="Sauvegarder vos 3 tableaux en ligne (Ctrl+S). Chaque membre a un seul tableau en ligne, remplacé à chaque sauvegarde.">☁ Sauvegarder</button>
-    <button id="btnShare" title="Partager votre tableau avec d'autres membres, en lecture ou en modification">⇄ Partager</button>
-    <button id="btnCloud" title="Ouvrir votre tableau ou un tableau partagé avec vous">☰ Ouvrir</button>
+    <button id="btnSave" title="Sauvegarder vos 3 tableaux en ligne (Ctrl+S). Chaque personnage a un seul tableau en ligne, remplacé à chaque sauvegarde.">☁ Sauvegarder</button>
+    <button id="btnShare" title="Partager votre tableau avec d'autres personnages, en lecture ou en modification">⇄ Partager</button>
+    <button id="btnCloud" title="Ouvrir le tableau de votre personnage ou un tableau partagé avec lui">☰ Ouvrir</button>
+    <button id="btnPerso" title="Personnage incarné">☺ …</button>
     <span id="cloudStatus" class="cloud-status"></span>
     <div class="sep"></div>
     <button id="btnExport">⇩ Export JSON</button>
@@ -2003,14 +2011,8 @@ const T = window.TableauEnquete = {
   }
 };
 T.etatBase = JSON.stringify(exporterStable());
-
-// Un membre qui a déjà un tableau en ligne ne voit pas la démo le temps du
-// chargement. Sinon, démo immédiate ; et si le module en ligne ne démarre
-// pas (réseau, configuration), démo au bout de quelques secondes.
-let attendreEnLigne = new URLSearchParams(location.search).has('tableau');
-try { attendreEnLigne = attendreEnLigne || localStorage.getItem('cam-tableau-perso') === '1'; } catch (e) {}
-setTimeout(() => { if (!attendreEnLigne && !T.pris) T.demo(); }, 80);
-setTimeout(() => { if (!T.pris && !new URLSearchParams(location.search).has('tableau')) T.demo(); }, 8000);
+// La page démarre vide : le module en ligne (réservé aux personnages) charge
+// le tableau du personnage incarné. T.demo() reste disponible si besoin.
 
 })();
 </script>

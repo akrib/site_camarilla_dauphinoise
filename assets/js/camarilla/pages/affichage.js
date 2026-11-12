@@ -12,13 +12,19 @@
 //             le segment « courant » ; quand il est plein, on passe au suivant,
 //             qu'on vide : les 500 dernières lignes sont toujours conservées.
 //   courant : nom du segment en cours ('j0' à 'j5')
-//   op      : { a, id } dernière opération (sert aux règles de sécurité)
+//   op      : { a, id, p } dernière opération (sert aux règles de sécurité) ;
+//             p = personnage qui agit ('' pour un conteur sans personnage)
+//
+// Réservé aux personnages : le membre doit incarner un de ses personnages
+// validés, et le journal retient le nom du personnage, jamais celui du joueur.
+// Les conteurs y ont accès sans personnage, sous leur propre nom.
 //
 // Une action = une seule écriture (note + ligne de journal ensemble), et une
 // seule lecture par personne connectée. Aucun texte de note n'entre dans le
 // journal, ni aucun lien entre une ligne du journal et une note précise.
 // =====================================================================
 import { db, fs, pageProtegee, barreMembre, estConteur, messageErreur } from '../core.js';
+import { exigerPersonnage, fenetreChoixPersonnage } from '../incarnation.js';
 
 const SEGMENTS = ['j0', 'j1', 'j2', 'j3', 'j4', 'j5'];
 const TAILLE_SEGMENT = 100;
@@ -32,9 +38,13 @@ const REF = fs.doc(db, 'panneau', 'principal');
 const racine = document.getElementById('cam-affichage');
 barreMembre(document.getElementById('cam-barre'));
 
-pageProtegee(racine, 'actif', ({ profil }) => demarrer(profil));
+pageProtegee(racine, 'actif', async (session) => {
+  const acces = await exigerPersonnage(racine, session, { outil: 'ce panneau d\'affichage' });
+  if (acces) demarrer(session, acces.perso);
+});
 
-function demarrer(profil) {
+function demarrer(session, perso) {
+  const { profil, user } = session;
   const $ = (id) => document.getElementById(id);
   const coque = $('panneau');
   const couches = $('panneauCouches');
@@ -62,10 +72,14 @@ function demarrer(profil) {
   const toast = $('toast');
   const tearInstruction = tearPanel.querySelector('.tear-instruction');
 
-  const nom = String(profil.nom || 'Joueur').slice(0, 60);
+  // On agit au nom du personnage incarné (ou du conteur, s'il n'en incarne aucun).
+  const nom = String(perso ? perso.nom : (profil.nom || 'Conteur')).slice(0, 80);
+  const idPerso = perso ? perso.id : '';
   const conteur = estConteur(profil);
+  $('playerLabel').textContent = perso ? 'Personnage' : 'Conteur';
   $('playerName').textContent = nom;
-  $('playerName').title = 'Connecté : ' + nom;
+  $('playerName').title = perso ? 'Vous incarnez ' + nom + ' (cliquer pour changer)' : 'Connecté en tant que conteur (cliquer pour incarner un personnage)';
+  $('playerName').addEventListener('click', () => fenetreChoixPersonnage(user.uid));
   if (conteur) $('clearLog').hidden = false;
 
   const fontStacks = {
@@ -202,7 +216,7 @@ function demarrer(profil) {
   }
 
   async function creer(entree) {
-    const doc = { notes: {}, courant: 'j0', op: { a: 'visite', id: '' } };
+    const doc = { notes: {}, courant: 'j0', op: { a: 'visite', id: '', p: idPerso } };
     SEGMENTS.forEach((j) => { doc[j] = []; });
     doc.j0 = [entree];
     await fs.setDoc(REF, doc);
@@ -217,7 +231,7 @@ function demarrer(profil) {
    */
   async function ecrire(action, noteId = '', calcul = null, { transaction = false } = {}) {
     const entree = { t: Date.now(), n: nom, a: action };
-    const op = { a: action, id: noteId };
+    const op = { a: action, id: noteId, p: idPerso };
     try {
       let local = etat;
       if (!local) {
@@ -749,7 +763,7 @@ function demarrer(profil) {
   });
   $('clearLog').addEventListener('click', async () => {
     if (!conteur || !confirm('Effacer tous les souvenirs des goules ? Cette action est définitive.')) return;
-    const champs = { courant: 'j0', op: { a: 'effacement', id: '' } };
+    const champs = { courant: 'j0', op: { a: 'effacement', id: '', p: idPerso } };
     SEGMENTS.forEach((j) => { champs[j] = []; });
     try { await fs.updateDoc(REF, champs); notify('Les souvenirs ont été effacés.'); }
     catch (e) { console.error(e); notify(messageErreur(e), true); }

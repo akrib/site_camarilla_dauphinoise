@@ -3,6 +3,7 @@ import {
   h, db, fs, pageProtegee, barreMembre, estActif, estConteur, estAdmin, ROLES, STATUTS_COMPTE,
   changerNom, renvoyerVerification, deconnexion, message, messageErreur, dateFr
 } from '../core.js';
+import { personnageIncarne, blocChoixPersonnage, quitterPersonnage } from '../incarnation.js';
 
 const racine = document.getElementById('cam-membres');
 barreMembre(document.getElementById('cam-barre'));
@@ -57,13 +58,50 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
     return;
   }
 
-  // --- Outils joueurs ---
+  // --- Outils du joueur (compte) ---
   racine.append(h('h2', {}, 'Mes outils'),
     h('div', { class: 'cam-grille' },
       tuile('/membres/fiches/', 'Mes fiches de personnage', 'Créer, compléter et soumettre vos fiches au conteur.'),
-      tuile('/utils/tableau', 'Tableau d\'enquête', 'Vos 3 tableaux, sauvegardés en ligne et partageables.'),
-      tuile('/membres/affichage/', 'Panneau d\'affichage', 'Les notes épinglées sur le liège, et ce que les goules en ont vu.'),
       tuile('/influences/', 'Influences', 'Actions d\'influence, raisons sociales et tickets.')));
+
+  // --- Personnage incarné et outils de jeu ---
+  // Le panneau d'affichage et le tableau d'enquête ne s'ouvrent qu'à un
+  // personnage validé (les conteurs y ont accès sans personnage).
+  const zonePerso = h('div');
+  racine.append(h('h2', { id: 'personnage' }, 'Personnage incarné'), zonePerso);
+  const conteurSansPerso = estConteur(profil);
+  async function dessinerPersonnage() {
+    zonePerso.replaceChildren(h('p', { class: 'sous-titre' }, 'Chargement…'));
+    const perso = await personnageIncarne(user.uid);
+    const outils = h('div', { class: 'cam-grille' },
+      tuile('/membres/affichage/', 'Panneau d\'affichage', perso
+        ? 'Épingler des notes et voir ce que les goules ont vu, en tant que ' + perso.nom + '.'
+        : 'Les notes épinglées sur le liège (en tant que conteur).'),
+      tuile('/utils/tableau', 'Tableau d\'enquête', perso
+        ? 'Les 3 tableaux d\'enquête de ' + perso.nom + ', partageables avec d\'autres personnages.'
+        : 'Consulter les tableaux des personnages (en tant que conteur).'));
+    if (!perso) {
+      zonePerso.replaceChildren(blocChoixPersonnage(user.uid, {
+        titre: 'Aucun personnage incarné',
+        texte: 'Le panneau d\'affichage et le tableau d\'enquête sont réservés aux personnages. Choisissez lequel de vos personnages validés vous jouez :',
+        apresChoix: () => dessinerPersonnage()
+      }), conteurSansPerso ? h('div', {}, h('p', { class: 'sous-titre' }, 'En tant que conteur, vous y avez aussi accès sans personnage :'), outils) : '');
+      return;
+    }
+    const changer = h('div', { style: 'display:none' });
+    zonePerso.replaceChildren(
+      h('div', { class: 'cam-bloc' },
+        h('div', { class: 'cam-incarne' },
+          h('span', {}, 'Vous incarnez'), h('span', { class: 'nom' }, perso.nom),
+          h('span', { class: 'sous-titre', style: 'margin:0' }, [perso.clan, perso.secte, perso.statut === 'active' ? 'en jeu' : 'en réserve'].filter(Boolean).join(' · '))),
+        h('div', { class: 'cam-actions' },
+          h('button', { type: 'button', class: 'secondaire', onclick: () => { changer.style.display = changer.style.display === 'none' ? '' : 'none'; } }, 'Changer de personnage'),
+          h('button', { type: 'button', class: 'secondaire', onclick: () => { quitterPersonnage(user.uid); dessinerPersonnage(); } }, 'Ne plus incarner personne'))),
+      changer,
+      h('h3', {}, 'Outils de ' + perso.nom), outils);
+    changer.append(blocChoixPersonnage(user.uid, { titre: 'Changer de personnage', apresChoix: () => dessinerPersonnage() }));
+  }
+  dessinerPersonnage();
 
   // --- Outils conteurs ---
   if (estConteur(profil)) {

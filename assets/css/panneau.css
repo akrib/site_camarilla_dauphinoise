@@ -35,7 +35,8 @@
 .panneau h1 { margin:0; color:#e6d8c2; font-family: Georgia, "Times New Roman", serif; font-size:clamp(30px,4vw,46px); line-height:1; font-weight:500; letter-spacing:-.035em; }
 .panneau .top-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
 .panneau .player-field { display:flex; align-items:center; gap:8px; color:#b9ad9d; font:10px "Courier New",monospace; letter-spacing:.08em; text-transform:uppercase; }
-.panneau .player-name { display:inline-block; min-width:110px; max-width:220px; min-height:38px; padding:10px 10px 8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#eee5d6; background:#171513; border:1px solid rgba(205,181,139,.25); border-radius:2px; font:13px Georgia,serif; letter-spacing:normal; text-transform:none; }
+.panneau .player-name:hover { border-color:var(--brass); }
+.panneau .player-name { cursor:pointer; text-align:left; display:inline-block; min-width:110px; max-width:220px; min-height:38px; padding:10px 10px 8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#eee5d6; background:#171513; border:1px solid rgba(205,181,139,.25); border-radius:2px; font:13px Georgia,serif; letter-spacing:normal; text-transform:none; }
 .panneau select:focus, .panneau textarea:focus { border-color:var(--brass); box-shadow:0 0 0 2px rgba(185,154,98,.12); outline:none; }
 .panneau .primary-btn, .panneau .subtle-btn { border:1px solid var(--brass); border-radius:2px; min-height:40px; padding:8px 14px; text-transform:uppercase; letter-spacing:.11em; font:10px/1.35 "Courier New",monospace; transition:background .16s ease,color .16s ease,transform .16s ease; }
 .panneau .primary-btn { color:#211b13; background:linear-gradient(135deg,#d2b77d,#a98952); font-weight:bold; }
