@@ -9,9 +9,11 @@ Disallow: /vendor/
 Disallow: /_site/
 Disallow: /_sass/
 Disallow: /_includes/
+Disallow: /membres/
+Disallow: /influences/
 
 # Lien vers le sitemap pour aider Google et les moteurs à indexer
-Sitemap: https://akrib.github.io/site_camarilla_dauphinoise/sitemap.xml
+Sitemap: https://www.camarilla-dauphinoise.fr/sitemap.xml
 
 # Facultatif : taux de crawl (limite le nombre de requêtes par seconde si besoin)
 # Crawl-delay: 10
