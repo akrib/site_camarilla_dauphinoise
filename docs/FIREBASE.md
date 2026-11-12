@@ -163,6 +163,9 @@ Cette étape empêche d'autres sites d'utiliser votre configuration.
 | Fiches de personnage | `/membres/fiches/` | membres actifs |
 | Tableau d'enquête (sauvegarde en ligne + partage) | `/utils/tableau` | personnages validés (et conteurs) |
 | Panneau d'affichage | `/membres/affichage/` | personnages validés (et conteurs) |
+| Notifications | `/membres/notifications/` | membres actifs |
+| Challenge (générateur + challenges demandés) | `/utils/challenge` | tout le monde (demandes : personnages et conteurs) |
+| Carte de Grenoble | `/utils/carte` | personnages validés (et conteurs) |
 | Influences | `/influences/` | membres ayant un personnage « en jeu » |
 | Comptes | `/membres/comptes/` | conteurs (rôles : admin) |
 | Influences — conteur | `/influences/conteur/` | conteurs |
@@ -177,6 +180,41 @@ Cette étape empêche d'autres sites d'utiliser votre configuration.
 - Une fois validée, seul un conteur peut la modifier. Le joueur dispose d'un bouton
   « Demander une modification », qui crée un ticket.
 - Les influences ne sont accessibles qu'avec un personnage **en jeu**.
+
+### Calendrier des parties et fenêtres d'influences
+
+Onglet **Calendrier** de la page *Influences — conteur* (`/influences/conteur/#calendrier`,
+tuile « Calendrier des parties » de l'espace membres). Pour chaque partie : sa date, la
+date limite de rendu des influences et un titre facultatif. **Une partie par mois** : le
+mois de la partie est celui de ses actions d'influence (champ `mois`).
+
+- Les influences d'une partie **s'ouvrent le lendemain de la partie précédente** (0 h) et
+  **ferment à sa date limite** (23 h 59). La toute première partie du calendrier s'ouvre
+  un mois avant sa date.
+- Pendant la fenêtre, le joueur envoie, **modifie** (texte, cible, raison sociale, lieu)
+  et retire ses actions **tant que le conteur n'a pas répondu**. Après la date limite,
+  tout est en lecture seule ; le conteur, lui, répond toujours.
+- Case « Autoriser les joueurs à préparer les actions des parties suivantes » : les
+  parties à venir sont aussi ouvertes (jamais les parties closes).
+- La prochaine partie et l'état des influences sont rappelés en haut de la page
+  Influences et de l'espace membres.
+- Tant qu'aucun calendrier n'est enregistré, les influences restent libres (ancien
+  fonctionnement).
+
+Ces fenêtres sont vérifiées par les **règles Firestore** (heure du serveur), pas seulement
+par la page. Document : `calendrier/parties`
+(`parties : { 'AAAA-MM': { date, limite, titre, ouverture, fermeture } }`, `anticipation`).
+
+### Textes longs compressés (Unishox2)
+
+Les textes longs sont compressés avant d'être enregistrés : descriptif et réponse des
+actions d'influence, description des raisons sociales, description et réponse des
+tickets, message du conteur sur une fiche, messages des notifications et des challenges
+demandés. Un texte de plus de 160 caractères est stocké en **octets** (Unishox2, environ
+35 à 60 % de la taille d'origine pour du français) si la compression fait gagner au moins
+10 % ; sinon il reste en texte. Les anciens documents restent lisibles. Bibliothèque :
+`assets/js/camarilla/lib/unishox2.js` (Unishox2 1.1.5, licence Apache-2.0) ; code :
+`assets/js/camarilla/compression.js`. Les exports CSV contiennent les textes en clair.
 
 ### Fiche de personnage MET
 
@@ -243,6 +281,42 @@ La page contient 3 tableaux. Chaque personnage a **un seul tableau en ligne**
 - Sans compte, ou sans personnage validé, la page reste fermée (l'export / import
   JSON n'est plus accessible aux visiteurs).
 
+### Notifications
+
+Page **Espace membres > Notifications** (`/membres/notifications/`), aussi accessible par
+le lien « Notifications » en haut des pages membres.
+
+- **Conteurs** : les fiches soumises à valider (avec un lien pour les relire), et les
+  challenges qu'ils ont envoyés, avec le résultat une fois résolus (« Lu, supprimer »).
+- **Joueurs** :
+  - le résultat de leurs demandes de validation (validée, mise en jeu, renvoyée pour
+    correction, archivée) avec le **message du conteur** ;
+  - les tableaux d'enquête partagés avec leurs personnages (lien « Ouvrir », qui fait
+    incarner le bon personnage si besoin) ;
+  - les challenges demandés par les conteurs (lien « Résoudre »).
+- Le message au joueur se saisit dans l'éditeur de fiche (bloc « Message au joueur »)
+  avant de cliquer sur Valider, Mettre en jeu, Renvoyer ou Archiver. Il part dans la
+  notification, et il est **effacé de la fiche** dès qu'elle est validée ou mise en jeu.
+- Une notification lue (« J'ai lu », « Retirer ») est **supprimée de la base**.
+- Collection `notifications` : petits documents (destinataire, type, texte court). Seul
+  un conteur peut envoyer un résultat de fiche, et seul le propriétaire d'un tableau
+  peut signaler un partage, vers un personnage réellement invité.
+
+### Challenges demandés
+
+La page **Challenge** (`/utils/challenge`) reste un générateur libre. En plus :
+
+- un **conteur** compose une demande pour un personnage validé : un titre, un message,
+  et un ou plusieurs challenges (10 au plus), chacun pris sur le réglage affiché de la
+  page (nombre de manches, Puits, Bombe, et la liste personnalisée imposée au joueur si
+  « Utiliser comme main » est cochée) ;
+- le **personnage** concerné (incarné) voit la demande en haut de la page et dans ses
+  notifications, et la résout **une seule fois** : le tirage est envoyé au conteur ;
+- le conteur lit le résultat dans ses notifications (bilan et détail des manches), puis
+  le supprime.
+- Collection `defis`. Les règles empêchent de résoudre deux fois, de résoudre pour un
+  autre personnage ou avec un personnage archivé.
+
 ### Panneau d'affichage
 
 Un liège partagé en temps réel entre les personnages : on y épingle des notes
@@ -266,6 +340,56 @@ jamais sur quelle note ni avec quel texte).
   deux minutes n'est pas noté de nouveau.
 - Seuls les conteurs peuvent « Effacer les souvenirs ».
 - Limites : 80 notes, 1 200 caractères par note.
+
+### Carte de Grenoble
+
+Page `/utils/carte` (outil de jeu : personnage incarné, ou conteur). Carte tactique de
+Grenoble et de ses environs :
+
+- **Plan** : carte routière (rues, quartiers, places, espaces verts…), fond **Nuit**
+  (sombre) ou **Jour** (clair) ;
+- **3D** : la même carte inclinée, bâtiments en volume à leur hauteur réelle. Le
+  passage de l'un à l'autre garde le centre, le zoom et tous les tracés ;
+- **Territoires** : polygones dessinés à la main (clic par clic, double-clic ou Entrée
+  pour fermer), points déplaçables, ajout / suppression de points, agrandir / réduire,
+  déplacement d'un bloc, couleur, transparence, nom (les zones 1 à 24 sont proposées),
+  description ;
+- **Havres** : marqueurs déplaçables, nom, description, icône, couleur ;
+- **Zones de chasse** : un **cercle autour du marqueur** (300 m par défaut, de 50 m à
+  3 km), réglable au curseur ou en glissant le point blanc sur le bord du cercle ; le
+  cercle suit le marqueur quand on le déplace ;
+- **Rondes** : lignes reliant plusieurs points (cliquer sur un havre pendant le tracé
+  y pose un point) ;
+- **Zones** : les deux cartes de référence de l'association (zones 1 à 7 et 8 à 24),
+  fichiers `assets/images/carte/zones-grenoble.webp` et `zones-isere.webp`.
+
+- **Influences** : liste des mois (parties du calendrier, avec leur état) dans la barre
+  du haut ; les actions d'influence du personnage pour ce mois s'affichent en losanges
+  (or : Gotha, rouge : Pègre, bleu : AIP). Tant que la fenêtre de la partie est ouverte et
+  que le conteur n'a pas répondu, on place une action (📍), on la déplace en la glissant
+  ou on la retire de la carte ; les mois clos sont en lecture seule. L'outil
+  **Influence** ouvre la gestion des influences avec le lieu cliqué déjà rempli. Un
+  conteur voit toutes les actions du mois (lecture seule). Dans la gestion des
+  influences, chaque formulaire a aussi « 📍 Choisir sur la carte ».
+
+Sauvegarde : dans le navigateur, **une carte par personnage** (clé `cam-carte-{id}`),
+plus **Export / Import JSON** pour passer d'un appareil à l'autre ou partager une carte.
+Les actions d'influence, elles, sont dans Firestore (champ `lieu : { lng, lat }`).
+
+Dépendances, toutes gratuites et sans clé d'API :
+
+| Quoi | Où | Rôle |
+|---|---|---|
+| MapLibre GL JS 6.18.0 (licence BSD) | `https://unpkg.com/maplibre-gl@6.18.0/…` | affichage de la carte vectorielle, 3D |
+| OpenFreeMap (styles `dark` et `liberty`) | `https://tiles.openfreemap.org/styles/…` | tuiles, polices et icônes de la carte |
+| OpenStreetMap | via OpenFreeMap | données (rues, bâtiments et leurs hauteurs) |
+
+Rien à installer ni à lancer : la page fonctionne dès qu'elle est sur le site. Pour
+changer de version de MapLibre, modifiez les adresses `unpkg.com` (en tête de
+`_pages/utils/carte.html`, de `assets/js/camarilla/pages/carte.js` et de
+`assets/js/camarilla/carte-base.js`). OpenFreeMap est un service gratuit fourni « en
+l'état » : s'il disparaissait, il suffirait de changer les deux adresses de `FONDS` dans
+`carte-base.js` (n'importe quel style au schéma OpenMapTiles convient).
 
 ### Images
 
@@ -338,7 +462,12 @@ Puis ouvrez <http://localhost:4000/connexion/?emulateurs=1>. Le paramètre
 | `assets/js/camarilla/core.js` | connexion, profil, rôles, utilitaires |
 | `assets/js/camarilla/images.js` | compression et stockage des images |
 | `assets/js/camarilla/incarnation.js` | personnage incarné (choix, vérification, répertoire) |
+| `assets/js/camarilla/defis.js` | challenges demandés (libellés, bilans) |
 | `assets/js/camarilla/donnees.js` | listes de jeu (villes, actions d'influence…) |
+| `assets/js/camarilla/calendrier.js` | calendrier des parties, fenêtres d'influences |
+| `assets/js/camarilla/compression.js` | compression des textes longs (Unishox2) |
+| `assets/js/camarilla/lib/unishox2.js` | bibliothèque Unishox2 (Apache-2.0) |
+| `assets/js/camarilla/carte-base.js` | MapLibre à la demande, fonds, choix d'un lieu |
 | `assets/js/camarilla/pages/*.js` | une page = un module |
 | `assets/js/camarilla/fiche/referentiel.js` | listes et coûts de la fiche MET (généré par `outils/fiche/extraire_excel.py`) |
 | `assets/js/camarilla/fiche/modele.js` | structure d'une fiche, import d'un classeur Excel |

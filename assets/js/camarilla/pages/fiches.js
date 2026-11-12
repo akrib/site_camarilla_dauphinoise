@@ -9,6 +9,7 @@ import {
 } from '../images.js';
 import { STATUTS_FICHE, STATUTS_FICHE_EDITABLES } from '../donnees.js';
 import { majRepertoire, estIncarnable } from '../incarnation.js';
+import { compresser, donneesDoc } from '../compression.js';
 import { creerEditeur } from '../fiche/editeur.js';
 import { ficheVide as ficheMetVide, normaliser } from '../fiche/modele.js';
 import { lireFicheExcel } from '../fiche/import-excel.js';
@@ -38,12 +39,12 @@ pageProtegee(racine, 'actif', async (s) => {
 // ---------------------------------------------------------------------
 async function chargerMesFiches() {
   const snap = await fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('proprietaire', '==', session.user.uid)));
-  mesFiches = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => millis(b.majLe) - millis(a.majLe));
+  mesFiches = snap.docs.map(donneesDoc).sort((a, b) => millis(b.majLe) - millis(a.majLe));
 }
 async function chargerToutes() {
   if (!conteur) return;
   const snap = await fs.getDocs(fs.collection(db, 'personnages'));
-  toutes = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  toutes = snap.docs.map(donneesDoc)
     .sort((a, b) => (a.proprietaireNom || '').localeCompare(b.proprietaireNom || '') || (a.nom || '').localeCompare(b.nom || ''));
 }
 
@@ -61,7 +62,7 @@ async function route() {
       if (perimee()) return;
       if (!snap.exists()) { racine.replaceChildren(h('div', { class: 'cam-encart erreur' }, 'Fiche introuvable.')); return; }
       const avis = avisApresNavigation; avisApresNavigation = null;
-      afficherEditeur({ id, ...snap.data() }, null, avis);
+      afficherEditeur(donneesDoc(snap), null, avis);
     } else if (hash === 'nouvelle') {
       afficherEditeur(null);
     } else {
@@ -315,7 +316,10 @@ function afficherEditeur(existante, preRemplie, avis) {
   });
 
   // --- Commentaire conteur ---
-  const commentaire = h('textarea', { disabled: !conteur, maxlength: 4000, placeholder: conteur ? 'Visible par le joueur.' : '' }, d.commentaireConteur || '');
+  const commentaire = h('textarea', {
+    disabled: !conteur, maxlength: 2000,
+    placeholder: conteur ? 'Envoyé au joueur dans ses notifications quand vous validez, mettez en jeu, renvoyez ou archivez la fiche.' : ''
+  }, d.commentaireConteur || '');
 
   // --- Actions ---
   const msg = h('div', { class: 'cam-msg' });
@@ -359,13 +363,28 @@ function afficherEditeur(existante, preRemplie, avis) {
       } else {
         const ref = fs.doc(db, 'personnages', d.id);
         if (conteur) {
-          const extra = { commentaireConteur: commentaire.value };
-          if ((statut === 'validee' || statut === 'active') && d.statut !== statut) { extra.validePar = uid; extra.valideLe = fs.serverTimestamp(); }
+          const changement = d.statut !== statut;
+          const extra = { commentaireConteur: compresser(commentaire.value) };
+          if ((statut === 'validee' || statut === 'active') && changement) {
+            extra.validePar = uid; extra.valideLe = fs.serverTimestamp();
+            // Fiche validée : le message n'a plus à rester sur la fiche (il part dans la notification).
+            extra.commentaireConteur = '';
+          }
           if (proprio) extra.proprietaireNom = session.profil.nom;
           await fs.updateDoc(ref, { ...data, ...extra });
           // Répertoire des personnages validés (partage des tableaux d'enquête).
           if (estIncarnable(d) || estIncarnable({ statut })) {
             await majRepertoire({ id: d.id, nom: data.nom, proprietaire: d.proprietaire, statut }, estIncarnable(d) ? undefined : null);
+          }
+          // Résultat de la demande de validation : notification au joueur, avec le message du conteur.
+          if (changement && ['validee', 'active', 'refusee', 'archivee'].includes(statut) && d.proprietaire !== uid) {
+            try {
+              await fs.addDoc(fs.collection(db, 'notifications'), {
+                type: 'fiche', destinataire: d.proprietaire, auteur: uid, auteurNom: session.profil.nom,
+                personnage: d.id, personnageNom: data.nom, statut,
+                message: compresser(commentaire.value.trim().slice(0, 2000)), creeLe: fs.serverTimestamp()
+              });
+            } catch (e) { console.warn('Notification non envoyée', e); }
           }
         } else {
           await fs.updateDoc(ref, { ...data, proprietaireNom: session.profil.nom });
@@ -465,7 +484,8 @@ function afficherEditeur(existante, preRemplie, avis) {
       modifiable ? h('div', { class: 'cam-actions' }, h('button', { type: 'button', class: 'petit secondaire', onclick: () => fichierJson.click() }, 'Charger un fichier JSON'), fichierJson) : '',
       msgJson),
     h('div', { class: 'cam-bloc' },
-      h('h3', {}, 'Commentaire du conteur'),
+      h('h3', {}, conteur ? 'Message au joueur' : 'Commentaire du conteur'),
+      conteur ? h('p', { class: 'sous-titre' }, 'Envoyé dans les notifications du joueur avec le résultat (validation, mise en jeu, renvoi, archivage). Il est effacé de la fiche une fois celle-ci validée.') : '',
       commentaire),
     h('div', { class: 'fiche-actions' }, actions, msg));
 }
@@ -488,7 +508,7 @@ function demanderModification(f) {
             await fs.addDoc(fs.collection(db, 'tickets'), {
               proprietaire: session.user.uid, proprietaireNom: session.profil.nom,
               personnageId: f.id, personnageNom: f.nom, categorie: 'Modification de fiche',
-              sujet: sujet.value.trim() || 'Modification de fiche', description: description.value.trim(),
+              sujet: sujet.value.trim() || 'Modification de fiche', description: compresser(description.value.trim()),
               statut: 'En attente', resultat: '', creeLe: fs.serverTimestamp()
             });
             message(msg, 'Demande envoyée. Suivez-la dans Influences > Tickets.', 'ok');

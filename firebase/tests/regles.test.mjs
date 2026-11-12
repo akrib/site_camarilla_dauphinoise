@@ -13,7 +13,7 @@ import {
 } from '@firebase/rules-unit-testing';
 import {
   doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs,
-  serverTimestamp, Timestamp, writeBatch, arrayUnion, deleteField
+  serverTimestamp, Timestamp, writeBatch, arrayUnion, deleteField, Bytes
 } from 'firebase/firestore';
 
 const ici = dirname(fileURLToPath(import.meta.url));
@@ -512,6 +512,76 @@ describe('Panneau d\'affichage', () => {
   });
 });
 
+describe('Notifications', () => {
+  const notifTableau = (extra = {}) => ({
+    type: 'tableau', destinataire: 'bob', auteur: 'alice', auteurNom: 'Amarok', personnage: 'pB', personnageNom: 'Bastien',
+    tableau: 'pA', titre: 'Enquête de Amarok', droit: 'lecture', creeLe: serverTimestamp(), ...extra
+  });
+  const notifFiche = (extra = {}) => ({
+    type: 'fiche', destinataire: 'alice', auteur: 'conteur', auteurNom: 'Conteur', personnage: 'pA', personnageNom: 'Amarok',
+    statut: 'validee', message: 'Bienvenue à Grenoble.', creeLe: serverTimestamp(), ...extra
+  });
+  test('partage de tableau : par son propriétaire, vers un personnage invité', async () => {
+    await assertSucceeds(setDoc(doc(db('alice'), 'notifications', 't1'), notifTableau()));
+    await assertFails(setDoc(doc(db('alice'), 'notifications', 't2'), notifTableau({ destinataire: 'dan', personnage: 'pD', personnageNom: 'Damien' })));
+    await assertFails(setDoc(doc(db('bob'), 'notifications', 't3'), notifTableau({ auteur: 'bob', destinataire: 'alice' })));
+    await assertFails(setDoc(doc(db('alice'), 'notifications', 't4'), notifTableau({ auteurNom: 'Alice' })));
+  });
+  test('résultat de validation : par un conteur, au propriétaire de la fiche', async () => {
+    await assertSucceeds(setDoc(doc(db('conteur'), 'notifications', 'f1'), notifFiche()));
+    await assertFails(setDoc(doc(db('alice'), 'notifications', 'f2'), notifFiche({ auteur: 'alice', auteurNom: 'Alice' })));
+    await assertFails(setDoc(doc(db('conteur'), 'notifications', 'f3'), notifFiche({ destinataire: 'bob' })));
+    await assertFails(setDoc(doc(db('conteur'), 'notifications', 'f4'), notifFiche({ message: 'x'.repeat(2001) })));
+    await assertFails(setDoc(doc(db('conteur'), 'notifications', 'f5'), notifFiche({ statut: 'brouillon' })));
+  });
+  test('lecture par le destinataire (et l\'auteur), suppression une fois lue', async () => {
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'notifications', 'n1'), { ...notifTableau(), creeLe: passe }));
+    await assertSucceeds(getDocs(query(collection(db('bob'), 'notifications'), where('destinataire', '==', 'bob'))));
+    await assertFails(getDocs(collection(db('bob'), 'notifications')));
+    await assertFails(getDoc(doc(db('dan'), 'notifications', 'n1')));
+    await assertSucceeds(getDocs(query(collection(db('alice'), 'notifications'), where('auteur', '==', 'alice'))));
+    await assertFails(deleteDoc(doc(db('dan'), 'notifications', 'n1')));
+    await assertSucceeds(deleteDoc(doc(db('bob'), 'notifications', 'n1')));
+  });
+});
+
+describe('Challenges demandés', () => {
+  const defi = (extra = {}) => ({
+    conteur: 'conteur', conteurNom: 'Conteur', destinataire: 'bob', personnage: 'pB', personnageNom: 'Bastien',
+    titre: 'Crocheter la serrure', message: 'Le notaire dort.', statut: 'en_attente', resultats: [],
+    challenges: [{ libelle: 'Serrure', manches: 3, puits: true, bombe: false, main: [] }, { libelle: 'Fuite', manches: 1, puits: false, bombe: false, main: ['pierre'] }],
+    creeLe: serverTimestamp(), ...extra
+  });
+  const resultats = [{ v: 2, e: 0, d: 1, m: [] }, { v: 1, e: 0, d: 0, m: [] }];
+  test('seul un conteur propose, à un personnage validé de ce joueur', async () => {
+    await assertSucceeds(setDoc(doc(db('conteur'), 'defis', 'd1'), defi()));
+    await assertFails(setDoc(doc(db('alice'), 'defis', 'd2'), defi({ conteur: 'alice', conteurNom: 'Alice' })));
+    await assertFails(setDoc(doc(db('conteur'), 'defis', 'd3'), defi({ destinataire: 'alice' })));
+    await assertFails(setDoc(doc(db('conteur'), 'defis', 'd4'), defi({ destinataire: 'alice', personnage: 'pA2', personnageNom: 'Brouillon' })));
+    await assertFails(setDoc(doc(db('conteur'), 'defis', 'd5'), defi({ challenges: [] })));
+    await assertFails(setDoc(doc(db('conteur'), 'defis', 'd6'), defi({ statut: 'joue' })));
+  });
+  test('le personnage le résout une seule fois ; le conteur supprime', async () => {
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'defis', 'd1'), { ...defi(), creeLe: passe }));
+    await assertSucceeds(getDoc(doc(db('bob'), 'defis', 'd1')));
+    await assertFails(getDoc(doc(db('alice'), 'defis', 'd1')));
+    await assertFails(updateDoc(doc(db('alice'), 'defis', 'd1'), { statut: 'joue', resultats, joueLe: serverTimestamp() }));
+    await assertFails(updateDoc(doc(db('bob'), 'defis', 'd1'), { statut: 'joue', resultats: resultats.slice(0, 1), joueLe: serverTimestamp() }));
+    await assertFails(updateDoc(doc(db('bob'), 'defis', 'd1'), { statut: 'joue', resultats, joueLe: serverTimestamp(), titre: 'Autre' }));
+    await assertSucceeds(updateDoc(doc(db('bob'), 'defis', 'd1'), { statut: 'joue', resultats, joueLe: serverTimestamp() }));
+    await assertFails(updateDoc(doc(db('bob'), 'defis', 'd1'), { resultats, joueLe: serverTimestamp() }));
+    await assertFails(deleteDoc(doc(db('bob'), 'defis', 'd1')));
+    await assertSucceeds(deleteDoc(doc(db('conteur'), 'defis', 'd1')));
+  });
+  test('un personnage archivé ne résout plus', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'defis', 'd1'), { ...defi(), creeLe: passe });
+      await updateDoc(doc(ctx.firestore(), 'personnages', 'pB'), { statut: 'archivee' });
+    });
+    await assertFails(updateDoc(doc(db('bob'), 'defis', 'd1'), { statut: 'joue', resultats, joueLe: serverTimestamp() }));
+  });
+});
+
 describe('Influences', () => {
   test('une action n\'est possible que pour son personnage en jeu', async () => {
     await assertSucceeds(setDoc(doc(db('alice'), 'influences', 'n1'), action('alice', 'pA', 'Amarok')));
@@ -560,3 +630,86 @@ describe('Tickets', () => {
     await assertFails(getDoc(doc(db('bob'), 'tickets', 'kA')));
   });
 });
+
+// ---------------------------------------------------------------------
+// Calendrier des parties et fenêtres d'influences
+// ---------------------------------------------------------------------
+const JOUR = 86400000;
+function calendrier(anticipation = false) {
+  const t = Date.now();
+  return {
+    parties: {
+      '2026-10': { date: '2026-10-17', limite: '2026-10-10', titre: '', ouverture: t - 60 * JOUR, fermeture: t - 30 * JOUR },
+      '2026-11': { date: '2026-11-21', limite: '2026-11-14', titre: 'Élysée', ouverture: t - 10 * JOUR, fermeture: t + 5 * JOUR },
+      '2026-12': { date: '2026-12-19', limite: '2026-12-12', titre: '', ouverture: t + 10 * JOUR, fermeture: t + 30 * JOUR }
+    },
+    anticipation, majPar: 'conteur', majLe: serverTimestamp()
+  };
+}
+async function poserCalendrier(anticipation = false) {
+  await env.withSecurityRulesDisabled(async (ctx) => { await setDoc(doc(ctx.firestore(), 'calendrier', 'parties'), calendrier(anticipation)); });
+}
+const octets = (n) => Bytes.fromUint8Array(new Uint8Array(n).fill(7).map((x, i) => (i === 0 ? 1 : x)));
+
+describe('Calendrier des parties', () => {
+  test('lu par les membres actifs, écrit par les conteurs seulement', async () => {
+    await assertFails(setDoc(doc(db('alice'), 'calendrier', 'parties'), { ...calendrier(), majPar: 'alice' }));
+    await assertSucceeds(setDoc(doc(db('conteur'), 'calendrier', 'parties'), calendrier()));
+    await assertFails(setDoc(doc(db('conteur'), 'calendrier', 'autre'), calendrier()));
+    await assertFails(setDoc(doc(db('conteur'), 'calendrier', 'parties'), { ...calendrier(), majPar: 'conteur2' }));
+    await assertSucceeds(getDoc(doc(db('alice'), 'calendrier', 'parties')));
+    await assertFails(getDoc(doc(db('eve'), 'calendrier', 'parties')));
+  });
+});
+
+describe('Influences et calendrier', () => {
+  test('création seulement pendant la fenêtre de la partie visée', async () => {
+    await poserCalendrier();
+    await assertSucceeds(setDoc(doc(db('alice'), 'influences', 'o1'), action('alice', 'pA', 'Amarok', { mois: '2026-11' })));
+    await assertFails(setDoc(doc(db('alice'), 'influences', 'o2'), action('alice', 'pA', 'Amarok', { mois: '2026-10' })));
+    await assertFails(setDoc(doc(db('alice'), 'influences', 'o3'), action('alice', 'pA', 'Amarok', { mois: '2026-12' })));
+    await assertFails(setDoc(doc(db('alice'), 'influences', 'o4'), action('alice', 'pA', 'Amarok', { mois: '2027-05' })));
+  });
+  test('préparation anticipée : parties à venir permises, parties closes toujours refusées', async () => {
+    await poserCalendrier(true);
+    await assertSucceeds(setDoc(doc(db('alice'), 'influences', 'o3'), action('alice', 'pA', 'Amarok', { mois: '2026-12' })));
+    await assertFails(setDoc(doc(db('alice'), 'influences', 'o2'), action('alice', 'pA', 'Amarok', { mois: '2026-10' })));
+  });
+  test('le joueur modifie texte et lieu tant que la fenêtre est ouverte et sans réponse', async () => {
+    await poserCalendrier();
+    await assertSucceeds(updateDoc(doc(db('alice'), 'influences', 'iA'), { descriptif: 'Nouveau texte', lieu: { lng: 5.72, lat: 45.18 }, majLe: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(db('alice'), 'influences', 'iA'), { lieu: deleteField() }));
+    await assertFails(updateDoc(doc(db('alice'), 'influences', 'iA'), { lieu: { lng: 500, lat: 45 } }));
+    await assertFails(updateDoc(doc(db('alice'), 'influences', 'iA'), { lieu: { lng: 5.7, lat: 45.1, z: 1 } }));
+    await assertFails(updateDoc(doc(db('alice'), 'influences', 'iA'), { nomAction: 'Autre chose' }));
+    await assertFails(updateDoc(doc(db('alice'), 'influences', 'iA'), { pointsAction: 9 }));
+    await assertFails(updateDoc(doc(db('alice'), 'influences', 'iA'), { mois: '2026-10' }));
+    await assertFails(updateDoc(doc(db('bob'), 'influences', 'iA'), { descriptif: 'Pas à moi' }));
+    await assertSucceeds(updateDoc(doc(db('conteur'), 'influences', 'iA'), { reponseConteur: 'Réussi', statut: 'traitee' }));
+    await assertFails(updateDoc(doc(db('alice'), 'influences', 'iA'), { descriptif: 'Après la réponse' }));
+  });
+  test('fenêtre close : ni modification ni retrait par le joueur ; le conteur répond toujours', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'calendrier', 'parties'), calendrier());
+      await setDoc(doc(ctx.firestore(), 'influences', 'iVieux'), { ...action('alice', 'pA', 'Amarok', { mois: '2026-10' }), creeLe: passe });
+    });
+    await assertFails(updateDoc(doc(db('alice'), 'influences', 'iVieux'), { descriptif: 'Trop tard' }));
+    await assertFails(deleteDoc(doc(db('alice'), 'influences', 'iVieux')));
+    await assertSucceeds(updateDoc(doc(db('conteur'), 'influences', 'iVieux'), { reponseConteur: 'Échec', statut: 'traitee' }));
+  });
+  test('sans calendrier, comme avant : tous les mois', async () => {
+    await assertSucceeds(setDoc(doc(db('alice'), 'influences', 'o5'), action('alice', 'pA', 'Amarok', { mois: '2025-01' })));
+  });
+});
+
+describe('Textes longs compressés (octets)', () => {
+  test('descriptif, réponse, ticket et message acceptés en octets, dans les mêmes limites', async () => {
+    await assertSucceeds(setDoc(doc(db('alice'), 'influences', 'c1'), action('alice', 'pA', 'Amarok', { descriptif: octets(300) })));
+    await assertFails(setDoc(doc(db('alice'), 'influences', 'c2'), action('alice', 'pA', 'Amarok', { descriptif: octets(1) })));
+    await assertFails(setDoc(doc(db('alice'), 'influences', 'c3'), action('alice', 'pA', 'Amarok', { descriptif: octets(4001) })));
+    await assertSucceeds(updateDoc(doc(db('conteur'), 'influences', 'iA'), { reponseConteur: octets(500), statut: 'traitee' }));
+    await assertSucceeds(setDoc(doc(db('alice'), 'tickets', 'c4'), ticket('alice', '', '', { description: octets(800) })));
+    await assertSucceeds(updateDoc(doc(db('conteur'), 'personnages', 'pA2'), { commentaireConteur: octets(200) }));
+  });
+});
+

@@ -260,6 +260,7 @@ export function barreMembre(conteneur) {
     conteneur.replaceChildren(h('div', { class: 'cam-barre' },
       h('span', {}, 'Connecté : ', h('strong', {}, profil ? profil.nom : user.email), role ? ' · ' + role : ''),
       h('a', { href: '/membres/' }, 'Espace membres'),
+      h('a', { href: '/membres/notifications/' }, 'Notifications'),
       h('a', { href: '#', onclick: (e) => { e.preventDefault(); deconnexion('/'); } }, 'Déconnexion')));
   });
 }

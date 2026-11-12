@@ -4,6 +4,7 @@ import {
   changerNom, renvoyerVerification, deconnexion, message, messageErreur, dateFr
 } from '../core.js';
 import { personnageIncarne, blocChoixPersonnage, quitterPersonnage } from '../incarnation.js';
+import { chargerCalendrier, encartCalendrier } from '../calendrier.js';
 
 const racine = document.getElementById('cam-membres');
 barreMembre(document.getElementById('cam-barre'));
@@ -59,10 +60,31 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
   }
 
   // --- Outils du joueur (compte) ---
-  racine.append(h('h2', {}, 'Mes outils'),
+  const compteurNotifs = h('span');
+  const tuileNotifs = tuile('/membres/notifications/', 'Notifications', 'Résultats de vos fiches, tableaux partagés, challenges demandés.');
+  tuileNotifs.querySelector('strong').append(compteurNotifs);
+  // Prochaine partie et fenêtre des influences (calendrier des conteurs)
+  const zoneCalendrier = h('div');
+  if (estActif(profil)) {
+    chargerCalendrier().then((cal) => { const e = encartCalendrier(cal); if (e) zoneCalendrier.replaceChildren(e); }).catch((e) => console.warn(e));
+  }
+  racine.append(zoneCalendrier, h('h2', {}, 'Mes outils'),
     h('div', { class: 'cam-grille' },
+      tuileNotifs,
       tuile('/membres/fiches/', 'Mes fiches de personnage', 'Créer, compléter et soumettre vos fiches au conteur.'),
       tuile('/influences/', 'Influences', 'Actions d\'influence, raisons sociales et tickets.')));
+
+  // Challenges demandés (pour le compteur des notifications et celui de la tuile Challenges).
+  let mesDefis = [];
+  try {
+    const snap = await fs.getDocs(fs.query(fs.collection(db, 'defis'), fs.where('destinataire', '==', user.uid)));
+    mesDefis = snap.docs.map((d) => d.data()).filter((d) => d.statut === 'en_attente');
+  } catch (e) { console.warn(e); }
+  fs.getCountFromServer(fs.query(fs.collection(db, 'notifications'), fs.where('destinataire', '==', user.uid)))
+    .then((c) => {
+      const n = c.data().count + mesDefis.length;
+      if (n) compteurNotifs.replaceChildren(h('span', { class: 'cam-tag soumise' }, String(n)));
+    }).catch((e) => console.warn(e));
 
   // --- Personnage incarné et outils de jeu ---
   // Le panneau d'affichage et le tableau d'enquête ne s'ouvrent qu'à un
@@ -73,10 +95,19 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
   async function dessinerPersonnage() {
     zonePerso.replaceChildren(h('p', { class: 'sous-titre' }, 'Chargement…'));
     const perso = await personnageIncarne(user.uid);
+    const defisPerso = perso ? mesDefis.filter((d) => d.personnage === perso.id).length : 0;
+    const tuileChallenges = tuile('/utils/challenge', 'Challenges', perso
+      ? (defisPerso ? defisPerso + ' challenge' + (defisPerso > 1 ? 's' : '') + ' demandé' + (defisPerso > 1 ? 's' : '') + ' à ' + perso.nom + ' par les conteurs.' : 'Le générateur de challenge, et les challenges que les conteurs demandent à ' + perso.nom + '.')
+      : 'Le générateur de challenge, et proposer un challenge à un personnage.');
+    if (defisPerso) tuileChallenges.querySelector('strong').append(h('span', { class: 'cam-tag soumise' }, String(defisPerso)));
     const outils = h('div', { class: 'cam-grille' },
+      tuileChallenges,
       tuile('/membres/affichage/', 'Panneau d\'affichage', perso
         ? 'Épingler des notes et voir ce que les goules ont vu, en tant que ' + perso.nom + '.'
         : 'Les notes épinglées sur le liège (en tant que conteur).'),
+      tuile('/utils/carte', 'Carte de Grenoble', perso
+        ? 'Havres, zones de chasse, rondes, territoires et actions d\'influence de ' + perso.nom + ', en plan ou en 3D.'
+        : 'Carte tactique de Grenoble (en tant que conteur).'),
       tuile('/utils/tableau', 'Tableau d\'enquête', perso
         ? 'Les 3 tableaux d\'enquête de ' + perso.nom + ', partageables avec d\'autres personnages.'
         : 'Consulter les tableaux des personnages (en tant que conteur).'));
@@ -118,7 +149,8 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
     grille.append(
       tuile('/membres/fiches/#a-valider', 'Fiches à valider', 'Relire, valider ou renvoyer les fiches soumises.', aValider || ''),
       tuile('/membres/comptes/', 'Comptes', 'Activer les inscriptions, gérer les rôles.', enAttente || ''),
-      tuile('/influences/conteur/', 'Influences — conteur', 'Répondre aux actions, tickets, districts, export CSV.'));
+      tuile('/influences/conteur/', 'Influences — conteur', 'Répondre aux actions, tickets, districts, export CSV.'),
+      tuile('/influences/conteur/#calendrier', 'Calendrier des parties', 'Dates des parties et dates limites de rendu des influences.'));
     if (estAdmin(profil)) {
       racine.append(h('p', { class: 'sous-titre' }, 'Administrateur : la page Comptes vous permet aussi de nommer des conteurs et de nettoyer les images inutilisées.'));
     }

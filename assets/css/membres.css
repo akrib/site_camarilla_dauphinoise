@@ -163,3 +163,39 @@ table.cam-table td textarea { min-height: 3rem; font-size: .82rem; }
 .cam-incarne { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; }
 .cam-incarne .nom { font-size: 1.15rem; font-weight: 700; color: var(--accent); }
 .cam-tuile.verrou { opacity: .55; pointer-events: none; }
+
+/* Notifications */
+.cam-btn.petit { padding: .3rem .65rem; font-size: .76rem; margin-top: .3rem; }
+.cam-notif { border-top: 1px solid var(--ligne); padding: .8rem 0; }
+.cam-notif:first-of-type { border-top: 0; padding-top: .2rem; }
+.cam-notif-tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .2rem 1rem; }
+.cam-notif-message { white-space: pre-wrap; overflow-wrap: anywhere; margin: .5rem 0 .2rem; padding: .6rem .9rem; background: #fff; border-left: 3px solid var(--accent); border-radius: 0 4px 4px 0; font-size: .9rem; }
+.cam-defi-liste { margin: .5rem 0 .2rem 1.2rem; padding: 0; font-size: .88rem; }
+.cam-defi-liste li { margin: .25rem 0; }
+.cam-defi-bilan { font-weight: 700; color: var(--accent); }
+.cam-defi-detail { white-space: pre-wrap; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .78rem; color: var(--encre-pale); margin: .3rem 0 0; }
+.cam-tuile .cam-tag { margin-left: .4rem; }
+
+/* --- Calendrier des parties --------------------------------------------- */
+.cam-encart.ok { border-color: var(--ok); background: #eef6f0; }
+.cam-calendrier strong { font-size: .95rem; }
+
+/* --- Lieu d'une action d'influence (choix sur la carte) ----------------- */
+.cam-lieu { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .6rem; }
+.cam-lieu .cam-lieu-valeur { font-size: .85rem; color: var(--encre-pale); font-variant-numeric: tabular-nums; }
+.cam-lieu-fond { position: fixed; inset: 0; z-index: 10000; background: rgba(10, 10, 14, .72); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.cam-lieu-boite { background: #15161b; color: #eee; border: 1px solid #2c2e36; border-radius: 8px; width: min(960px, 100%); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, .6); }
+.cam-lieu-tete, .cam-lieu-pied { display: flex; align-items: center; gap: .6rem; padding: .7rem 1rem; }
+.cam-lieu-tete { justify-content: space-between; border-bottom: 1px solid #2c2e36; }
+.cam-lieu-pied { border-top: 1px solid #2c2e36; flex-wrap: wrap; }
+.cam-lieu-pied .cam-lieu-info { font-size: .85rem; color: #bbb; font-variant-numeric: tabular-nums; }
+.cam-lieu-boite button { font: inherit; font-size: .85rem; padding: .45rem .9rem; border-radius: 4px; border: 1px solid #9b1c2c; background: #9b1c2c; color: #fff; cursor: pointer; }
+.cam-lieu-boite button.secondaire { background: transparent; color: #ddd; border-color: #444; }
+.cam-lieu-boite button:disabled { opacity: .45; cursor: not-allowed; }
+.cam-lieu-boite .cam-lieu-fermer { background: transparent; border: 0; font-size: 1.4rem; line-height: 1; padding: 0 .3rem; color: #bbb; }
+.cam-lieu-carte { height: min(70vh, 560px); background: #0b0c0f; }
+.cam-lieu-marqueur { width: 22px; height: 22px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .6); cursor: grab; }
+
+/* --- Modification d'une action d'influence ------------------------------ */
+.cam-edition { margin-top: .8rem; padding: .8rem 1rem; border: 1px dashed var(--ligne); border-radius: 6px; background: var(--panneau); }
+.cam-edition h3 { margin-top: 0; }

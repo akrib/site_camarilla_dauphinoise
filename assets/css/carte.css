@@ -1,0 +1,203 @@
+/* =====================================================================
+   Carte de Grenoble — page /utils/carte
+   Esthétique « outil de surveillance territoriale » : sombre, sobre,
+   lisible. Carte au centre, barre d'outils en haut, panneau à droite.
+   ===================================================================== */
+:root {
+  --c-fond: #0b0c0f;
+  --c-panneau: #121419;
+  --c-panneau-2: #181b22;
+  --c-ligne: #262a33;
+  --c-ligne-2: #343a46;
+  --c-texte: #e6e1d6;
+  --c-pale: #9a958a;
+  --c-sourd: #6c6a64;
+  --c-sang: #9b1c2c;
+  --c-sang-vif: #c4283d;
+  --c-laiton: #c9a227;
+  --c-ok: #4f8a5b;
+  --c-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --c-titre: Georgia, "Times New Roman", serif;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body.carte-page {
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--c-fond); color: var(--c-texte); font-family: var(--c-ui); font-size: 14px;
+}
+.carte-page [hidden] { display: none !important; }
+.carte-page button, .carte-page input, .carte-page select, .carte-page textarea { font: inherit; }
+
+/* ---------- Barre d'outils ---------- */
+.carte-barre {
+  display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap;
+  padding: 8px 14px; background: linear-gradient(#15171d, #0f1014);
+  border-bottom: 1px solid var(--c-ligne); z-index: 5;
+}
+.carte-marque { display: flex; align-items: center; gap: 10px; margin-right: 6px; }
+.carte-marque .sceau {
+  width: 30px; height: 30px; border: 1px solid var(--c-sang); border-radius: 50%;
+  display: grid; place-items: center; color: var(--c-sang-vif); font-size: 15px;
+}
+.carte-marque h1 { margin: 0; font: 600 13px/1.1 var(--c-titre); letter-spacing: .22em; text-transform: uppercase; }
+.carte-marque small { display: block; color: var(--c-sourd); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; margin-top: 3px; }
+.carte-groupe { display: flex; align-items: center; gap: 4px; }
+.carte-groupe + .carte-groupe { padding-left: 12px; border-left: 1px solid var(--c-ligne); }
+.carte-btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px;
+  border: 1px solid var(--c-ligne-2); border-radius: 4px; background: var(--c-panneau-2); color: var(--c-texte);
+  cursor: pointer; font-size: 12.5px; white-space: nowrap; transition: border-color .12s, background .12s;
+}
+.carte-btn:hover { border-color: var(--c-pale); }
+.carte-btn.actif { border-color: var(--c-sang-vif); background: #2a1217; color: #fff; box-shadow: inset 0 0 0 1px var(--c-sang); }
+.carte-btn .ico { width: 16px; height: 16px; display: inline-grid; place-items: center; }
+.carte-btn .ico svg { width: 16px; height: 16px; }
+.carte-btn.discret { background: transparent; }
+.carte-segment { display: inline-flex; border: 1px solid var(--c-ligne-2); border-radius: 4px; overflow: hidden; }
+.carte-segment button { height: 30px; padding: 0 12px; border: 0; background: var(--c-panneau-2); color: var(--c-pale); cursor: pointer; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.carte-segment button.actif { background: var(--c-sang); color: #fff; }
+.carte-select { height: 32px; padding: 0 8px; border: 1px solid var(--c-ligne-2); border-radius: 4px; background: var(--c-panneau-2); color: var(--c-texte); }
+.carte-espace { flex: 1; }
+
+/* ---------- Corps : carte + panneau ---------- */
+.carte-corps { flex: 1; display: flex; min-height: 0; position: relative; overflow: hidden; }
+#carte { flex: 1; position: relative; min-width: 0; background: #101216; }
+#carte.mode-dessin .maplibregl-canvas-container.maplibregl-interactive { cursor: crosshair; }
+.carte-aide {
+  position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); z-index: 3;
+  max-width: min(680px, calc(100% - 40px)); padding: 8px 14px; border-radius: 4px;
+  background: rgba(12, 13, 17, .9); border: 1px solid var(--c-ligne-2); color: var(--c-texte);
+  font-size: 12.5px; text-align: center; pointer-events: none; backdrop-filter: blur(3px);
+}
+.carte-aide b { color: var(--c-laiton); font-weight: 600; }
+.carte-coords { position: absolute; left: 10px; bottom: 8px; z-index: 2; color: var(--c-pale); font: 11px ui-monospace, Menlo, Consolas, monospace; background: rgba(12,13,17,.75); padding: 2px 6px; border-radius: 3px; pointer-events: none; }
+
+.carte-panneau {
+  width: 340px; flex: none; display: flex; flex-direction: column; min-height: 0;
+  background: var(--c-panneau); border-left: 1px solid var(--c-ligne);
+}
+.carte-panneau-tete { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--c-ligne); }
+.carte-onglet {
+  flex: 1 0 auto; padding: 10px 8px 9px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--c-pale);
+  cursor: pointer; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap;
+}
+
+.carte-onglet.actif { color: var(--c-texte); border-bottom-color: var(--c-sang-vif); }
+.carte-onglet .n { display: inline-block; min-width: 18px; margin-left: 4px; padding: 0 4px; border-radius: 9px; background: var(--c-ligne-2); color: var(--c-texte); font-size: 10px; }
+.carte-liste { flex: 1; overflow-y: auto; padding: 6px 0; }
+.carte-vide { padding: 18px 16px; color: var(--c-sourd); font-size: 13px; line-height: 1.5; }
+.carte-item { display: flex; align-items: center; gap: 10px; padding: 8px 14px; cursor: pointer; border-left: 2px solid transparent; }
+.carte-item:hover { background: var(--c-panneau-2); }
+.carte-item.sel { background: #1d1216; border-left-color: var(--c-sang-vif); }
+.carte-item .pastille { width: 12px; height: 12px; border-radius: 3px; flex: none; box-shadow: 0 0 0 1px rgba(255,255,255,.18); }
+.carte-item .nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.carte-item .info { color: var(--c-sourd); font-size: 11px; }
+.carte-item button { border: 0; background: none; color: var(--c-pale); cursor: pointer; padding: 2px 4px; font-size: 14px; }
+.carte-item button:hover { color: var(--c-texte); }
+
+/* ---------- Éditeur d'élément ---------- */
+.carte-editeur { border-top: 1px solid var(--c-ligne); padding: 12px 14px 14px; background: var(--c-panneau-2); max-height: 62%; overflow-y: auto; }
+.carte-editeur h2 { margin: 0 0 10px; font: 600 12px var(--c-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--c-laiton); display: flex; justify-content: space-between; align-items: center; }
+.carte-editeur h2 button { border: 0; background: none; color: var(--c-pale); font-size: 18px; cursor: pointer; }
+.carte-champ { display: block; margin-bottom: 10px; }
+.carte-champ > span { display: block; margin-bottom: 4px; color: var(--c-pale); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; }
+.carte-champ input[type=text], .carte-champ textarea, .carte-champ select {
+  width: 100%; padding: 7px 9px; border: 1px solid var(--c-ligne-2); border-radius: 3px; background: #0d0f13; color: var(--c-texte);
+}
+.carte-champ textarea { min-height: 70px; resize: vertical; line-height: 1.45; }
+.carte-champ input:focus, .carte-champ textarea:focus, .carte-champ select:focus { outline: none; border-color: var(--c-laiton); }
+.carte-couleurs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.carte-couleurs button { width: 22px; height: 22px; border-radius: 4px; border: 1px solid rgba(255,255,255,.2); cursor: pointer; padding: 0; }
+.carte-couleurs button.sel { outline: 2px solid #fff; outline-offset: 1px; }
+.carte-couleurs input[type=color] { width: 30px; height: 24px; border: 1px solid var(--c-ligne-2); border-radius: 4px; background: none; padding: 0; cursor: pointer; }
+.carte-ligne { display: flex; align-items: center; gap: 8px; }
+.carte-ligne input[type=range] { flex: 1; accent-color: var(--c-sang-vif); }
+.carte-ligne output { min-width: 52px; text-align: right; color: var(--c-pale); font: 11px ui-monospace, Menlo, monospace; }
+.carte-icones { display: flex; gap: 6px; flex-wrap: wrap; }
+.carte-icones button { width: 36px; height: 36px; border: 1px solid var(--c-ligne-2); border-radius: 4px; background: #0d0f13; color: var(--c-texte); cursor: pointer; display: grid; place-items: center; }
+.carte-icones button.sel { border-color: var(--c-laiton); box-shadow: inset 0 0 0 1px var(--c-laiton); }
+.carte-icones svg { width: 20px; height: 20px; }
+.carte-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.carte-actions .carte-btn { height: 30px; font-size: 12px; }
+.carte-actions .danger { border-color: #5a2129; color: #f0b6be; }
+.carte-actions .danger:hover { background: #3a1117; }
+.carte-note { color: var(--c-sourd); font-size: 11.5px; line-height: 1.45; margin: 6px 0 0; }
+
+/* ---------- Marqueurs (havres, zones de chasse) ---------- */
+.carte-marqueur { display: flex; flex-direction: column; align-items: center; cursor: pointer; filter: drop-shadow(0 2px 3px rgba(0,0,0,.6)); }
+.carte-marqueur .epingle {
+  width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+  display: grid; place-items: center; border: 2px solid rgba(255,255,255,.85);
+}
+.carte-marqueur .epingle svg { width: 16px; height: 16px; transform: rotate(45deg); color: #fff; }
+.carte-marqueur .etiquette {
+  margin-top: 4px; padding: 1px 6px; border-radius: 3px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  background: rgba(10,11,14,.85); color: #eee; font: 600 11px var(--c-ui); letter-spacing: .02em;
+}
+.carte-marqueur.sel .epingle { border-color: var(--c-laiton); box-shadow: 0 0 0 3px rgba(201,162,39,.45); }
+.carte-marqueur.chasse .epingle { border-radius: 50%; transform: none; }
+.carte-marqueur.chasse .epingle svg { transform: none; }
+
+/* ---------- Actions d'influence ---------- */
+.carte-marqueur.influence { cursor: pointer; }
+.carte-marqueur.influence .losange { width: 18px; height: 18px; transform: rotate(45deg); border: 2px solid rgba(255,255,255,.9); border-radius: 3px; }
+.carte-marqueur.influence .etiquette { margin-top: 6px; font-weight: 500; max-width: 140px; }
+.carte-marqueur.influence.mobile { cursor: grab; }
+.carte-marqueur.influence.sel .losange { border-color: var(--c-laiton); box-shadow: 0 0 0 3px rgba(201,162,39,.5); }
+.carte-item .pastille.losange { transform: rotate(45deg) scale(.85); border-radius: 2px; }
+.carte-infl-tete { padding: 10px 14px; border-bottom: 1px solid var(--c-ligne); margin: 0; }
+.carte-infl-tete b { color: var(--c-texte); }
+.carte-infl { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.carte-infl-ligne { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; border-bottom: 1px dashed var(--c-ligne); padding-bottom: 3px; }
+.carte-infl-ligne span { color: var(--c-sourd); }
+.carte-infl-ligne b { font-weight: 600; text-align: right; }
+.carte-infl-texte { white-space: pre-wrap; font-size: 12.5px; line-height: 1.45; margin: 6px 0 0; color: var(--c-texte); max-height: 220px; overflow: auto; }
+.carte-infl-reponse { white-space: pre-wrap; font-size: 12px; margin: 4px 0 0; padding: 6px 8px; border-left: 3px solid var(--c-ok); background: var(--c-panneau-2); }
+.carte-infl-reponse.vide { border-left-color: var(--c-laiton); color: var(--c-pale); font-style: italic; }
+#moisInfl { max-width: 290px; }
+.carte-libelle { font-size: 10.5px; color: var(--c-pale); text-transform: uppercase; letter-spacing: .08em; margin-right: 6px; }
+.carte-page .maplibregl-popup-content { background: var(--c-panneau); color: var(--c-texte); border: 1px solid var(--c-ligne-2); border-radius: 6px; padding: 12px 14px; }
+.carte-page .maplibregl-popup-tip { border-top-color: var(--c-panneau) !important; border-bottom-color: var(--c-panneau) !important; }
+.carte-page .maplibregl-popup-close-button { color: var(--c-pale); }
+.carte-popup p { margin: 4px 0 10px; font-size: 12px; color: var(--c-pale); }
+.carte-popup a.carte-btn { text-decoration: none; display: inline-flex; }
+
+/* ---------- Fenêtres (références, import) ---------- */
+.carte-fond-modal { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 18px; background: rgba(4,4,6,.78); backdrop-filter: blur(3px); }
+.carte-modal { width: min(1040px, 100%); max-height: 92vh; overflow: auto; background: var(--c-panneau); border: 1px solid var(--c-ligne-2); border-radius: 6px; box-shadow: 0 30px 90px rgba(0,0,0,.7); }
+.carte-modal-tete { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--c-ligne); }
+.carte-modal-tete h2 { margin: 0; font: 600 13px var(--c-ui); letter-spacing: .16em; text-transform: uppercase; }
+.carte-modal-tete button { border: 0; background: none; color: var(--c-pale); font-size: 22px; cursor: pointer; }
+.carte-refs { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; padding: 16px; }
+.carte-refs figure { margin: 0; background: #fff; border-radius: 4px; overflow: hidden; }
+.carte-refs img { display: block; width: 100%; height: auto; cursor: zoom-in; }
+.carte-refs figcaption { padding: 8px 10px; background: var(--c-panneau-2); color: var(--c-pale); font-size: 12px; }
+.carte-zones { padding: 0 16px 16px; columns: 2 240px; font-size: 12.5px; color: var(--c-pale); }
+.carte-zones div { break-inside: avoid; padding: 2px 0; }
+.carte-zones b { color: var(--c-texte); display: inline-block; min-width: 26px; }
+
+/* ---------- Garde (personnage incarné) ---------- */
+.cam-garde { position: fixed; inset: 0; z-index: 30; display: flex; align-items: flex-start; justify-content: center; overflow: auto; padding: 8vh 1rem; background: rgba(6,6,8,.97); }
+.cam-garde-boite { width: min(760px, 100%); background: #f7f4ee; color: #2b2b2b; border-radius: 8px; padding: 1.4rem 1.6rem; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+.cam-garde .cam-bloc { margin: 0; }
+
+/* ---------- MapLibre ---------- */
+.carte-page .maplibregl-ctrl-group { background: var(--c-panneau-2); border: 1px solid var(--c-ligne-2); }
+.carte-page .maplibregl-ctrl-group button + button { border-top-color: var(--c-ligne-2); }
+.carte-page .maplibregl-ctrl-group button .maplibregl-ctrl-icon { filter: invert(.9); }
+.carte-page .maplibregl-ctrl-attrib { background: rgba(12,13,17,.7); color: var(--c-pale); }
+.carte-page .maplibregl-ctrl-attrib a { color: var(--c-pale); }
+.carte-page .maplibregl-ctrl-scale { background: rgba(12,13,17,.7); color: var(--c-pale); border-color: var(--c-pale); }
+.carte-erreur { position: absolute; inset: 0; display: grid; place-items: center; padding: 30px; text-align: center; color: var(--c-pale); }
+
+/* ---------- Téléphone ---------- */
+.carte-bascule-panneau { display: none; }
+@media (max-width: 860px) {
+  .carte-barre { gap: 6px 8px; padding: 6px 8px; }
+  .carte-marque small, .carte-btn .txt { display: none; }
+  .carte-groupe + .carte-groupe { padding-left: 6px; }
+  .carte-panneau { position: absolute; right: 0; top: 0; bottom: 0; width: min(360px, 92vw); z-index: 6; transform: translateX(100%); transition: transform .2s; box-shadow: -10px 0 30px rgba(0,0,0,.5); }
+  .carte-panneau.ouvert { transform: none; }
+  .carte-bascule-panneau { display: inline-flex; }
+}
+.carte-actions a.carte-btn { text-decoration: none; }

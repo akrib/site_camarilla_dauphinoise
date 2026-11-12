@@ -645,6 +645,33 @@ async function partager() {
     }
     const t = titre.value.trim().slice(0, 100) || titreParDefaut();
     const ok = await sauvegarderMien({ acces, droits, invites, titre: t }, msg);
-    if (ok) setTimeout(() => m.fermer(), 800);
+    if (ok) {
+      await notifierPartage(invitesActuels, invites, t);
+      setTimeout(() => m.fermer(), 800);
+    }
+  }
+
+  // Notifications : les personnages nouvellement invités voient le lien dans
+  // leur page Notifications ; celles des personnages retirés sont supprimées.
+  async function notifierPartage(avant, apres, titreTableau) {
+    try {
+      for (const id of Object.keys(apres).filter((x) => !avant[x])) {
+        const x = persos.find((p) => p.id === id);
+        if (!x) continue;
+        await fs.addDoc(fs.collection(db, 'notifications'), {
+          type: 'tableau', destinataire: x.proprietaire, auteur: uid(), auteurNom: perso.nom,
+          personnage: id, personnageNom: apres[id].nom, tableau: perso.id, titre: titreTableau,
+          droit: apres[id].droit, creeLe: fs.serverTimestamp()
+        });
+      }
+      const retires = Object.keys(avant).filter((x) => !apres[x]);
+      if (retires.length) {
+        const snap = await fs.getDocs(fs.query(fs.collection(db, 'notifications'), fs.where('auteur', '==', uid())));
+        for (const d of snap.docs) {
+          const n = d.data();
+          if (n.type === 'tableau' && n.tableau === perso.id && retires.includes(n.personnage)) await fs.deleteDoc(d.ref);
+        }
+      }
+    } catch (e) { console.warn('Notifications de partage non envoyées', e); }
   }
 }

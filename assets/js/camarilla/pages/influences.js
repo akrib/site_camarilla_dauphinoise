@@ -1,8 +1,20 @@
 // Page /influences/ : actions d'influence des joueurs (Firestore).
+// Les actions visent une partie du calendrier (champ mois = clé de la partie)
+// et ne se créent / modifient que pendant sa fenêtre d'influences.
+// Paramètres d'adresse reconnus (liens depuis la carte de Grenoble) :
+//   ?perso=ID   personnage à sélectionner
+//   ?mois=AAAA-MM&lieu=lng,lat#actions   nouvelle action, partie et lieu choisis
+//   ?action=ID#resultats   action à mettre en avant (et à modifier si possible)
 import {
   h, db, fs, pageProtegee, barreMembre, message, messageErreur, dateFr, millis, onglets, options,
-  confirmer, moisCourant, aujourdhui
+  confirmer, aujourdhui
 } from '../core.js';
+import { compresser, donneesDoc } from '../compression.js';
+import {
+  chargerCalendrier, encartCalendrier, periodesModifiables, modifiable, moisParDefaut, libelleMois, libellePartie,
+  partieCourante, resumeEtat, partie
+} from '../calendrier.js';
+import { choisirLieu, texteLieu } from '../carte-base.js';
 import {
   VILLES, ZONES, POINTS, SPECIALISATIONS, CAT_GOTHA, CAT_PEGRE, ACTIONS_GOTHA_GLOB, ACTIONS_PEGRE_GLOB,
   CATEGORIES_AIP, AIP_ACTIONS, CATEGORIES_RAISON_SOCIALE, CATEGORIES_TICKET, TYPES_ACTION, STATUTS_TICKET
@@ -19,13 +31,22 @@ const classeCat = (c) => (c || '').includes('Gotha') ? 'gotha' : ((c || '').incl
 
 pageProtegee(racine, 'actif', async ({ user, profil }) => {
   const uid = user.uid;
-  const snap = await fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('proprietaire', '==', uid)));
+  const params = new URLSearchParams(location.search);
+  const [snap, cal] = await Promise.all([
+    fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('proprietaire', '==', uid))),
+    chargerCalendrier().catch(() => ({ existe: false, parties: [], anticipation: false }))
+  ]);
   const tousPersos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   const enJeu = tousPersos.filter((p) => p.statut === 'active').sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
+  const persoDemande = enJeu.find((p) => p.id === params.get('perso'));
+  const lieuDemande = (() => {
+    const [lng, lat] = (params.get('lieu') || '').split(',').map(Number);
+    return Number.isFinite(lng) && Number.isFinite(lat) && Math.abs(lng) <= 180 && Math.abs(lat) <= 90 ? { lng, lat } : null;
+  })();
 
   let perso = null;            // personnage sélectionné
   let raisons = [];            // raisons sociales du personnage
-  const choixPerso = options(h('select', {}), enJeu.map((p) => [p.id, p.nom]), enJeu[0] ? enJeu[0].id : '');
+  const choixPerso = options(h('select', {}), enJeu.map((p) => [p.id, p.nom]), (persoDemande || enJeu[0] || {}).id || '');
 
   // ===================================================================
   // Structure
@@ -44,6 +65,8 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     h('div', { class: 'cam-onglets' }, visibles.map((k) => h('button', { type: 'button', dataset: { onglet: k } }, libelles[k]))),
     visibles.map((k) => panneaux[k]));
 
+  const encart = encartCalendrier(cal);
+  if (encart) racine.append(encart);
   if (enJeu.length) {
     racine.append(h('div', { class: 'cam-bloc' },
       h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Personnage en jeu'), choixPerso)),
@@ -56,7 +79,8 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
   }
   racine.append(app);
   const activer = onglets(app);
-  activer(location.hash === '#tickets' || !enJeu.length ? 'tickets' : 'fiche');
+  const ongletDemande = location.hash.slice(1);
+  activer(!enJeu.length ? 'tickets' : (panneaux[ongletDemande] ? ongletDemande : 'fiche'));
 
   // ===================================================================
   // Fiche (lecture seule : la fiche se modifie dans « Mes fiches »)
@@ -90,29 +114,64 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     });
   }
 
+  // Lieu de l'action sur la carte de Grenoble (facultatif)
+  function champLieu(initial) {
+    let lieu = initial || null;
+    const info = h('span', { class: 'cam-lieu-valeur' });
+    const retirer = h('button', { type: 'button', class: 'petit secondaire', title: 'Retirer le lieu' }, '✕');
+    const maj = () => { info.textContent = lieu ? texteLieu(lieu) : 'Aucun lieu choisi'; retirer.style.display = lieu ? '' : 'none'; };
+    retirer.addEventListener('click', () => { lieu = null; maj(); });
+    const bouton = h('button', { type: 'button', class: 'petit secondaire' }, '📍 Choisir sur la carte');
+    bouton.addEventListener('click', async () => {
+      const r = await choisirLieu({ initial: lieu, titre: 'Lieu de l\'action — ' + (perso ? perso.nom : '') });
+      if (r) { lieu = r; maj(); }
+    });
+    maj();
+    return {
+      el: h('div', { class: 'cam-lieu' }, bouton, info, retirer),
+      get valeur() { return lieu; },
+      vider() { lieu = null; maj(); }
+    };
+  }
+
   function champsCommuns() {
     return {
       date: h('input', { type: 'date', value: aujourdhui() }),
       ville: options(h('select', {}), VILLES, perso ? perso.ville : ''),
-      zone: options(h('select', {}), ZONES)
+      zone: options(h('select', {}), ZONES),
+      lieu: champLieu(lieuDemande)
     };
   }
-  const ligneCommune = (c) => h('div', { class: 'cam-ligne' },
-    h('div', {}, h('label', {}, 'Date'), c.date), h('div', {}, h('label', {}, 'Ville'), c.ville), h('div', {}, h('label', {}, 'Zone (district)'), c.zone));
+  const ligneCommune = (c) => [h('div', { class: 'cam-ligne' },
+    h('div', {}, h('label', {}, 'Date'), c.date), h('div', {}, h('label', {}, 'Ville'), c.ville), h('div', {}, h('label', {}, 'Zone (district)'), c.zone)),
+    h('label', {}, 'Lieu sur la carte de Grenoble (facultatif)'), c.lieu.el];
 
-  async function envoyerAction(champs, msg, boutonEl) {
+  // Partie visée par les nouvelles actions (fenêtres d'influences ouvertes)
+  let choixPeriode = null;
+  function moisDesNouvellesActions(champs) {
+    if (!cal.existe) return (champs.date || aujourdhui()).slice(0, 7);
+    return choixPeriode ? choixPeriode.value : '';
+  }
+
+  async function envoyerAction(champs, msg, boutonEl, c) {
+    const mois = moisDesNouvellesActions(champs);
+    if (!mois || !modifiable(cal, mois)) { message(msg, 'Les influences ne sont pas ouvertes pour cette partie.', 'err'); return false; }
     if (!champs.raisonSociale) { message(msg, 'Choisissez une raison sociale (onglet Raisons sociales pour en créer une).', 'err'); return false; }
     if (!champs.descriptif) { message(msg, 'Le descriptif est obligatoire.', 'err'); return false; }
     boutonEl.disabled = true;
     message(msg, 'Envoi…', 'info');
     try {
-      await fs.addDoc(fs.collection(db, 'influences'), {
+      const doc = {
         proprietaire: uid, personnageId: perso.id, personnageNom: perso.nom,
-        mois: (champs.date || aujourdhui()).slice(0, 7), statut: 'attente', reponseConteur: '',
+        mois, statut: 'attente', reponseConteur: '',
         creeLe: fs.serverTimestamp(), cible: '', specialisation: '', niveau: 0, categorieCible: '',
-        ...champs
-      });
-      message(msg, 'Action envoyée au conteur.', 'ok');
+        ...champs, descriptif: compresser(champs.descriptif)
+      };
+      if (c && c.lieu.valeur) doc.lieu = c.lieu.valeur;
+      await fs.addDoc(fs.collection(db, 'influences'), doc);
+      if (c) c.lieu.vider();
+      dessinerResultats(); dessinerRecap();   // la nouvelle action apparaît tout de suite
+      message(msg, 'Action envoyée au conteur' + (cal.existe ? ' (' + libelleMois(mois).toLowerCase() + ')' : '') + '.', 'ok');
       return true;
     } catch (e) { message(msg, messageErreur(e), 'err'); return false; }
     finally { boutonEl.disabled = false; }
@@ -149,7 +208,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
         type: 'globale', date: c.date.value, ville: c.ville.value, zone: c.zone.value, categorie: categorie.value,
         niveau: a.niveau, specialisation: spec.value, raisonSociale: raison.value, nomAction: a.nom,
         pointsAction: parseInt(points.value, 10), descriptif: descriptif.value.trim()
-      }, msg, btn)) descriptif.value = '';
+      }, msg, btn, c)) descriptif.value = '';
     });
     const el = h('div', { class: 'cam-bloc', dataset: { panneau: 'globale' } },
       h('h2', {}, 'Nouvelle action globale'), h('p', { class: 'sous-titre' }, 'Coûte 1 Action d\'Influence. Le niveau requis dépend de l\'action choisie.'),
@@ -192,7 +251,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
         type: 'ciblee', date: c.date.value, ville: c.ville.value, zone: c.zone.value, categorie: categorie.value,
         categorieCible: catCible.value, nomAction: action.value, raisonSociale: raison.value, cible: cible.value.trim(),
         pointsAction: parseInt(points.value, 10), descriptif: descriptif.value.trim()
-      }, msg, btn)) { descriptif.value = ''; cible.value = ''; }
+      }, msg, btn, c)) { descriptif.value = ''; cible.value = ''; }
     });
     const el = h('div', { class: 'cam-bloc', dataset: { panneau: 'ciblee' } },
       h('h2', {}, 'Nouvelle action ciblée'), h('p', { class: 'sous-titre' }, 'Attaque, Défense ou Obstruction.'),
@@ -228,7 +287,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
         type: 'soutien', date: c.date.value, ville: c.ville.value, zone: c.zone.value, categorie: categorie.value,
         niveau: n, raisonSociale: raison.value, nomAction: 'Soutien', cible: cible.value.trim(),
         pointsAction: n + m, descriptif: (m < 0 ? '[Malus hors-praxis : ' + m + '] ' : '') + descriptif.value.trim()
-      }, msg, btn)) { descriptif.value = ''; cible.value = ''; }
+      }, msg, btn, c)) { descriptif.value = ''; cible.value = ''; }
     });
     const el = h('div', { class: 'cam-bloc', dataset: { panneau: 'soutien' } },
       h('h2', {}, 'Nouveau soutien'), h('p', { class: 'sous-titre' }, 'Prêtez vos Actions d\'Influence pour augmenter temporairement le niveau d\'un autre personnage.'),
@@ -255,7 +314,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
       if (await envoyerAction({
         type: 'aip', date: c.date.value, ville: c.ville.value, zone: c.zone.value, categorie: categorie.value,
         raisonSociale: raison.value, nomAction: action.value, pointsAction: parseInt(points.value, 10), descriptif: descriptif.value.trim()
-      }, msg, btn)) descriptif.value = '';
+      }, msg, btn, c)) descriptif.value = '';
     });
     const el = h('div', { class: 'cam-bloc', dataset: { panneau: 'aip' } },
       h('h2', {}, 'Nouvelle action AIP'), h('p', { class: 'sous-titre' }, 'Enquête, Patrouille, Mentorat, Chasse, Troupeau, Informatique, Artisanat, Science, Dépense d\'XP…'),
@@ -268,13 +327,34 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
 
   function dessinerActions() {
     selRaisons.length = 0;
+    choixPeriode = null;
+    let entete = null;
+    if (cal.existe) {
+      const ouvertes = periodesModifiables(cal);
+      if (!ouvertes.length) {
+        const p = partieCourante(cal);
+        panneaux.actions.replaceChildren(h('div', { class: 'cam-bloc' },
+          h('h2', {}, 'Influences fermées'),
+          h('p', {}, p ? [h('strong', {}, libellePartie(p)), ' : ', resumeEtat(cal, p)] : 'Aucune partie n\'est prévue au calendrier.'),
+          h('p', { class: 'sous-titre' }, 'Les influences d\'une partie s\'ouvrent le lendemain de la partie précédente et ferment à la date limite fixée par les conteurs. Vos actions envoyées restent consultables dans « Résultats ».')));
+        return;
+      }
+      const demande = params.get('mois');
+      choixPeriode = options(h('select', {}), ouvertes.map((p) => [p.cle, libellePartie(p) + ' — jusqu\'au ' + dateFr(p.limite)]),
+        ouvertes.some((p) => p.cle === demande) ? demande : ouvertes[0].cle);
+      entete = h('div', { class: 'cam-bloc' },
+        h('label', {}, 'Partie concernée'), choixPeriode,
+        h('p', { class: 'sous-titre' }, ouvertes.length > 1
+          ? 'Plusieurs parties sont ouvertes (préparation anticipée autorisée par les conteurs) : choisissez la bonne.'
+          : resumeEtat(cal, ouvertes[0])));
+    }
     const forms = [formGlobale(), formCiblee(), formSoutien(), formAip()];
     const bloc = h('div', {},
       h('div', { class: 'cam-onglets' },
         Object.entries({ globale: 'Action globale', ciblee: 'Action ciblée', soutien: 'Soutien', aip: 'AIP' })
           .map(([k, lib]) => h('button', { type: 'button', dataset: { onglet: k } }, lib))),
       forms.map((f) => f.el));
-    panneaux.actions.replaceChildren(bloc);
+    panneaux.actions.replaceChildren(...[entete, bloc].filter(Boolean));
     forms.forEach((f) => f.init());
     remplirRaisons();
     onglets(bloc)('globale');
@@ -286,14 +366,15 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
   async function mesActions() {
     const s = await fs.getDocs(fs.query(fs.collection(db, 'influences'),
       fs.where('proprietaire', '==', uid), fs.where('personnageId', '==', perso.id)));
-    return s.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => millis(b.creeLe) - millis(a.creeLe));
+    return s.docs.map(donneesDoc).sort((a, b) => millis(b.creeLe) - millis(a.creeLe));
   }
 
-  const moisRecap = h('input', { type: 'month', value: moisCourant() });
+  const moisRecap = h('input', { type: 'month', value: moisParDefaut(cal) });
   const zoneRecap = h('div', { class: 'cam-recap' });
   async function dessinerRecap() {
     panneaux.recap.replaceChildren(h('div', { class: 'cam-bloc' },
       h('h2', {}, 'Récap du mois'),
+      cal.existe ? h('p', { class: 'sous-titre' }, 'Le mois est celui de la partie visée par les actions.') : '',
       h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Mois'), moisRecap)), zoneRecap));
     zoneRecap.replaceChildren(h('p', { class: 'sous-titre' }, 'Chargement…'));
     try {
@@ -316,27 +397,91 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
   async function dessinerResultats() {
     const liste = h('div', {}, h('p', { class: 'sous-titre' }, 'Chargement…'));
     panneaux.resultats.replaceChildren(h('div', { class: 'cam-bloc' },
-      h('h2', {}, 'Résultats des influences'), h('p', { class: 'sous-titre' }, 'Toutes vos actions et les réponses du conteur.'),
+      h('h2', {}, 'Résultats des influences'),
+      h('p', { class: 'sous-titre' }, 'Toutes vos actions et les réponses du conteur. Une action sans réponse se modifie ou se retire tant que les influences de sa partie sont ouvertes.'),
       h('button', { type: 'button', class: 'secondaire', onclick: dessinerResultats }, 'Rafraîchir'), liste));
     try {
       const actions = await mesActions();
-      liste.replaceChildren(...(actions.length ? actions.map((a) => h('div', { class: 'cam-element' },
-        h('div', { class: 'meta' },
-          h('span', { class: 'cam-tag ' + classeCat(a.categorie) }, a.categorie),
-          h('span', { class: 'cam-tag' }, TYPES_ACTION[a.type] || a.type),
-          (a.date ? dateFr(a.date) : '') + ' — ' + a.nomAction + ' — ' + a.pointsAction + ' pt(s)'),
-        h('div', {},
-          a.raisonSociale ? [h('strong', {}, 'Raison sociale : '), a.raisonSociale, h('br')] : '',
-          a.cible ? [h('strong', {}, 'Cible : '), a.cible, a.categorieCible ? ' (' + a.categorieCible + ')' : '', h('br')] : '',
-          h('span', { class: 'texte' }, a.descriptif)),
-        h('div', { class: 'reponse' + (a.reponseConteur ? '' : ' vide') }, a.reponseConteur ? ['Résultat du conteur : ', a.reponseConteur] : 'En attente du résultat du conteur…'),
-        a.statut === 'attente' && !a.reponseConteur ? h('button', {
+      const demandee = params.get('action');
+      liste.replaceChildren(...(actions.length ? actions.map((a) => actionEl(a, a.id === demandee)) : [h('p', { class: 'sous-titre' }, 'Aucune action envoyée pour le moment.')]));
+      const cible = demandee && liste.querySelector('.cam-element.epingle');
+      if (cible) cible.scrollIntoView({ block: 'center' });
+    } catch (e) { liste.replaceChildren(h('div', { class: 'cam-msg err' }, messageErreur(e))); }
+  }
+
+  const peutModifier = (a) => a.statut === 'attente' && !a.reponseConteur && modifiable(cal, a.mois);
+
+  function actionEl(a, enAvant) {
+    const zoneEdition = h('div', {});
+    const p = partie(cal, a.mois);
+    const el = h('div', { class: 'cam-element' + (enAvant ? ' epingle' : ''), id: 'action-' + a.id },
+      h('div', { class: 'meta' },
+        h('span', { class: 'cam-tag ' + classeCat(a.categorie) }, a.categorie),
+        h('span', { class: 'cam-tag' }, TYPES_ACTION[a.type] || a.type),
+        h('span', { class: 'cam-tag', title: p ? libellePartie(p) : '' }, libelleMois(a.mois)),
+        (a.date ? dateFr(a.date) : '') + ' — ' + a.nomAction + ' — ' + a.pointsAction + ' pt(s)'),
+      h('div', {},
+        a.raisonSociale ? [h('strong', {}, 'Raison sociale : '), a.raisonSociale, h('br')] : '',
+        a.cible ? [h('strong', {}, 'Cible : '), a.cible, a.categorieCible ? ' (' + a.categorieCible + ')' : '', h('br')] : '',
+        a.lieu ? [h('strong', {}, 'Lieu : '), h('a', { href: lienCarte(a) }, '📍 voir sur la carte'), h('br')] : '',
+        h('span', { class: 'texte' }, a.descriptif)),
+      h('div', { class: 'reponse' + (a.reponseConteur ? '' : ' vide') }, a.reponseConteur ? ['Résultat du conteur : ', a.reponseConteur] : 'En attente du résultat du conteur…'),
+      peutModifier(a) ? h('div', { class: 'cam-actions' },
+        h('button', { type: 'button', class: 'petit', onclick: () => editerAction(a, zoneEdition) }, 'Modifier'),
+        h('button', {
           type: 'button', class: 'petit danger', onclick: async () => {
             if (!confirmer('Retirer cette action ?')) return;
             try { await fs.deleteDoc(fs.doc(db, 'influences', a.id)); dessinerResultats(); } catch (e) { alert(messageErreur(e)); }
           }
-        }, 'Retirer') : '')) : [h('p', { class: 'sous-titre' }, 'Aucune action envoyée pour le moment.')]));
-    } catch (e) { liste.replaceChildren(h('div', { class: 'cam-msg err' }, messageErreur(e))); }
+        }, 'Retirer')) : '',
+      zoneEdition);
+    if (enAvant && peutModifier(a)) setTimeout(() => editerAction(a, zoneEdition), 0);
+    return el;
+  }
+
+  const lienCarte = (a) => '/utils/carte?mois=' + encodeURIComponent(a.mois) + '&action=' + encodeURIComponent(a.id);
+
+  // Modification d'une action pas encore traitée (fenêtre ouverte)
+  function editerAction(a, zone) {
+    if (zone.childNodes.length) { zone.replaceChildren(); return; }
+    const c = champsCommuns();
+    c.date.value = a.date || '';
+    options(c.ville, VILLES, a.ville || '');
+    options(c.zone, ZONES, a.zone || '');
+    c.lieu = champLieu(a.lieu || null);
+    const raison = options(h('select', {}), raisons.map((r) => r.nom).concat(raisons.some((r) => r.nom === a.raisonSociale) || !a.raisonSociale ? [] : [a.raisonSociale]), a.raisonSociale);
+    const cible = h('input', { type: 'text', maxlength: 150, value: a.cible || '' });
+    const descriptif = h('textarea', { maxlength: 4000 }, a.descriptif || '');
+    const ouvertes = periodesModifiables(cal);
+    const periode = cal.existe && ouvertes.length > 1 ? options(h('select', {}), ouvertes.map((p) => [p.cle, libellePartie(p)]), a.mois) : null;
+    const msg = h('div', { class: 'cam-msg' });
+    const btn = h('button', { type: 'button', class: 'petit ok' }, 'Enregistrer les modifications');
+    btn.addEventListener('click', async () => {
+      if (!descriptif.value.trim()) { message(msg, 'Le descriptif est obligatoire.', 'err'); return; }
+      if (a.cible && !cible.value.trim()) { message(msg, 'Indiquez la cible.', 'err'); return; }
+      const maj = {
+        date: c.date.value, ville: c.ville.value, zone: c.zone.value, raisonSociale: raison.value,
+        descriptif: compresser(descriptif.value.trim()), majLe: fs.serverTimestamp(),
+        lieu: c.lieu.valeur || fs.deleteField()
+      };
+      if (a.cible) maj.cible = cible.value.trim();
+      if (periode) maj.mois = periode.value;
+      btn.disabled = true;
+      try {
+        await fs.updateDoc(fs.doc(db, 'influences', a.id), maj);
+        message(msg, 'Action modifiée.', 'ok');
+        setTimeout(dessinerResultats, 600);
+      } catch (e) { message(msg, messageErreur(e), 'err'); btn.disabled = false; }
+    });
+    zone.replaceChildren(h('div', { class: 'cam-edition' },
+      h('h3', {}, 'Modifier l\'action'),
+      periode ? [h('label', {}, 'Partie concernée'), periode] : '',
+      ligneCommune(c),
+      h('label', {}, 'Raison sociale'), raison,
+      a.cible ? [h('label', {}, 'Cible'), cible] : '',
+      h('label', {}, 'Descriptif joueur *'), descriptif,
+      h('div', { class: 'cam-actions' }, btn, h('button', { type: 'button', class: 'petit secondaire', onclick: () => zone.replaceChildren() }, 'Annuler')),
+      msg));
   }
 
   // ===================================================================
@@ -345,7 +490,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
   async function chargerRaisons() {
     const s = await fs.getDocs(fs.query(fs.collection(db, 'raisons_sociales'),
       fs.where('proprietaire', '==', uid), fs.where('personnageId', '==', perso.id)));
-    raisons = s.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
+    raisons = s.docs.map(donneesDoc).sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
   }
 
   function dessinerRaisons() {
@@ -361,7 +506,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
       try {
         await fs.addDoc(fs.collection(db, 'raisons_sociales'), {
           proprietaire: uid, personnageId: perso.id, personnageNom: perso.nom, nom: nom.value.trim(),
-          ville: ville.value, zone: zone.value, categorie: categorie.value, description: description.value.trim(),
+          ville: ville.value, zone: zone.value, categorie: categorie.value, description: compresser(description.value.trim()),
           creeLe: fs.serverTimestamp()
         });
         await chargerRaisons(); dessinerRaisons(); remplirRaisons();
@@ -402,7 +547,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
       try {
         await fs.addDoc(fs.collection(db, 'tickets'), {
           proprietaire: uid, proprietaireNom: profil.nom, personnageId: p ? p.id : '', personnageNom: p ? p.nom : '',
-          categorie: categorie.value, sujet: sujet.value.trim(), description: description.value.trim(),
+          categorie: categorie.value, sujet: sujet.value.trim(), description: compresser(description.value.trim()),
           statut: 'En attente', resultat: '', creeLe: fs.serverTimestamp()
         });
         sujet.value = ''; description.value = '';
@@ -421,7 +566,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     async function chargerListe() {
       try {
         const s = await fs.getDocs(fs.query(fs.collection(db, 'tickets'), fs.where('proprietaire', '==', uid)));
-        const tickets = s.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => millis(b.creeLe) - millis(a.creeLe));
+        const tickets = s.docs.map(donneesDoc).sort((a, b) => millis(b.creeLe) - millis(a.creeLe));
         liste.replaceChildren(...(tickets.length ? tickets.map(ticketEl) : [h('p', { class: 'sous-titre' }, 'Aucun ticket.')]));
       } catch (e) { liste.replaceChildren(h('div', { class: 'cam-msg err' }, messageErreur(e))); }
     }
@@ -442,7 +587,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
               if (!complement.value.trim()) return;
               try {
                 const desc = (t.description + '\n\n— Complément du ' + new Date().toLocaleDateString('fr-FR') + ' —\n' + complement.value.trim()).slice(0, 8000);
-                await fs.updateDoc(fs.doc(db, 'tickets', t.id), { description: desc, statut: 'En attente', majLe: fs.serverTimestamp() });
+                await fs.updateDoc(fs.doc(db, 'tickets', t.id), { description: compresser(desc), statut: 'En attente', majLe: fs.serverTimestamp() });
                 chargerListe();
               } catch (e) { message(msgT, messageErreur(e), 'err'); }
             }

@@ -69,6 +69,36 @@ permalink: /utils/challenge
   }
   .hero h1 .accent{color:var(--gold)}
 
+  /* ---------- Challenges demandés / proposés (membres connectés) ---------- */
+  .panel[hidden]{display:none}
+  .cam-defis .defi{border-top:1px solid var(--border);padding:14px 0}
+  .cam-defis .defi:first-of-type{border-top:0;padding-top:0}
+  .cam-defis .defi.cible{outline:1px solid var(--gold);outline-offset:6px}
+  .cam-defis .defiTete{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px;align-items:baseline}
+  .cam-defis .defiTete strong{font-family:Georgia,serif;font-size:1.05rem;color:var(--cream)}
+  .cam-defis .defiTete span{font-size:.72rem;color:var(--muted);letter-spacing:.06em}
+  .cam-defis .defiMsg{white-space:pre-wrap;margin:10px 0;padding:10px 14px;border-left:3px solid var(--red);background:rgba(255,255,255,.03);color:var(--cream);font-family:Georgia,serif;font-size:.92rem}
+  .cam-defis .defiListe{margin:8px 0 12px 1.2rem;padding:0;font-size:.82rem;color:var(--cream-dim)}
+  .cam-defis .defiListe li{margin:3px 0}
+  .cam-defis .defiListe b{color:var(--cream)}
+  .cam-defis .defiListe .x{margin-left:8px;border:0;background:none;color:var(--red-bright);cursor:pointer;font:inherit}
+  .cam-defis .defiBilan{color:var(--gold);font-weight:700}
+  .cam-defis .defiRes h3{font-family:Georgia,serif;font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;margin:16px 0 8px;color:var(--cream-dim)}
+  .cam-defis .defiAutres{font-size:.8rem;color:var(--cream-dim);margin-top:10px}
+  .cam-defis .defiAutres button{margin-left:6px}
+  .cam-defis .defiInfo{font-size:.8rem;color:var(--muted)}
+  .cam-defis .defiMsgEtat{font-size:.78rem;margin-top:8px;min-height:1em}
+  .cam-defis .defiMsgEtat.err{color:var(--red-bright)}
+  .cam-defis .defiMsgEtat.ok{color:var(--gold)}
+  .cam-defis .field input[type=text], .cam-defis .field select, .cam-defis .field textarea{
+    width:100%;padding:9px 12px;border:1px solid var(--border2);background:#050505;color:var(--cream);
+    font-family:'Courier New',monospace;font-size:.85rem;outline:none
+  }
+  .cam-defis .field textarea{min-height:70px;resize:vertical;font-family:Georgia,serif}
+  .cam-defis .field{flex:1;min-width:200px}
+  .cam-defis .btn.petit{padding:7px 12px;font-size:.66rem}
+  .cam-defis a{color:var(--gold)}
+
   /* ---------- Panels ---------- */
   .panel{
     background:linear-gradient(180deg, rgba(20,20,20,.9), rgba(15,15,15,.9));
@@ -408,6 +438,9 @@ permalink: /utils/challenge
     <h1>Générateur de challenge<br>de la <span class="accent">camarilla dauphinoise</span></h1>
   </header>
 
+  <!-- ============ CHALLENGES DEMANDÉS PAR LES CONTEURS (membres connectés) ============ -->
+  <section id="cam-defis" class="panel cam-defis" hidden></section>
+
   <!-- ============ CONTRÔLES ============ -->
   <section class="panel">
     <div class="panelHead">
@@ -484,6 +517,9 @@ permalink: /utils/challenge
 
     <div id="drawResult" class="drawBox"></div>
   </section>
+
+  <!-- ============ PROPOSER UN CHALLENGE (conteurs) ============ -->
+  <section id="cam-defis-conteur" class="panel cam-defis" hidden></section>
 
   <!-- ============ RÈGLES ============ -->
   <section class="panel">
@@ -1017,7 +1053,37 @@ document.addEventListener('keydown', e => {
   if(e.key === 'c' || e.key === 'C'){ if(lastResults.length) copyResults(); }
 });
 
+/* =====================================================
+   PONT AVEC LES CHALLENGES DEMANDÉS PAR LES CONTEURS
+   (assets/js/camarilla/pages/challenge-en-ligne.js)
+   ===================================================== */
+window.ChallengeDuJeu = {
+  MOVES, ORDER,
+  /** Réglage affiché : manches, Puits / Bombe, et la liste personnalisée si « Utiliser comme main ». */
+  reglageActuel: () => ({
+    manches: state.count, puits: state.puits, bombe: state.bombe,
+    main: el.useList.checked ? customList.slice() : []
+  }),
+  /** Tire les manches d'un challenge : [{ p (joueur), c (adversaire), o: win | tie | lose }]. */
+  jouer(cfg) {
+    const active = ORDER.filter(m => m === 'pierre' || m === 'ciseaux' || m === 'papier' ||
+      (m === 'puits' && cfg.puits) || (m === 'bombe' && cfg.bombe));
+    const main = (cfg.main || []).filter(m => active.includes(m));
+    const pool = main.length ? main : active;
+    const n = Math.min(MAX_MANCHES, Math.max(1, cfg.manches | 0));
+    const res = [];
+    for(let i = 0; i < n; i++){
+      const p = pick(pool), c = pick(active);
+      res.push({ p, c, o: judge(p, c, active) });
+    }
+    return res;
+  },
+  carte: (r, i) => buildCard({ p: r.p, c: r.c, outcome: r.o }, i),
+  toast
+};
+
 })();
 </script>
+<script type="module" src="/assets/js/camarilla/pages/challenge-en-ligne.js"></script>
 </body>
 </html>

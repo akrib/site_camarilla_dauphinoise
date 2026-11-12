@@ -36,6 +36,13 @@ service cloud.firestore {
     function texte(v, max) { return v is string && v.size() <= max; }
     function texteNonVide(v, max) { return v is string && v.size() > 0 && v.size() <= max; }
     function refImage(v) { return v is string && v.size() <= 200; }
+    // Texte long : chaîne, ou octets compressés (Unishox2, voir compression.js).
+    function texteLong(v, max) { return (v is string || v is bytes) && v.size() <= max; }
+    function texteLongNonVide(v, max) { return texteLong(v, max) && v.size() > (v is bytes ? 1 : 0); }
+    function lieuValide(v) {
+      return v is map && v.keys().hasOnly(['lng', 'lat']) && v.keys().hasAll(['lng', 'lat'])
+        && v.lng is number && v.lat is number && v.lng >= -180 && v.lng <= 180 && v.lat >= -90 && v.lat <= 90;
+    }
 
     function perso(id) { return get(chemin('personnages', id)).data; }
     function persoEnJeuDuJoueur(id) {
@@ -181,7 +188,7 @@ service cloud.firestore {
           && d.fiche.get('nom', '') == d.nom && d.fiche.get('clan', '') == d.clan && d.fiche.get('secte', '') == d.secte
           && refImage(d.portrait)
           && texte(d.contenuJson, 600000)
-          && texte(d.commentaireConteur, 4000)
+          && texteLong(d.commentaireConteur, 4000)
           && d.statut in ['brouillon', 'soumise', 'refusee', 'validee', 'active', 'archivee'];
       }
       function champsFiche() {
@@ -418,16 +425,122 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------
+    // Notifications (page /membres/notifications/)
+    // Petits messages, supprimés dès que le destinataire les a lus.
+    // type 'fiche'   : résultat d'une demande de validation, envoyé par un
+    //                  conteur, avec son message au joueur
+    // type 'tableau' : un personnage a partagé son tableau d'enquête avec un
+    //                  personnage du destinataire
+    // ------------------------------------------------------------------
+    match /notifications/{id} {
+      function tab() { return get(chemin('tableaux', nouveau().tableau)).data; }
+      allow read: if actif() && (ancien().destinataire == uid() || ancien().auteur == uid() || conteur());
+      allow create: if actif() && nouveau().auteur == uid() && nouveau().creeLe == request.time
+        && nouveau().destinataire is string && texteNonVide(nouveau().personnageNom, 80)
+        && (
+          // Résultat d'une validation de fiche (conteurs)
+          (nouveau().type == 'fiche' && conteur()
+            && cles(['type', 'destinataire', 'auteur', 'auteurNom', 'personnage', 'personnageNom', 'statut', 'message', 'creeLe'],
+                    ['type', 'destinataire', 'auteur', 'auteurNom', 'personnage', 'personnageNom', 'statut', 'message', 'creeLe'])
+            && nouveau().auteurNom == moi().nom
+            && perso(nouveau().personnage).proprietaire == nouveau().destinataire
+            && nouveau().personnageNom == perso(nouveau().personnage).nom
+            && nouveau().statut in ['validee', 'active', 'refusee', 'archivee']
+            && texteLong(nouveau().message, 2000))
+          // Partage d'un tableau d'enquête : par son propriétaire, vers un personnage réellement invité
+          || (nouveau().type == 'tableau'
+            && cles(['type', 'destinataire', 'auteur', 'auteurNom', 'personnage', 'personnageNom', 'tableau', 'titre', 'droit', 'creeLe'],
+                    ['type', 'destinataire', 'auteur', 'auteurNom', 'personnage', 'personnageNom', 'tableau', 'titre', 'droit', 'creeLe'])
+            && tab().proprietaire == uid()
+            && nouveau().auteurNom == tab().proprietaireNom
+            && nouveau().personnage in tab().invites
+            && nouveau().personnageNom == tab().invites[nouveau().personnage].nom
+            && nouveau().destinataire in tab().acces
+            && texteNonVide(nouveau().titre, 100)
+            && nouveau().droit in ['lecture', 'ecriture'])
+        );
+      allow delete: if actif() && (ancien().destinataire == uid() || ancien().auteur == uid() || conteur());
+    }
+
+    // ------------------------------------------------------------------
+    // Challenges demandés par un conteur à un personnage (page /utils/challenge)
+    // challenges : [{ libelle, manches, puits, bombe, main }] (10 au plus)
+    // Le joueur ne résout la demande qu'une fois (en_attente -> joue) ; le
+    // conteur la supprime après avoir lu le résultat.
+    // ------------------------------------------------------------------
+    match /defis/{id} {
+      allow read: if (actif() && ancien().destinataire == uid()) || conteur();
+      allow create: if conteur()
+        && cles(['conteur', 'conteurNom', 'destinataire', 'personnage', 'personnageNom', 'titre', 'message',
+                 'challenges', 'statut', 'resultats', 'creeLe'],
+                ['conteur', 'conteurNom', 'destinataire', 'personnage', 'personnageNom', 'titre', 'message',
+                 'challenges', 'statut', 'resultats', 'creeLe'])
+        && nouveau().conteur == uid() && nouveau().conteurNom == moi().nom
+        && perso(nouveau().personnage).proprietaire == nouveau().destinataire
+        && perso(nouveau().personnage).statut in ['validee', 'active']
+        && nouveau().personnageNom == perso(nouveau().personnage).nom
+        && texteNonVide(nouveau().titre, 120) && texteLong(nouveau().message, 2000)
+        && nouveau().challenges is list && nouveau().challenges.size() >= 1 && nouveau().challenges.size() <= 10
+        && nouveau().statut == 'en_attente'
+        && nouveau().resultats is list && nouveau().resultats.size() == 0
+        && nouveau().creeLe == request.time;
+      // Le personnage concerné résout la demande, une seule fois.
+      allow update: if actif() && ancien().destinataire == uid() && persoIncarnable(ancien().personnage)
+        && ancien().statut == 'en_attente' && nouveau().statut == 'joue'
+        && seulement(['statut', 'resultats', 'joueLe'])
+        && nouveau().joueLe == request.time
+        && nouveau().resultats is list && nouveau().resultats.size() == ancien().challenges.size();
+      allow delete: if conteur();
+    }
+
+    // ------------------------------------------------------------------
+    // Calendrier des parties : calendrier/parties (voir calendrier.js)
+    // parties : { 'AAAA-MM': { date, limite, titre, ouverture, fermeture } }
+    // (ouverture / fermeture en ms) ; anticipation : préparation des parties
+    // suivantes autorisée avant leur ouverture.
+    // ------------------------------------------------------------------
+    match /calendrier/{id} {
+      allow read: if actif();
+      allow create, update: if conteur() && id == 'parties'
+        && cles(['parties', 'anticipation', 'majLe', 'majPar'], ['parties', 'anticipation', 'majLe', 'majPar'])
+        && nouveau().parties is map && nouveau().parties.size() <= 60
+        && nouveau().anticipation is bool
+        && nouveau().majPar == uid() && nouveau().majLe == request.time;
+      allow delete: if conteur();
+    }
+
+    // ------------------------------------------------------------------
     // Influences : actions des joueurs (globale, ciblée, soutien, AIP)
-    // Seul le propriétaire d'un personnage « en jeu » peut agir pour lui.
+    // Seul le propriétaire d'un personnage « en jeu » peut agir pour lui, et
+    // seulement pendant la fenêtre d'influences de la partie visée (champ
+    // mois = clé de la partie dans le calendrier). Sans calendrier, libre.
+    // lieu : { lng, lat } facultatif, position de l'action sur la carte.
     // ------------------------------------------------------------------
     match /influences/{id} {
+      function calendrier() { return get(chemin('calendrier', 'parties')).data; }
+      function moisModifiable(m) {
+        return !exists(chemin('calendrier', 'parties')) || (
+          m in calendrier().parties
+          && request.time.toMillis() <= calendrier().parties[m].fermeture
+          && (request.time.toMillis() >= calendrier().parties[m].ouverture || calendrier().anticipation == true));
+      }
+      function champsJoueur(d) {
+        return texte(d.get('date', ''), 10)
+          && texte(d.get('ville', ''), 60) && texte(d.get('zone', ''), 20)
+          && texte(d.get('specialisation', ''), 60)
+          && texte(d.get('raisonSociale', ''), 150)
+          && texte(d.get('cible', ''), 150)
+          && texte(d.get('categorieCible', ''), 60)
+          && texteLongNonVide(d.descriptif, 4000)
+          && (!('lieu' in d) || lieuValide(d.lieu));
+      }
+
       allow read: if (actif() && ancien().proprietaire == uid()) || conteur();
 
       allow create: if actif()
         && cles(['proprietaire', 'personnageId', 'personnageNom', 'type', 'date', 'mois', 'ville', 'zone',
                  'categorie', 'categorieCible', 'nomAction', 'niveau', 'specialisation', 'raisonSociale', 'cible',
-                 'pointsAction', 'descriptif', 'statut', 'reponseConteur', 'creeLe'],
+                 'pointsAction', 'descriptif', 'lieu', 'statut', 'reponseConteur', 'creeLe'],
                 ['proprietaire', 'personnageId', 'personnageNom', 'type', 'mois', 'categorie',
                  'nomAction', 'pointsAction', 'descriptif', 'statut', 'reponseConteur', 'creeLe'])
         && nouveau().proprietaire == uid()
@@ -435,32 +548,41 @@ service cloud.firestore {
         && nouveau().personnageNom == perso(nouveau().personnageId).nom
         && nouveau().type in ['globale', 'ciblee', 'soutien', 'aip']
         && nouveau().mois is string && nouveau().mois.matches('[0-9]{4}-[0-9]{2}')
-        && texte(nouveau().get('date', ''), 10)
-        && texte(nouveau().get('ville', ''), 60) && texte(nouveau().get('zone', ''), 20)
+        && moisModifiable(nouveau().mois)
         && texteNonVide(nouveau().categorie, 60) && texteNonVide(nouveau().nomAction, 120)
         && nouveau().get('niveau', 0) is int
-        && texte(nouveau().get('specialisation', ''), 60)
-        && texte(nouveau().get('raisonSociale', ''), 150)
-        && texte(nouveau().get('cible', ''), 150)
-        && texte(nouveau().get('categorieCible', ''), 60)
         && nouveau().pointsAction is int && nouveau().pointsAction >= -3 && nouveau().pointsAction <= 30
-        && texteNonVide(nouveau().descriptif, 4000)
+        && champsJoueur(nouveau())
         && nouveau().statut == 'attente' && nouveau().reponseConteur == ''
         && nouveau().creeLe == request.time;
 
-      allow update: if conteur()
-        && seulement(['reponseConteur', 'statut', 'majLe', 'traitePar'])
-        && nouveau().statut in ['attente', 'traitee']
-        && texte(nouveau().reponseConteur, 6000);
+      allow update: if actif() && (
+        // Conteur : réponse et statut.
+        (conteur()
+          && seulement(['reponseConteur', 'statut', 'majLe', 'traitePar'])
+          && nouveau().statut in ['attente', 'traitee']
+          && texteLong(nouveau().reponseConteur, 6000))
+        // Joueur : tant que l'action n'a pas de réponse et que la fenêtre de
+        // la partie est ouverte (ou à venir, si l'anticipation est permise).
+        || (ancien().proprietaire == uid() && ancien().statut == 'attente' && ancien().reponseConteur == ''
+          && persoEnJeuDuJoueur(ancien().personnageId)
+          && moisModifiable(ancien().mois) && moisModifiable(nouveau().mois)
+          && nouveau().mois.matches('[0-9]{4}-[0-9]{2}')
+          && seulement(['date', 'mois', 'ville', 'zone', 'specialisation', 'raisonSociale', 'cible', 'categorieCible',
+                        'descriptif', 'lieu', 'majLe'])
+          && champsJoueur(nouveau()))
+      );
 
-      allow delete: if (actif() && ancien().proprietaire == uid() && ancien().statut == 'attente') || conteur();
+      allow delete: if (actif() && ancien().proprietaire == uid() && ancien().statut == 'attente'
+          && ancien().reponseConteur == '' && moisModifiable(ancien().mois))
+        || conteur();
     }
 
     // Registre des raisons sociales de chaque personnage.
     match /raisons_sociales/{id} {
       function raisonValide(d) {
         return texteNonVide(d.nom, 150) && texte(d.ville, 60) && texte(d.zone, 20)
-          && texte(d.categorie, 60) && texte(d.description, 3000);
+          && texte(d.categorie, 60) && texteLong(d.description, 3000);
       }
       allow read: if (actif() && ancien().proprietaire == uid()) || conteur();
       allow create: if actif()
@@ -494,7 +616,7 @@ service cloud.firestore {
               && nouveau().personnageNom == perso(nouveau().personnageId).nom)
         )
         && texteNonVide(nouveau().categorie, 80) && texteNonVide(nouveau().sujet, 150)
-        && texteNonVide(nouveau().description, 6000)
+        && texteLongNonVide(nouveau().description, 6000)
         && nouveau().statut == 'En attente' && nouveau().resultat == ''
         && nouveau().creeLe == request.time;
 
@@ -502,12 +624,12 @@ service cloud.firestore {
         // Conteur : statut et réponse.
         (conteur() && seulement(['statut', 'resultat', 'majLe', 'traitePar'])
           && nouveau().statut in ['En attente', 'En cours', 'Informations demandées', 'Complété', 'Refusé', 'Annulé']
-          && texte(nouveau().resultat, 6000))
+          && texteLong(nouveau().resultat, 6000))
         // Joueur : compléter sa demande quand le conteur demande des informations,
         // ou annuler une demande pas encore traitée.
         || (ancien().proprietaire == uid() && (
               (ancien().statut == 'Informations demandées' && seulement(['description', 'statut', 'majLe'])
-                && nouveau().statut in ['En attente', 'Annulé'] && texteNonVide(nouveau().description, 8000))
+                && nouveau().statut in ['En attente', 'Annulé'] && texteLongNonVide(nouveau().description, 8000))
               || (ancien().statut == 'En attente' && seulement(['statut', 'majLe']) && nouveau().statut == 'Annulé')
            ))
       );

@@ -1,9 +1,14 @@
 // Page /influences/conteur/ : tableau de bord des conteurs (Firestore).
+// Onglet « Calendrier » : dates des parties et dates limites des influences.
 import {
   h, db, fs, pageProtegee, barreMembre, message, messageErreur, dateFr, millis, onglets, options,
-  moisCourant, telecharger, versCsv, confirmer
+  telecharger, versCsv, confirmer
 } from '../core.js';
 import { ZONES, STATUTS_TICKET, TYPES_ACTION, CATEGORIES_AIP } from '../donnees.js';
+import { compresser, donneesDoc } from '../compression.js';
+import {
+  chargerCalendrier, calculerCalendrier, moisParDefaut, partie, libellePartie, resumeEtat, etat, LIBELLES_ETAT, MAX_PARTIES
+} from '../calendrier.js';
 
 const racine = document.getElementById('cam-influences-conteur');
 barreMembre(document.getElementById('cam-barre'));
@@ -15,9 +20,19 @@ const CLASSE_TICKET = {
 const classeCat = (c) => (c || '').includes('Gotha') ? 'gotha' : ((c || '').includes('Pègre') ? 'pegre' : '');
 
 pageProtegee(racine, 'conteur', async ({ user }) => {
-  const mois = h('input', { type: 'month', value: moisCourant() });
+  let calendrier = await chargerCalendrier().catch(() => ({ existe: false, parties: [], anticipation: false }));
+  const mois = h('input', { type: 'month', value: moisParDefaut(calendrier) });
+  const infoPartie = h('p', { class: 'sous-titre' });
+  const lienCarte = h('a', { class: 'cam-btn secondaire', href: '#' }, '📍 Voir sur la carte');
+  const majInfoPartie = () => {
+    const p = partie(calendrier, mois.value);
+    infoPartie.replaceChildren(...(p ? [h('strong', {}, libellePartie(p)), ' — ', resumeEtat(calendrier, p)]
+      : [calendrier.existe ? 'Aucune partie prévue ce mois-ci au calendrier.' : 'Aucun calendrier enregistré : les joueurs envoient leurs actions librement (onglet « Calendrier »).']));
+    lienCarte.href = '/utils/carte?mois=' + encodeURIComponent(mois.value);
+  };
   const msg = h('div', { class: 'cam-msg' });
   const panneaux = {
+    calendrier: h('div', { dataset: { panneau: 'calendrier' } }),
     personnages: h('div', { dataset: { panneau: 'personnages' } }),
     actions: h('div', { dataset: { panneau: 'actions' } }),
     districts: h('div', { dataset: { panneau: 'districts' } }),
@@ -25,16 +40,18 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
     tickets: h('div', { dataset: { panneau: 'tickets' } }),
     exports: h('div', { dataset: { panneau: 'exports' } })
   };
-  const libelles = { personnages: 'Personnages', actions: 'Actions du mois', districts: 'Districts', raisons: 'Raisons sociales', tickets: 'Tickets', exports: 'Exports CSV' };
+  const libelles = { calendrier: 'Calendrier', personnages: 'Personnages', actions: 'Actions du mois', districts: 'Districts', raisons: 'Raisons sociales', tickets: 'Tickets', exports: 'Exports CSV' };
   const app = h('div', {},
     h('div', { class: 'cam-onglets' }, Object.keys(panneaux).map((k) => h('button', { type: 'button', dataset: { onglet: k } }, libelles[k]))),
     Object.values(panneaux));
   racine.append(
     h('div', { class: 'cam-bloc' },
-      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Mois'), mois)),
-      h('button', { type: 'button', onclick: () => charger() }, 'Actualiser'), msg),
+      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Mois (partie)'), mois)), infoPartie,
+      h('div', { class: 'cam-actions' }, h('button', { type: 'button', onclick: () => charger() }, 'Actualiser'), lienCarte), msg),
     app);
-  onglets(app)(location.hash === '#tickets' ? 'tickets' : 'actions');
+  const ongletDemande = location.hash.slice(1);
+  onglets(app)(panneaux[ongletDemande] ? ongletDemande : 'actions');
+  majInfoPartie();
 
   let actions = [], persos = [], raisons = [], tickets = [];
 
@@ -47,17 +64,99 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
         fs.getDocs(fs.collection(db, 'raisons_sociales')),
         fs.getDocs(fs.collection(db, 'tickets'))
       ]);
-      actions = a.docs.map((d) => ({ id: d.id, ...d.data() })).sort((x, y) => millis(y.creeLe) - millis(x.creeLe));
+      actions = a.docs.map(donneesDoc).sort((x, y) => millis(y.creeLe) - millis(x.creeLe));
       persos = p.docs.map((d) => ({ id: d.id, ...d.data() })).sort((x, y) => (x.nom || '').localeCompare(y.nom || ''));
-      raisons = r.docs.map((d) => ({ id: d.id, ...d.data() })).sort((x, y) => (x.personnageNom || '').localeCompare(y.personnageNom || '') || (x.nom || '').localeCompare(y.nom || ''));
-      tickets = t.docs.map((d) => ({ id: d.id, ...d.data() })).sort((x, y) => millis(y.creeLe) - millis(x.creeLe));
+      raisons = r.docs.map(donneesDoc).sort((x, y) => (x.personnageNom || '').localeCompare(y.personnageNom || '') || (x.nom || '').localeCompare(y.nom || ''));
+      tickets = t.docs.map(donneesDoc).sort((x, y) => millis(y.creeLe) - millis(x.creeLe));
       const enAttente = actions.filter((x) => x.statut === 'attente').length;
       message(msg, actions.length + ' action(s) en ' + mois.value + ', dont ' + enAttente + ' sans réponse. '
         + tickets.filter((x) => ['En attente', 'En cours'].includes(x.statut)).length + ' ticket(s) à traiter.', 'ok');
       dessinerPersonnages(); dessinerActions(); dessinerDistricts(); dessinerRaisons(); dessinerTickets(); dessinerExports();
     } catch (e) { message(msg, messageErreur(e), 'err'); }
   }
-  mois.addEventListener('change', charger);
+  mois.addEventListener('change', () => { majInfoPartie(); charger(); });
+
+  // --- Calendrier des parties ---
+  function dessinerCalendrier() {
+    const lignes = calendrier.parties.map((p) => ({ date: p.date, limite: p.limite, titre: p.titre || '' }));
+    const anticipation = h('input', { type: 'checkbox', checked: calendrier.anticipation });
+    const corps = h('tbody');
+    const alertes = h('div', {});
+    const msgC = h('div', { class: 'cam-msg' });
+    const CLASSE_ETAT = { ouverte: 'traitee', a_venir: 'attente', fermee: 'archivee' };
+    const dessinerLignes = () => {
+      if (msgC.classList.contains('err')) { msgC.className = 'cam-msg'; msgC.textContent = ''; }
+      lignes.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
+      const { parties, erreurs } = calculerCalendrier(lignes);
+      corps.replaceChildren(...(lignes.length ? lignes.map((l, i) => {
+        const date = h('input', { type: 'date', value: l.date });
+        const limite = h('input', { type: 'date', value: l.limite });
+        const titre = h('input', { type: 'text', value: l.titre, maxlength: 120, placeholder: 'Facultatif' });
+        date.addEventListener('change', () => { l.date = date.value; dessinerLignes(); });
+        limite.addEventListener('change', () => { l.limite = limite.value; dessinerLignes(); });
+        titre.addEventListener('input', () => { l.titre = titre.value; });
+        const c = parties.find((x) => x.date === l.date);
+        return h('tr', {},
+          h('td', {}, date), h('td', {}, limite), h('td', {}, titre),
+          h('td', {}, c ? dateFr(c.ouverture) + ' → ' + dateFr(c.fermeture) : '—'),
+          h('td', {}, c ? h('span', { class: 'cam-tag ' + CLASSE_ETAT[etat(c)] }, LIBELLES_ETAT[etat(c)]) : ''),
+          h('td', {}, h('button', { type: 'button', class: 'petit danger', title: 'Retirer cette partie', onclick: () => { lignes.splice(i, 1); dessinerLignes(); } }, '×')));
+      }) : [h('tr', {}, h('td', { colspan: 6 }, 'Aucune partie. Ajoutez la prochaine ci-dessous.'))]));
+      alertes.replaceChildren(...erreurs.map((e) => h('div', { class: 'cam-msg err' }, e)));
+    };
+    // Ajout d'une partie : la date limite est proposée une semaine avant.
+    const nDate = h('input', { type: 'date' });
+    const nLimite = h('input', { type: 'date' });
+    const nTitre = h('input', { type: 'text', maxlength: 120, placeholder: 'Ex : Élysée de décembre' });
+    nDate.addEventListener('change', () => {
+      if (!nDate.value || nLimite.value) return;
+      const d = new Date(nDate.value + 'T12:00:00');
+      d.setDate(d.getDate() - 7);
+      nLimite.value = d.toISOString().slice(0, 10);
+    });
+    const ajouter = h('button', { type: 'button', class: 'petit' }, 'Ajouter la partie');
+    ajouter.addEventListener('click', () => {
+      if (!nDate.value) { message(msgC, 'Indiquez la date de la partie.', 'err'); return; }
+      if (lignes.length >= MAX_PARTIES) { message(msgC, 'Au plus ' + MAX_PARTIES + ' parties : retirez les plus anciennes.', 'err'); return; }
+      lignes.push({ date: nDate.value, limite: nLimite.value || nDate.value, titre: nTitre.value.trim() });
+      nDate.value = ''; nLimite.value = ''; nTitre.value = '';
+      message(msgC, 'Partie ajoutée : pensez à enregistrer le calendrier.', 'info');
+      dessinerLignes();
+    });
+    const enregistrer = h('button', { type: 'button', class: 'ok' }, 'Enregistrer le calendrier');
+    enregistrer.addEventListener('click', async () => {
+      const { parties, erreurs } = calculerCalendrier(lignes);
+      if (erreurs.length) { message(msgC, 'Corrigez d\'abord : ' + erreurs[0], 'err'); return; }
+      enregistrer.disabled = true;
+      try {
+        await fs.setDoc(fs.doc(db, 'calendrier', 'parties'), {
+          parties: Object.fromEntries(parties.map(({ cle, ...p }) => [cle, p])),
+          anticipation: anticipation.checked, majLe: fs.serverTimestamp(), majPar: user.uid
+        });
+        calendrier = { existe: true, parties, anticipation: anticipation.checked };
+        message(msgC, 'Calendrier enregistré : ' + parties.length + ' partie(s).', 'ok');
+        majInfoPartie(); dessinerLignes();
+      } catch (e) { message(msgC, messageErreur(e), 'err'); }
+      finally { enregistrer.disabled = false; }
+    });
+    panneaux.calendrier.replaceChildren(h('div', { class: 'cam-bloc' },
+      h('h2', {}, 'Calendrier des parties'),
+      h('p', { class: 'sous-titre' }, 'Les influences d\'une partie s\'ouvrent le lendemain de la partie précédente (la toute première : un mois avant sa date) et ferment à sa date limite, à 23 h 59. Une seule partie par mois : le mois de la partie est celui de ses actions d\'influence.'),
+      h('div', { class: 'cam-table-defil' }, h('table', { class: 'cam-table' },
+        h('thead', {}, h('tr', {}, ['Date de la partie', 'Date limite des influences', 'Titre', 'Fenêtre d\'influences', 'État', ''].map((x) => h('th', {}, x)))),
+        corps)),
+      alertes,
+      h('h3', {}, 'Ajouter une partie'),
+      h('div', { class: 'cam-ligne' },
+        h('div', {}, h('label', {}, 'Date de la partie'), nDate),
+        h('div', {}, h('label', {}, 'Date limite des influences'), nLimite),
+        h('div', {}, h('label', {}, 'Titre'), nTitre)),
+      ajouter,
+      h('label', { class: 'cam-coche', style: 'margin-top:1rem' }, anticipation,
+        'Autoriser les joueurs à préparer les actions des parties suivantes avant leur ouverture'),
+      h('div', { class: 'cam-actions' }, enregistrer), msgC));
+    dessinerLignes();
+  }
 
   // --- Personnages en jeu : qui a agi ce mois-ci ---
   function dessinerPersonnages() {
@@ -109,7 +208,8 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
         h('span', { class: 'cam-tag ' + classeCat(a.categorie) }, a.categorie),
         h('span', { class: 'cam-tag' }, TYPES_ACTION[a.type] || a.type),
         h('span', { class: 'cam-tag ' + a.statut }, a.statut === 'traitee' ? 'Traitée' : 'Sans réponse'),
-        (a.date ? dateFr(a.date) : '') + ' · ' + (a.ville || '') + ' zone ' + (a.zone || '?')),
+        (a.date ? dateFr(a.date) : '') + ' · ' + (a.ville || '') + ' zone ' + (a.zone || '?'),
+        a.lieu ? [' · ', h('a', { href: '/utils/carte?mois=' + encodeURIComponent(a.mois) + '&action=' + encodeURIComponent(a.id) }, '📍 carte')] : ''),
       h('strong', {}, a.personnageNom), ' — ', a.nomAction, ' — ', a.pointsAction + ' pt(s)',
       a.niveau ? ' — niveau ' + a.niveau : '', a.specialisation ? ' — ' + a.specialisation : '',
       h('div', {},
@@ -124,7 +224,7 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
             try {
               const statut = traitee.checked ? 'traitee' : 'attente';
               await fs.updateDoc(fs.doc(db, 'influences', a.id), {
-                reponseConteur: reponse.value.trim(), statut, majLe: fs.serverTimestamp(), traitePar: user.uid
+                reponseConteur: compresser(reponse.value.trim()), statut, majLe: fs.serverTimestamp(), traitePar: user.uid
               });
               a.reponseConteur = reponse.value.trim(); a.statut = statut;
               message(msgA, 'Réponse enregistrée.', 'ok');
@@ -199,7 +299,7 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
           h('button', {
             type: 'button', class: 'petit ok', onclick: async () => {
               try {
-                await fs.updateDoc(fs.doc(db, 'tickets', t.id), { statut: statut.value, resultat: resultat.value.trim(), majLe: fs.serverTimestamp(), traitePar: user.uid });
+                await fs.updateDoc(fs.doc(db, 'tickets', t.id), { statut: statut.value, resultat: compresser(resultat.value.trim()), majLe: fs.serverTimestamp(), traitePar: user.uid });
                 t.statut = statut.value; t.resultat = resultat.value.trim();
                 message(msgT, 'Ticket mis à jour.', 'ok');
               } catch (e) { message(msgT, messageErreur(e), 'err'); }
@@ -241,5 +341,6 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
         ]), 'personnages-en-jeu.csv', 'text/csv;charset=utf-8')))));
   }
 
+  dessinerCalendrier();
   await charger();
 });
