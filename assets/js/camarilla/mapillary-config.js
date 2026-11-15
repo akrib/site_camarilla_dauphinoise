@@ -11,4 +11,4 @@
 // Ce jeton est fait pour être public : il n'autorise que la lecture des
 // photos, comme la clé Firebase de firebase-config.js. Voir docs/FIREBASE.md.
 // =====================================================================
-export const MAPILLARY_JETON = 'MLY|A_REMPLACER';
+export const MAPILLARY_JETON = 'MLY|29591781333795822|c9be9606a46b2a43daa10f52295bbbf1';
