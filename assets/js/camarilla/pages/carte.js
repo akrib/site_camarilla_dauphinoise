@@ -36,7 +36,7 @@
 import * as maplibregl from 'https://unpkg.com/maplibre-gl@6.18.0/dist/maplibre-gl.mjs';
 import { h, db, fs, surSession, estConteur, messageErreur, dateFr, millis } from '../core.js';
 import { accesOutil, afficherGarde as garder, fenetreChoixPersonnage } from '../incarnation.js';
-import { GRENOBLE, FONDS, ATTRIBUTION, couleurInfluence, versPoint, versLieu, chargerTerritoires } from '../carte-base.js';
+import { GRENOBLE, FONDS, ATTRIBUTION, couleurInfluence, versPoint, versLieu, chargerTerritoires, completerImages } from '../carte-base.js';
 import { donneesDoc, compresserJson, decompresserJson } from '../compression.js';
 import { chargerCalendrier, modifiable, moisParDefaut, partie, etat, libelleMois, libellePartie, resumeEtat, LIBELLES_ETAT } from '../calendrier.js';
 import { TYPES_ACTION, NOMS_ZONES, DOMAINES_VOISINS, libelleZone } from '../donnees.js';
@@ -1321,6 +1321,7 @@ function demarrerCarte() {
     $('carte').append(h('div', { class: 'carte-erreur' }, 'La carte ne peut pas s\'afficher sur ce navigateur (WebGL indisponible) : ' + messageErreur(e)));
     return;
   }
+  completerImages(map);
   map.addControl(new maplibregl.NavigationControl({ visualizePitch: EN_JEU, showCompass: EN_JEU }), 'top-left');
   map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
   brancherCarte();

@@ -70,10 +70,18 @@ body.sabbat-page {
 
 /* ---------- Scène : photo ---------- */
 .sabbat-scene { position: relative; flex: 1; min-height: 0; overflow: hidden; }
-.sabbat-vue {
-  position: absolute; inset: 0;
+/* MapillaryJS ajoute la classe .mapillary-viewer au conteneur, et sa feuille de
+   style (chargée après celle-ci) lui donne « position: relative » : le conteneur
+   retombait alors à 0 px de haut (photo invisible, tuiles demandées avec z=NaN).
+   Sélecteur plus précis + largeur et hauteur explicites, pour tenir dans tous les cas. */
+.sabbat-scene > .sabbat-vue,
+.sabbat-scene > .sabbat-vue.mapillary-viewer {
+  position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0;   /* tout MapillaryJS reste sous la mini-carte */
   background: radial-gradient(ellipse at 50% 40%, #1b1416 0%, #0b0c0f 70%);
 }
+/* Boutons de MapillaryJS (zoom, boussole) : à gauche, loin de la mini-carte */
+.sabbat-vue .mapillary-zoom-container { right: auto; left: 14px; bottom: 96px; }
+.sabbat-vue .mapillary-bearing-indicator-container { right: auto; left: 10px; bottom: 44px; }
 .sabbat-chargement {
   position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 6;
   display: flex; align-items: center; gap: 12px; padding: 12px 18px;
@@ -243,5 +251,7 @@ body[data-etape="revele"] .sabbat-credits, body[data-etape="bilan"] .sabbat-cred
   .sabbat-res-chiffres strong { font-size: 22px; }
   .sabbat-total strong { font-size: 30px; }
   .sabbat-credits { max-width: calc(100% - 140px); }
+  .sabbat-vue .mapillary-zoom-container { bottom: 124px; }
+  .sabbat-vue .mapillary-bearing-indicator-container { bottom: 70px; }
   .sabbat-boite { padding: 22px 18px; }
 }

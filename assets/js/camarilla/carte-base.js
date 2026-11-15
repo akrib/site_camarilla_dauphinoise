@@ -6,7 +6,8 @@
 //   - choisirLieu() : fenêtre où l'on clique sur la carte pour choisir un
 //     point (lieu d'une action d'influence) ;
 //   - territoires officiels (zones 1 à 24, domaines…) tracés par les
-//     conteurs : lecture, et zone qui contient un point.
+//     conteurs : lecture, et zone qui contient un point ;
+//   - completerImages() : motifs absents des fonds OpenFreeMap.
 // =====================================================================
 import { h, db, fs } from './core.js';
 import { decompresserJson } from './compression.js';
@@ -70,6 +71,37 @@ export function geojsonTerritoires(territoires) {
   })));
 }
 
+// ---------------------------------------------------------------------
+// Motifs absents des fonds OpenFreeMap. Le style « dark » (fond Nuit)
+// dessine les bois avec le motif « wood-pattern », qui manque à sa planche
+// d'icônes (ofm_f384) : MapLibre affiche alors l'avertissement
+// « Image "wood-pattern" could not be loaded » et les bois restent vides.
+// On fabrique le motif à la demande. Les autres images manquantes ne sont
+// pas masquées : leur avertissement reste utile.
+// ---------------------------------------------------------------------
+function motifBois() {
+  const n = 16;
+  const data = new Uint8Array(n * n * 4);
+  const peindre = (x, y, [r, g, b, a]) => { const i = ((y % n) * n + (x % n)) * 4; data.set([r, g, b, a], i); };
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) peindre(x, y, [38, 44, 37, 255]);   // sous-bois
+  // Petits arbres en quinconce (2 × 2 pixels), comme le motif d'OSM Liberty
+  for (const [x, y] of [[2, 3], [10, 3], [6, 11], [14, 11]]) {
+    for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) peindre(x + dx, y + dy, [66, 84, 62, 255]);
+  }
+  return { width: n, height: n, data };
+}
+const MOTIFS = { 'wood-pattern': motifBois };
+/** À appeler sur chaque carte MapLibre créée avec un fond OpenFreeMap. */
+export function completerImages(carte) {
+  const fournir = (id) => {
+    if (!MOTIFS[id] || carte.hasImage(id)) return;
+    carte.addImage(id, MOTIFS[id](), { pixelRatio: 1 });
+  };
+  if (typeof carte.setMissingStyleImageResolver === 'function') carte.setMissingStyleImageResolver(fournir);
+  else carte.on('styleimagemissing', (e) => fournir(e.id));   // MapLibre plus ancien
+  return carte;
+}
+
 let chargement = null;
 export function chargerMapLibre() {
   if (!document.querySelector('link[data-maplibre]')) {
@@ -110,6 +142,7 @@ export function choisirLieu({ initial = null, titre = 'Lieu de l\'action', coule
         container: zone, style: FONDS.nuit, center: choix || GRENOBLE.centre, zoom: choix ? 15 : GRENOBLE.zoom,
         attributionControl: { compact: true, customAttribution: ATTRIBUTION }
       });
+      completerImages(carte);
       carte.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
       // Zones officielles en fond, pour situer le lieu
       if (territoires.length) {

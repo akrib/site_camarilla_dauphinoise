@@ -21,7 +21,7 @@
 //   points et voient le classement. Un admin peut remettre un joueur à zéro.
 // =====================================================================
 import { h, db, fs, surSession, estActif, estAdmin, messageErreur, millis } from '../core.js';
-import { FONDS, ATTRIBUTION, chargerMapLibre, dansPolygone } from '../carte-base.js';
+import { FONDS, ATTRIBUTION, chargerMapLibre, completerImages, dansPolygone } from '../carte-base.js';
 import { MAPILLARY_JETON } from '../mapillary-config.js';
 
 const $ = (id) => document.getElementById(id);
@@ -179,6 +179,9 @@ async function montrerPhoto(id) {
       container: $('vue'),
       component: { cover: false, attribution: false, sequence: false }
     });
+    // MapillaryJS ne mesure son conteneur qu'à la création et quand la fenêtre
+    // change de taille : on le prévient de tout autre changement.
+    if (window.ResizeObserver) new ResizeObserver(() => visionneuse.resize()).observe($('vue'));
   }
   await visionneuse.moveTo(id);
 }
@@ -221,6 +224,7 @@ async function preparerCarte() {
     dragRotate: false, pitchWithRotate: false,
     attributionControl: { compact: true, customAttribution: ATTRIBUTION }
   });
+  completerImages(carte);
   carte.touchZoomRotate.disableRotation();
   carte.on('style.load', ajouterCouches);
   carte.on('click', (e) => { if (etape === 'manche') poserRepere([e.lngLat.lng, e.lngLat.lat]); });
