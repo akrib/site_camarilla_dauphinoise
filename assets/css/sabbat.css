@@ -1,0 +1,247 @@
+/* =====================================================================
+   Jeu « Trouve le Sabbat » — page /utils/sabbat
+   Photo plein écran, mini-carte en bas à droite (agrandie au survol),
+   résultat sur la carte en grand. Palette de la carte de Grenoble.
+   ===================================================================== */
+:root {
+  --s-fond: #0b0c0f;
+  --s-panneau: #121419;
+  --s-panneau-2: #181b22;
+  --s-ligne: #262a33;
+  --s-ligne-2: #343a46;
+  --s-texte: #e6e1d6;
+  --s-pale: #9a958a;
+  --s-sourd: #6c6a64;
+  --s-sang: #9b1c2c;
+  --s-sang-vif: #c4283d;
+  --s-laiton: #c9a227;
+  --s-ok: #6fae7c;
+  --s-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --s-titre: Georgia, "Times New Roman", serif;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body.sabbat-page {
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--s-fond); color: var(--s-texte); font: 14px/1.45 var(--s-ui);
+}
+.sabbat-page [hidden] { display: none !important; }
+.sabbat-page button { font: inherit; }
+.sabbat-page a { color: var(--s-laiton); }
+
+/* ---------- Barre ---------- */
+.sabbat-barre {
+  position: relative; z-index: 15;
+  display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap;
+  padding: 8px 14px; background: linear-gradient(#15171d, #0f1014); border-bottom: 1px solid var(--s-ligne);
+}
+.sabbat-marque { display: flex; align-items: center; gap: 10px; color: inherit !important; text-decoration: none; }
+.sabbat-marque .sceau {
+  width: 30px; height: 30px; border: 1px solid var(--s-sang); border-radius: 50%;
+  display: grid; place-items: center; color: var(--s-sang-vif); font-size: 15px;
+}
+.sabbat-marque strong { display: block; font: 600 13px/1.1 var(--s-titre); letter-spacing: .22em; text-transform: uppercase; }
+.sabbat-marque small { display: block; color: var(--s-sourd); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; margin-top: 3px; }
+.sabbat-compteurs { display: flex; gap: 18px; padding-left: 16px; border-left: 1px solid var(--s-ligne); color: var(--s-pale); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.sabbat-compteurs b { color: var(--s-texte); font: 600 16px var(--s-titre); letter-spacing: 0; margin: 0 2px; }
+.sabbat-espace { flex: 1; }
+.sabbat-joueur { color: var(--s-pale); font-size: 12.5px; }
+.sabbat-joueur b { color: var(--s-texte); font-weight: 600; }
+
+/* ---------- Boutons ---------- */
+.sabbat-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 13px;
+  border: 1px solid var(--s-ligne-2); border-radius: 4px; background: var(--s-panneau-2); color: var(--s-texte);
+  cursor: pointer; font-size: 12.5px; white-space: nowrap; transition: border-color .12s, background .12s, opacity .12s;
+}
+.sabbat-btn:hover:not(:disabled) { border-color: var(--s-pale); }
+.sabbat-btn.discret { background: transparent; }
+.sabbat-barre .sabbat-btn .ico { display: none; }
+.sabbat-btn.principal { background: var(--s-sang); border-color: var(--s-sang-vif); color: #fff; }
+.sabbat-btn.principal:hover:not(:disabled) { background: var(--s-sang-vif); }
+.sabbat-btn.grand { height: 42px; padding: 0 22px; font-size: 14px; letter-spacing: .04em; }
+.sabbat-btn:disabled { opacity: .55; cursor: default; }
+.sabbat-mini {
+  width: 30px; height: 30px; display: inline-grid; place-items: center; padding: 0;
+  border: 1px solid var(--s-ligne-2); border-radius: 4px; background: rgba(18, 20, 25, .92); color: var(--s-texte); cursor: pointer;
+}
+.sabbat-mini:hover { border-color: var(--s-pale); }
+.sabbat-page :focus-visible { outline: 2px solid var(--s-laiton); outline-offset: 2px; }
+
+/* ---------- Scène : photo ---------- */
+.sabbat-scene { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.sabbat-vue {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, #1b1416 0%, #0b0c0f 70%);
+}
+.sabbat-chargement {
+  position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 6;
+  display: flex; align-items: center; gap: 12px; padding: 12px 18px;
+  background: rgba(11, 12, 15, .88); border: 1px solid var(--s-ligne-2); border-radius: 999px; color: var(--s-pale);
+}
+.sabbat-rond {
+  width: 16px; height: 16px; border: 2px solid var(--s-ligne-2); border-top-color: var(--s-sang-vif); border-radius: 50%;
+  animation: sabbat-tourne .9s linear infinite;
+}
+@keyframes sabbat-tourne { to { transform: rotate(360deg); } }
+.sabbat-depart { position: absolute; top: 14px; left: 14px; z-index: 4; background: rgba(18, 20, 25, .9); }
+
+/* ---------- Mini-carte ---------- */
+.sabbat-zone-carte {
+  position: absolute; right: 16px; bottom: 34px; z-index: 5;
+  width: 320px; height: 250px; display: flex; flex-direction: column;
+  border: 1px solid var(--s-ligne-2); border-radius: 8px; overflow: hidden; background: var(--s-panneau);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .55); opacity: .82;
+  transition: width .18s ease, height .18s ease, opacity .18s ease;
+}
+.sabbat-zone-carte:hover, .sabbat-zone-carte.grande { width: min(620px, 62vw); height: min(460px, 64vh); opacity: 1; }
+.sabbat-carte { position: relative; flex: 1; min-height: 0; }
+.sabbat-carte .maplibregl-canvas { cursor: crosshair; }
+.sabbat-carte-outils { position: absolute; top: 8px; right: 8px; z-index: 2; display: flex; gap: 6px; }
+.sabbat-fermer-carte { display: none; }
+.sabbat-deviner { height: 44px; border-radius: 0; border-width: 1px 0 0; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; }
+.sabbat-ouvrir-carte { display: none; }
+
+/* Étapes : accueil (rien), manche (photo + mini-carte), résultat et bilan (carte en grand) */
+body[data-etape="accueil"] .sabbat-zone-carte,
+body[data-etape="accueil"] .sabbat-depart { display: none; }
+body[data-etape="revele"] .sabbat-zone-carte,
+body[data-etape="bilan"] .sabbat-zone-carte {
+  inset: 0; width: auto; height: auto; border: 0; border-radius: 0; opacity: 1; box-shadow: none; transition: none;
+}
+body[data-etape="revele"] .sabbat-deviner, body[data-etape="bilan"] .sabbat-deviner,
+body[data-etape="revele"] #btnAgrandir, body[data-etape="bilan"] #btnAgrandir,
+body[data-etape="revele"] .sabbat-depart, body[data-etape="bilan"] .sabbat-depart { display: none; }
+body[data-etape="revele"] .sabbat-credits, body[data-etape="bilan"] .sabbat-credits { display: none; }
+
+/* ---------- Pions ---------- */
+.sabbat-pion {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  font: 700 13px/1 var(--s-titre); box-shadow: 0 2px 8px rgba(0, 0, 0, .6);
+}
+.sabbat-pion.joueur { background: var(--s-sang-vif); border: 2px solid #fff; color: #fff; }
+.sabbat-pion.repaire { background: #0b0c0f; border: 2px solid var(--s-laiton); color: var(--s-laiton); font-size: 15px; }
+.sabbat-pion.petit { width: 22px; height: 22px; font-size: 11px; }
+.sabbat-pion.repaire.petit { font-size: 12px; }
+
+/* ---------- Panneaux de résultat et de bilan ---------- */
+.sabbat-panneau {
+  position: absolute; z-index: 7; left: 50%; bottom: 0; transform: translateX(-50%);
+  width: min(620px, 100%); padding: 16px 20px 18px;
+  background: rgba(18, 20, 25, .96); border: 1px solid var(--s-ligne-2); border-bottom: 0; border-radius: 10px 10px 0 0;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, .5);
+}
+.sabbat-bilan {
+  left: 16px; top: 16px; bottom: auto; transform: none; width: 360px; max-height: calc(100% - 32px); overflow: auto;
+  border: 1px solid var(--s-ligne-2); border-radius: 10px;
+}
+.sabbat-res-tete { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.sabbat-res-num { color: var(--s-pale); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+.sabbat-badge {
+  padding: 2px 9px; border: 1px solid var(--s-laiton); border-radius: 999px; color: var(--s-laiton);
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+}
+.sabbat-badge.petit { padding: 0 6px; font-size: 9.5px; }
+.sabbat-res-chiffres { display: flex; gap: 32px; align-items: flex-end; }
+.sabbat-res-chiffres small { display: block; color: var(--s-sourd); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.sabbat-res-chiffres strong { font: 600 28px/1.15 var(--s-titre); }
+.sabbat-res-chiffres div:last-child small:last-child { display: inline; text-transform: none; letter-spacing: 0; }
+.sabbat-jauge { height: 6px; margin: 10px 0 8px; background: var(--s-panneau-2); border-radius: 3px; overflow: hidden; }
+.sabbat-jauge span { display: block; height: 100%; background: linear-gradient(90deg, var(--s-sang), var(--s-laiton)); }
+.sabbat-commentaire { margin: 6px 0; color: var(--s-texte); font-style: italic; font-family: var(--s-titre); }
+.sabbat-credit { margin: 6px 0 0; color: var(--s-sourd); font-size: 11.5px; }
+.sabbat-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.sabbat-total strong { font: 600 40px/1.1 var(--s-titre); }
+.sabbat-total small { color: var(--s-pale); }
+.sabbat-titre { margin: 4px 0 0; color: var(--s-laiton); font: 600 15px var(--s-titre); letter-spacing: .2em; text-transform: uppercase; }
+.sabbat-liste { margin: 12px 0 4px; padding: 0 0 0 22px; }
+.sabbat-liste li { padding: 4px 0; border-bottom: 1px solid var(--s-ligne); color: var(--s-pale); }
+.sabbat-liste li span:first-child { display: inline-block; min-width: 70px; }
+.sabbat-liste li b { float: right; color: var(--s-texte); font-weight: 600; }
+.sabbat-statut { margin-top: 12px; color: var(--s-pale); font-size: 13px; }
+.sabbat-statut p { margin: 0; }
+
+/* ---------- Voiles (accueil, classement) ---------- */
+.sabbat-voile {
+  position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+  padding: 64px 16px 24px; background: rgba(6, 6, 9, .78); backdrop-filter: blur(3px);
+}
+#classement { z-index: 30; padding-top: 24px; }
+.sabbat-boite {
+  position: relative; width: min(620px, 100%); max-height: 100%; overflow: auto;
+  padding: 28px 30px; background: var(--s-panneau); border: 1px solid var(--s-ligne-2); border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .6);
+}
+.sabbat-boite.large { width: min(820px, 100%); }
+.sabbat-sceau-grand {
+  width: 62px; height: 62px; margin: 0 auto 10px; border: 1px solid var(--s-sang); border-radius: 50%;
+  display: grid; place-items: center; color: var(--s-sang-vif); font-size: 30px;
+}
+.sabbat-boite h1, .sabbat-boite h2 {
+  margin: 0 0 12px; text-align: center; font: 600 22px/1.2 var(--s-titre); letter-spacing: .22em; text-transform: uppercase;
+}
+.sabbat-boite h2 { font-size: 17px; }
+.sabbat-recit { font: italic 15px/1.55 var(--s-titre); color: var(--s-texte); text-align: center; margin: 0 0 16px; }
+.sabbat-regles { margin: 0 0 14px; padding-left: 20px; color: var(--s-pale); }
+.sabbat-regles li { margin: 5px 0; }
+.sabbat-regles b { color: var(--s-texte); }
+.sabbat-boite .sabbat-actions { justify-content: center; }
+.sabbat-x { position: absolute; top: 10px; right: 12px; border: 0; background: none; color: var(--s-pale); font-size: 24px; cursor: pointer; line-height: 1; }
+.sabbat-x:hover { color: var(--s-texte); }
+.cam-msg { margin: 8px 0 0; font-size: 13px; }
+.cam-msg.ok { color: var(--s-ok); }
+.cam-msg.err { color: #e0707c; font-weight: 600; }
+
+/* ---------- Classement ---------- */
+.sabbat-onglets { display: flex; justify-content: center; gap: 0; margin: 0 0 14px; }
+.sabbat-onglets button {
+  height: 30px; padding: 0 14px; border: 1px solid var(--s-ligne-2); background: var(--s-panneau-2); color: var(--s-pale);
+  cursor: pointer; font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+}
+.sabbat-onglets button:first-child { border-radius: 4px 0 0 4px; }
+.sabbat-onglets button:last-child { border-radius: 0 4px 4px 0; border-left: 0; }
+.sabbat-onglets button.actif { background: var(--s-sang); border-color: var(--s-sang-vif); color: #fff; }
+.sabbat-table-zone { overflow-x: auto; }
+.sabbat-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.sabbat-table th { padding: 6px 8px; border-bottom: 1px solid var(--s-ligne-2); color: var(--s-sourd); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-align: left; text-transform: uppercase; }
+.sabbat-table td { padding: 7px 8px; border-bottom: 1px solid var(--s-ligne); }
+.sabbat-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.sabbat-table td.tri { color: var(--s-laiton); font-weight: 600; }
+.sabbat-table td.rang { width: 44px; color: var(--s-pale); }
+.sabbat-table tr.moi td { background: rgba(155, 28, 44, .18); }
+.sabbat-table .sabbat-mini { width: 24px; height: 24px; font-size: 11px; }
+.sabbat-note { margin: 12px 0 0; color: var(--s-sourd); font-size: 12px; }
+
+/* ---------- Crédits ---------- */
+.sabbat-credits {
+  position: fixed; left: 10px; bottom: 6px; z-index: 4; margin: 0; max-width: calc(100% - 360px);
+  color: rgba(230, 225, 214, .6); font-size: 10.5px; text-shadow: 0 1px 2px #000;
+}
+.sabbat-credits a { color: rgba(230, 225, 214, .8); }
+
+/* MapillaryJS : rien qui trahisse le lieu pendant la manche */
+.sabbat-vue .mapillary-attribution-container { display: none !important; }
+
+/* ---------- Téléphone ---------- */
+@media (max-width: 720px) {
+  .sabbat-barre { gap: 6px 10px; padding: 6px 10px; flex-wrap: nowrap; }
+  .sabbat-marque small, .sabbat-joueur { display: none; }
+  body:not([data-etape="accueil"]) .sabbat-marque strong { display: none; }
+  .sabbat-compteurs { gap: 10px; padding-left: 10px; }
+  .sabbat-barre .sabbat-btn { padding: 0 10px; }
+  .sabbat-barre .sabbat-btn .ico { display: inline; }
+  .sabbat-barre .sabbat-btn .txt { display: none; }
+  body[data-etape="manche"] .sabbat-zone-carte { display: none; }
+  body[data-etape="manche"] .sabbat-ouvrir-carte { display: inline-flex; position: absolute; right: 14px; bottom: 30px; z-index: 5; height: 44px; padding: 0 20px; }
+  body[data-etape="manche"].carte-ouverte .sabbat-zone-carte {
+    display: flex; inset: 0; width: auto; height: auto; border: 0; border-radius: 0; opacity: 1;
+  }
+  body.carte-ouverte .sabbat-fermer-carte { display: inline-grid; }
+  body.carte-ouverte #btnAgrandir { display: none; }
+  .sabbat-panneau { padding: 12px 14px 14px; }
+  .sabbat-bilan { left: 0; right: 0; top: auto; bottom: 0; width: 100%; max-height: 62%; border-radius: 10px 10px 0 0; border-bottom: 0; }
+  .sabbat-res-chiffres strong { font-size: 22px; }
+  .sabbat-total strong { font-size: 30px; }
+  .sabbat-credits { max-width: calc(100% - 140px); }
+  .sabbat-boite { padding: 22px 18px; }
+}

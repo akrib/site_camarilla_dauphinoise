@@ -1,0 +1,88 @@
+---
+layout: null
+title: "Trouve le Sabbat"
+permalink: /utils/sabbat
+sitemap: false
+---
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0c0f">
+  <title>Trouve le Sabbat — Camarilla Dauphinoise</title>
+  <link rel="stylesheet" href="{{ '/assets/css/sabbat.css' | relative_url }}">
+</head>
+<body class="sabbat-page" data-etape="accueil">
+
+<header class="sabbat-barre">
+  <a class="sabbat-marque" href="{{ '/membres/' | relative_url }}" title="Espace membres">
+    <span class="sceau">✠</span>
+    <span><strong>Trouve le Sabbat</strong><small>Grenoble, la nuit</small></span>
+  </a>
+  <div class="sabbat-compteurs" id="compteurs" hidden>
+    <span>Repaire <b id="numManche">1</b> / <b id="nbManches">5</b></span>
+    <span>Score <b id="score">0</b></span>
+  </div>
+  <div class="sabbat-espace"></div>
+  <button class="sabbat-btn discret" id="btnAbandon" title="Abandonner la traque" hidden><span class="ico">✕</span><span class="txt">Abandonner</span></button>
+  <button class="sabbat-btn" id="btnClassement" title="Classement des traqueurs"><span class="ico">♛</span><span class="txt">Classement</span></button>
+  <span class="sabbat-joueur" id="joueur"></span>
+</header>
+
+<main class="sabbat-scene" id="scene">
+  <div class="sabbat-vue" id="vue" aria-label="Photo du repaire"></div>
+  <div class="sabbat-chargement" id="chargement" hidden><span class="sabbat-rond"></span><span id="chargementTexte">Un informateur vous transmet la photo…</span></div>
+  <button class="sabbat-btn sabbat-depart" id="btnDepart" title="Revenir à la photo de l'informateur">⟲ Photo de départ</button>
+
+  <div class="sabbat-zone-carte" id="zoneCarte">
+    <div class="sabbat-carte" id="carte" aria-label="Carte de Grenoble : cliquez pour placer votre repère"></div>
+    <div class="sabbat-carte-outils">
+      <button class="sabbat-mini" id="btnAgrandir" title="Agrandir / réduire la carte">⤢</button>
+      <button class="sabbat-mini" id="btnFond" title="Fond de carte jour / nuit">☀</button>
+      <button class="sabbat-mini sabbat-fermer-carte" id="btnFermerCarte" title="Revenir à la photo">×</button>
+    </div>
+    <button class="sabbat-btn principal sabbat-deviner" id="btnDeviner" disabled>Placez votre repère sur la carte</button>
+  </div>
+  <button class="sabbat-btn principal sabbat-ouvrir-carte" id="btnOuvrirCarte">Carte</button>
+
+  <section class="sabbat-panneau" id="resultat" hidden aria-live="polite"></section>
+  <section class="sabbat-panneau sabbat-bilan" id="bilan" hidden aria-live="polite"></section>
+</main>
+
+<div class="sabbat-voile" id="accueil">
+  <div class="sabbat-boite">
+    <div class="sabbat-sceau-grand">✠</div>
+    <h1>Trouve le Sabbat</h1>
+    <p class="sabbat-recit">Un informateur de la Camarilla a photographié l'entrée d'un repaire du Sabbat, quelque part dans Grenoble. Il n'a pas eu le temps de dire où. Retrouvez l'endroit sur la carte avant que la meute ne change de planque.</p>
+    <ul class="sabbat-regles">
+      <li><b>5 repaires</b> par traque, tous dans la commune de Grenoble.</li>
+      <li>Regardez autour de vous : glisser pour tourner, molette pour zoomer, flèches pour avancer dans la rue.</li>
+      <li>Placez votre repère sur la carte, puis validez. Jusqu'à <b>5 000 points</b> par repaire selon la distance ; à moins de 150 m, le repaire est <b>débusqué</b>.</li>
+      <li>Les points vont au <b>joueur</b> (son compte), pas à un personnage, et comptent pour le classement.</li>
+    </ul>
+    <div class="sabbat-statut" id="statutAccueil"></div>
+    <div class="sabbat-actions">
+      <button class="sabbat-btn principal grand" id="btnCommencer">Commencer la traque</button>
+      <button class="sabbat-btn grand" id="btnClassement2">Classement</button>
+    </div>
+  </div>
+</div>
+
+<div class="sabbat-voile" id="classement" hidden>
+  <div class="sabbat-boite large" role="dialog" aria-labelledby="titreClassement">
+    <button class="sabbat-x" id="btnFermerClassement" title="Fermer">×</button>
+    <h2 id="titreClassement">Classement des traqueurs</h2>
+    <div class="sabbat-onglets" role="tablist">
+      <button class="actif" data-tri="total" role="tab">Total des points</button>
+      <button data-tri="meilleure" role="tab">Meilleure traque</button>
+    </div>
+    <div id="classementContenu"></div>
+  </div>
+</div>
+
+<p class="sabbat-credits">Photos © contributeurs <a href="https://www.mapillary.com" target="_blank" rel="noopener">Mapillary</a>, licence <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr" target="_blank" rel="noopener">CC BY-SA 4.0</a> · Carte OpenFreeMap © contributeurs OpenStreetMap</p>
+
+<script type="module" src="{{ '/assets/js/camarilla/pages/sabbat.js' | relative_url }}"></script>
+</body>
+</html>

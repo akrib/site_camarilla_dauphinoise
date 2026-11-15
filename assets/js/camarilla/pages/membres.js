@@ -76,7 +76,8 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
     h('div', { class: 'cam-grille' },
       tuileNotifs,
       tuile('/membres/fiches/', 'Mes fiches de personnage', 'Créer, compléter et soumettre vos fiches au conteur.'),
-      tuileInfluences, tuileTickets));
+      tuileInfluences, tuileTickets,
+      tuile('/utils/sabbat', 'Trouve le Sabbat', 'Retrouver dans Grenoble le repaire photographié par un informateur. Points et classement des joueurs.')));
 
   // Challenges demandés (pour le compteur des notifications et celui de la tuile Challenges).
   let mesDefis = [];
