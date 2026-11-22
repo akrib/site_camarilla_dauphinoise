@@ -837,3 +837,69 @@ describe('Classement de « Trouve le Sabbat »', () => {
     await assertSucceeds(deleteDoc(doc(db('admin'), 'classement', 'bob')));
   });
 });
+
+describe('Gazette « Le Gratin Dauphinois »', () => {
+  const leger = (uid, nom, extra = {}) => ({ mois: '2026-11', numero: 1, une: 'Scandale à la Bastille', statut: 'brouillon', version: 1,
+    majLe: serverTimestamp(), majPar: uid, majParNom: nom, ...extra });
+  const contenu = (extra = {}) => ({ statut: 'brouillon', donnees: octets(300), majLe: serverTimestamp(), ...extra });
+  async function ecrire(uid, l, c, mois = '2026-11') {
+    const d = db(uid);
+    const lot = writeBatch(d);
+    lot.set(doc(d, 'gazettes', mois), l);
+    if (c) lot.set(doc(d, 'gazettes', mois, 'contenu', 'edition'), c);
+    return lot.commit();
+  }
+  test('un conteur crée un brouillon (document léger + contenu dans le même lot)', async () => {
+    await assertFails(ecrire('alice', leger('alice', 'Alice'), contenu()));
+    await assertFails(ecrire('conteur', leger('conteur', 'Quelqu\'un'), contenu()));
+    await assertFails(ecrire('conteur', leger('conteur', 'Conteur', { version: 3 }), contenu()));
+    await assertFails(ecrire('conteur', leger('conteur', 'Conteur', { mois: '2026-12' }), contenu()));
+    await assertFails(ecrire('conteur', leger('conteur', 'Conteur'), contenu({ statut: 'publiee' })));
+    await assertFails(ecrire('conteur', leger('conteur', 'Conteur', { images: ['x'] }), contenu()));
+    await assertFails(setDoc(doc(db('conteur'), 'gazettes', '2026-11', 'contenu', 'edition'), contenu()));
+    await assertFails(ecrire('conteur', leger('conteur', 'Conteur', { mois: '2026-13' }), contenu(), '2026-13'));
+    await assertSucceeds(ecrire('conteur', leger('conteur', 'Conteur'), contenu()));
+  });
+  test('brouillon invisible des joueurs ; numéro publié lisible', async () => {
+    await ecrire('conteur', leger('conteur', 'Conteur'), contenu());
+    await assertFails(getDoc(doc(db('alice'), 'gazettes', '2026-11')));
+    await assertFails(getDoc(doc(db('alice'), 'gazettes', '2026-11', 'contenu', 'edition')));
+    await assertFails(getDocs(collection(db('alice'), 'gazettes')));
+    await assertSucceeds(getDocs(query(collection(db('alice'), 'gazettes'), where('statut', '==', 'publiee'))));
+    await assertSucceeds(getDoc(doc(db('conteur2'), 'gazettes', '2026-11', 'contenu', 'edition')));
+    // Publication : version suivante, date posée par le serveur
+    await assertFails(ecrire('conteur', leger('conteur', 'Conteur', { statut: 'publiee', version: 2, publieeLe: passe }), contenu({ statut: 'publiee' })));
+    await assertSucceeds(ecrire('conteur', leger('conteur', 'Conteur', { statut: 'publiee', version: 2, publieeLe: serverTimestamp() }), contenu({ statut: 'publiee' })));
+    await assertSucceeds(getDoc(doc(db('alice'), 'gazettes', '2026-11')));
+    await assertSucceeds(getDoc(doc(db('alice'), 'gazettes', '2026-11', 'contenu', 'edition')));
+    await assertFails(getDoc(doc(db('eve'), 'gazettes', '2026-11')));
+    await assertFails(ecrire('alice', leger('alice', 'Alice', { statut: 'publiee', version: 3 }), contenu({ statut: 'publiee' })));
+  });
+  test('version : pas d\'écrasement d\'une sauvegarde qu\'on n\'a pas vue', async () => {
+    await ecrire('conteur', leger('conteur', 'Conteur'), contenu());
+    await assertSucceeds(ecrire('conteur2', leger('conteur2', 'Conteur2', { version: 2 }), contenu()));
+    await assertFails(ecrire('conteur', leger('conteur', 'Conteur', { version: 2 }), contenu()));
+    await assertSucceeds(ecrire('conteur', leger('conteur', 'Conteur', { version: 3 }), contenu()));
+  });
+  test('suppression : brouillon par un conteur, numéro publié par un admin', async () => {
+    const supprimer = (uid) => { const d = db(uid); const lot = writeBatch(d);
+      lot.delete(doc(d, 'gazettes', '2026-11', 'contenu', 'edition')); lot.delete(doc(d, 'gazettes', '2026-11')); return lot.commit(); };
+    await ecrire('conteur', leger('conteur', 'Conteur'), contenu());
+    await assertFails(supprimer('alice'));
+    await assertSucceeds(supprimer('conteur2'));
+    await ecrire('conteur', leger('conteur', 'Conteur', { statut: 'publiee', publieeLe: serverTimestamp() }), contenu({ statut: 'publiee' }));
+    await assertFails(supprimer('conteur'));
+    await assertFails(deleteDoc(doc(db('conteur'), 'gazettes', '2026-11', 'contenu', 'edition')));
+    await assertSucceeds(supprimer('admin'));
+  });
+  test('pense-bête : conteurs seulement', async () => {
+    const pb = (extra = {}) => ({ sujets: { iA: { personnage: 'Amarok', action: 'Un ami dans le besoin' } }, majLe: serverTimestamp(), ...extra });
+    await assertFails(setDoc(doc(db('alice'), 'gazette_pensebete', '2026-11'), pb()));
+    await assertFails(setDoc(doc(db('conteur'), 'gazette_pensebete', 'novembre'), pb()));
+    await assertFails(setDoc(doc(db('conteur'), 'gazette_pensebete', '2026-11'), pb({ autre: 1 })));
+    await assertSucceeds(setDoc(doc(db('conteur'), 'gazette_pensebete', '2026-11'), pb()));
+    await assertSucceeds(updateDoc(doc(db('conteur2'), 'gazette_pensebete', '2026-11'), { 'sujets.iB': { personnage: 'Bastien' }, majLe: serverTimestamp() }));
+    await assertSucceeds(getDoc(doc(db('conteur'), 'gazette_pensebete', '2026-11')));
+    await assertFails(getDoc(doc(db('alice'), 'gazette_pensebete', '2026-11')));
+  });
+});

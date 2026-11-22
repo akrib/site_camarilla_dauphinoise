@@ -185,6 +185,8 @@ l'indique et le bouton « Commencer » reste grisé.
 | Challenge (générateur + challenges demandés) | `/utils/challenge` | tout le monde (demandes : personnages et conteurs) |
 | Carte de Grenoble | `/utils/carte` | personnages validés (et conteurs) |
 | Trouve le Sabbat (jeu) | `/utils/sabbat` | tout le monde (classement : membres actifs) |
+| Le Gratin Dauphinois (gazette) | `/membres/gazette/` | membres actifs (numéros publiés) |
+| Gazette — édition | `/membres/gazette/edition/` | conteurs |
 | Influences | `/influences/` | personnage incarné « en jeu » |
 | Tickets | `/membres/tickets/` | membres actifs (réponses : conteurs) |
 | Comptes | `/membres/comptes/` | conteurs (rôles, maintenance : admin) |
@@ -509,6 +511,57 @@ titre (de « Néonate égaré » à « Justicar »).
 - **Coût** : Mapillary est gratuit (quotas très larges). Firestore : une lecture et une
   écriture par traque terminée, une lecture par ligne affichée dans le classement.
 
+### Le Gratin Dauphinois (gazette)
+
+Une gazette par mois, mise en page par les conteurs (`/membres/gazette/edition/`), lue
+par les membres actifs une fois publiée (`/membres/gazette/`, lien « Le Gratin
+Dauphinois » de l'espace membres ; « Gazette — édition » côté conteurs).
+
+- **Mise en page** : chaque page (une feuille A4) est découpée en **rangées**, chaque
+  rangée en **colonnes** (découpages sur 12 : 12, 6+6, 8+4, 4+4+4, 3+6+3, 3+3+3+3…, au
+  survol de la rangée ou en bas de la page) ; chaque colonne empile des articles, qui se
+  déplacent par glisser-déposer ou avec les flèches. Un article retiré de la page reste
+  dans la **réserve**. Pages à ajouter, monter, descendre, supprimer.
+- **Articles** : surtitre, titre, chapeau, texte, signature ; style (article, gros titre
+  de une, encadré, brève, petite annonce) ; texte sur 1 à 3 colonnes ; lettrine. Mise en
+  forme du texte : ligne vide = paragraphe, `**gras**`, `*italique*`, `## Intertitre`,
+  `> citation`, `- liste`, `---` (ornement). Aucun HTML n'est accepté.
+- **Images** : seulement par **lien** `https://` (jamais stockées sur le site ni dans
+  Firestore) ; légende, crédit, position (au-dessus, à gauche, à droite, en dessous),
+  taille. Hauteur limitée pour tenir sur la page ; en gris éclairci à l'impression. Une
+  image refusée par le site qui l'héberge est signalée dans l'éditeur et masquée aux
+  joueurs.
+- **Bandeau** (onglet Réglages) : titre du journal, sous-titre, devise, lieu, prix, date
+  affichée (le mois du numéro par défaut), « oreilles » de part et d'autre du titre.
+- **Pense-bête** : dans **Influences — conteur**, le bouton **« 📰 Gazette »** d'une action
+  la note comme sujet d'article (document `gazette_pensebete/{mois}`, conteurs seulement :
+  le joueur ne voit rien). L'onglet Pense-bête de l'éditeur liste les sujets du mois
+  (une lecture), avec « Créer un article » (article en réserve, sujet rappelé), « Traité »
+  et « Retirer » ; plus des notes libres gardées avec le numéro.
+- **Sauvegarde locale** (bouton, Ctrl+S, et automatique à chaque modification) : dans le
+  navigateur, sans aucune lecture ni écriture en ligne. Au retour sur l'éditeur, le
+  brouillon local est repris sans relire le site, sauf si un autre conteur a enregistré
+  une version plus récente (choix proposé).
+- **Sauvegarder sur le site** : 2 écritures (`gazettes/{mois}`, document léger, et
+  `gazettes/{mois}/contenu/edition`, numéro complet compressé). Visible des conteurs ;
+  des joueurs seulement une fois publié. Chaque sauvegarde porte un numéro de version :
+  si un autre conteur a enregistré entre-temps, l'éditeur le dit et propose de charger
+  sa version ou de la remplacer.
+- **Prévisualiser** : le numéro tel que les joueurs le verront (écran), ou tel qu'il sera
+  imprimé (**A4 noir et blanc**), avec un contrôle des pages qui dépassent une feuille.
+  **Publier…** ouvre cette prévisualisation : la publication se fait avec **« Valider et
+  publier »**. « Retirer la publication » le repasse en brouillon.
+- **Lecture des joueurs** : vieux journal (papier ivoire, filets, caractères d'époque)
+  sur fond sombre, contrasté ; une seule colonne sur téléphone. **Imprimer** (ou
+  Ctrl+P) : noir et blanc, fond blanc, filets fins, A4. Polices hébergées sur le site
+  (`assets/fonts/gazette/`, licence OFL).
+- **Économie Firestore** : la liste des numéros lit un petit document par numéro publié ;
+  un numéro déjà lu et inchangé est relu dans le navigateur (0 lecture). Éditeur : la
+  liste, puis le contenu seulement s'il a changé ; le pense-bête à la demande.
+- **Règles** : `gazettes` et `contenu` écrits par les conteurs (même lot, même statut,
+  version + 1, auteur = soi) ; lus par les membres actifs seulement si `statut ==
+  'publiee'`. Suppression : brouillon par un conteur, numéro publié par un admin.
+
 ### Images
 
 Les images (portraits, photos du tableau d'enquête, images en base64 dans les JSON
@@ -592,6 +645,7 @@ Puis ouvrez <http://localhost:4000/connexion/?emulateurs=1>. Le paramètre
 | `assets/js/camarilla/annuaire.js` | annuaire et répertoire gardés dans le navigateur |
 | `assets/js/camarilla/suivi.js` | nouvelles réponses, travail des conteurs, rappels du calendrier |
 | `assets/js/camarilla/mapillary-config.js` | jeton Mapillary du jeu « Trouve le Sabbat » (CSS : `assets/css/sabbat.css`) |
+| `assets/js/camarilla/gazette/modele.js`, `rendu.js`, `stockage.js` | gazette : structure d'un numéro, rendu (écran, impression), Firestore et navigateur (CSS : `gazette.css`, `gazette-edition.css`, `gazette-lecture.css` ; polices : `assets/fonts/gazette/`) |
 | `assets/js/camarilla/outils/tableau.js`, `challenge.js` | scripts des pages tableau d'enquête et challenge (CSS : `assets/css/tableau.css`, `challenge.css`) |
 | `assets/js/camarilla/pages/*.js` | une page = un module |
 | `assets/js/camarilla/fiche/referentiel.js` | listes et coûts de la fiche MET (généré par `outils/fiche/extraire_excel.py`) |

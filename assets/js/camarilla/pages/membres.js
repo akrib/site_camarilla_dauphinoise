@@ -77,7 +77,8 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
       tuileNotifs,
       tuile('/membres/fiches/', 'Mes fiches de personnage', 'Créer, compléter et soumettre vos fiches au conteur.'),
       tuileInfluences, tuileTickets,
-      tuile('/utils/sabbat', 'Trouve le Sabbat', 'Retrouver dans Grenoble le repaire photographié par un informateur. Points et classement des joueurs.')));
+      tuile('/utils/sabbat', 'Trouve le Sabbat', 'Retrouver dans Grenoble le repaire photographié par un informateur. Points et classement des joueurs.'),
+      tuile('/membres/gazette/', 'Le Gratin Dauphinois', 'La gazette des nuits grenobloises : tous les numéros parus, à lire ou à imprimer.')));
 
   // Challenges demandés (pour le compteur des notifications et celui de la tuile Challenges).
   let mesDefis = [];
@@ -160,6 +161,7 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
       tuile('/membres/fiches/#a-valider', 'Fiches à valider', 'Relire, valider ou renvoyer les fiches soumises.', travail.fiches || ''),
       tuile('/membres/comptes/', 'Comptes', 'Activer les inscriptions, gérer les rôles.', enAttente || ''),
       tuile('/influences/conteur/', 'Influences — conteur', 'Répondre aux actions, districts, export CSV.', travail.actions || ''),
+      tuile('/membres/gazette/edition/', 'Gazette — édition', 'Mettre en page et publier Le Gratin Dauphinois (un numéro par mois).'),
       tuile('/membres/tickets/#joueurs', 'Tickets des joueurs', 'Répondre aux demandes des joueurs.', travail.tickets || ''),
       tuile('/influences/conteur/#calendrier', 'Calendrier des parties', 'Dates des parties et dates limites de rendu des influences.'),
       tuile('/membres/territoires/', 'Territoires', 'Tracer les zones 1 à 24 et les territoires de la ville, visibles sur la carte des joueurs.'));

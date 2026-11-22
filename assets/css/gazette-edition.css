@@ -1,0 +1,166 @@
+/* =====================================================================
+   Éditeur de la gazette — page /membres/gazette/edition/ (conteurs)
+   Barre en haut, panneau à gauche, pages au centre (rendu réel de la
+   gazette, avec les outils de mise en page au survol).
+   ===================================================================== */
+:root {
+  --e-fond: #2d2823; --e-panneau: #15171c; --e-panneau-2: #1c1f26; --e-ligne: #2b303a; --e-ligne-2: #3a404c;
+  --e-texte: #e8e3d8; --e-pale: #a29c90; --e-sang: #9b1c2c; --e-sang-vif: #c4283d; --e-laiton: #c9a227; --e-ok: #6fae7c;
+  --e-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+html, body { height: 100%; margin: 0; }
+body.gze-page { display: flex; flex-direction: column; overflow: hidden; background: var(--e-fond); color: var(--e-texte); font: 14px/1.45 var(--e-ui); }
+.gze-page [hidden] { display: none !important; }
+.gze-page button, .gze-page input, .gze-page select, .gze-page textarea { font: inherit; }
+
+/* ---------- Barre ---------- */
+.gze-barre {
+  position: relative; z-index: 20; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px;
+  padding: 8px 14px; background: linear-gradient(#17191f, #101115); border-bottom: 1px solid var(--e-ligne);
+}
+.gze-marque { display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
+.gze-sceau { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--e-sang); border-radius: 50%; color: var(--e-sang-vif); }
+.gze-marque strong { display: block; font: 400 1.25rem/1 "Gz Fraktur", Georgia, serif; }
+.gze-marque small { display: block; margin-top: 2px; color: var(--e-pale); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
+.gze-groupe { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.gze-groupe label { color: var(--e-pale); font-size: 12px; }
+.gze-espace { flex: 1; }
+.gze-etat { width: 100%; font-size: 12px; color: var(--e-pale); min-height: 16px; }
+.gze-etat.ok { color: var(--e-ok); }
+.gze-etat.attente { color: var(--e-laiton); }
+.gze-etat.err { color: #ef8a95; font-weight: 600; }
+.gze-badge { padding: 2px 10px; border: 1px solid var(--e-ligne-2); border-radius: 999px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--e-pale); }
+.gze-badge.publiee { border-color: var(--e-ok); color: var(--e-ok); }
+.gze-badge.modifie { border-color: var(--e-laiton); color: var(--e-laiton); }
+
+.gze-btn, .gze-select {
+  height: 32px; padding: 0 12px; border: 1px solid var(--e-ligne-2); border-radius: 4px;
+  background: var(--e-panneau-2); color: var(--e-texte); cursor: pointer; font-size: 12.5px; white-space: nowrap;
+}
+.gze-btn:hover { border-color: var(--e-pale); }
+.gze-btn.principal { background: var(--e-sang); border-color: var(--e-sang-vif); color: #fff; }
+.gze-btn.principal:hover { background: var(--e-sang-vif); }
+.gze-btn.danger { border-color: #7a2a33; color: #ef8a95; }
+.gze-mini {
+  height: 24px; min-width: 24px; padding: 0 7px; border: 1px solid #b9ab8e; border-radius: 3px;
+  background: #fffaf0; color: #3b3128; cursor: pointer; font: 12px/1 var(--e-ui);
+}
+.gze-mini:hover { border-color: #3b3128; }
+.gze-page .gze-mini, .gze-page .gze-outils-rangee, .gze-page .gze-ajout-rangee, .gze-page .gze-outils-page { font-family: var(--e-ui); font-size: 12px; line-height: 1; }
+.gze-mini.danger { color: #9b1c2c; }
+.gze-panneau .gze-mini { background: var(--e-panneau-2); color: var(--e-texte); border-color: var(--e-ligne-2); }
+
+/* ---------- Corps : panneau + plan ---------- */
+.gze-corps { flex: 1; min-height: 0; display: flex; }
+.gze-panneau { width: 380px; flex: none; display: flex; flex-direction: column; background: var(--e-panneau); border-right: 1px solid var(--e-ligne); }
+.gze-onglets { display: flex; border-bottom: 1px solid var(--e-ligne); }
+.gze-onglets button {
+  flex: 1; height: 38px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--e-pale); cursor: pointer; font-size: 12.5px;
+}
+.gze-onglets button.actif { color: var(--e-texte); border-bottom-color: var(--e-sang-vif); }
+.gze-onglets .n { margin-left: 4px; padding: 0 6px; border-radius: 999px; background: var(--e-ligne-2); font-size: 11px; }
+.gze-onglets .n:empty { display: none; }
+.gze-panneau-corps { flex: 1; overflow: auto; padding: 14px 16px 30px; }
+.gze-plan { flex: 1; overflow: auto; padding: 24px 28px 60px; }
+
+/* ---------- Formulaires du panneau ---------- */
+.gze-form h3 { margin: 18px 0 8px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--e-pale); }
+.gze-form h3:first-child { margin-top: 0; }
+.gze-champ { display: block; margin: 0 0 10px; }
+.gze-champ > span { display: block; margin-bottom: 3px; font-size: 12px; color: var(--e-pale); }
+.gze-champ small, .gze-note { display: block; margin-top: 3px; font-size: 11.5px; color: #8a8478; }
+.gze-champ input[type=text], .gze-champ input[type=url], .gze-champ input[type=number], .gze-champ input[type=month], .gze-champ select, .gze-champ textarea,
+.gze-fenetre input, .gze-fenetre select {
+  width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid var(--e-ligne-2); border-radius: 4px;
+  background: #0f1115; color: var(--e-texte);
+}
+.gze-champ textarea { resize: vertical; line-height: 1.45; }
+.gze-champ input:focus, .gze-champ select:focus, .gze-champ textarea:focus { outline: none; border-color: var(--e-laiton); }
+.gze-ligne { display: flex; gap: 10px; }
+.gze-ligne > * { flex: 1; min-width: 0; }
+.gze-case { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; font-size: 12.5px; }
+.gze-champ.gze-case { margin-top: 18px; }
+.gze-actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.gze-ou { margin-bottom: 10px; padding: 6px 9px; border-left: 3px solid var(--e-laiton); background: var(--e-panneau-2); font-size: 12px; color: var(--e-pale); }
+.gze-source { margin: 0 0 10px; font-size: 12px; color: var(--e-laiton); }
+.gze-aide { margin: -4px 0 12px; font-size: 12px; color: var(--e-pale); }
+.gze-aide summary { cursor: pointer; }
+.gze-aide ul { margin: 6px 0 0; padding-left: 18px; }
+.gze-aide code { padding: 0 4px; border-radius: 3px; background: #0f1115; color: var(--e-texte); }
+.gze-image-champs { margin: 6px 0 10px; padding: 10px 12px 2px; border: 1px solid var(--e-ligne-2); border-radius: 6px; }
+.gze-image-champs legend { padding: 0 6px; font-size: 12px; color: var(--e-pale); }
+.gze-apercu-img img { display: block; max-width: 100%; max-height: 160px; margin: 0 0 10px; border: 1px solid var(--e-ligne-2); }
+.gze-msg-img { display: block; margin: -4px 0 8px; font-size: 12px; }
+.gze-msg-img.err { color: #ef8a95; }
+.gze-vide p { color: var(--e-pale); }
+.gze-carte { margin: 10px 0; padding: 10px 12px; border: 1px solid var(--e-ligne-2); border-radius: 6px; background: var(--e-panneau-2); }
+.gze-carte strong { display: block; }
+.gze-carte small { display: block; margin-top: 2px; color: var(--e-pale); }
+.gze-carte p { margin: 6px 0 0; font-size: 12.5px; }
+.gze-carte details { margin-top: 6px; font-size: 12.5px; }
+.gze-carte summary { cursor: pointer; color: var(--e-pale); }
+.gze-sujet.fait { opacity: .55; }
+.gze-reserve.gze-cible { outline: 2px dashed var(--e-laiton); outline-offset: 4px; }
+
+/* ---------- Plan : la gazette avec ses outils ---------- */
+.gze-plan .gz-journal { gap: 10px; }
+.gze-outils-page { display: flex; align-items: center; gap: 6px; width: 100%; max-width: 210mm; margin-top: 14px; color: #d8cdb6; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+.gze-outils-page .gze-mini { background: #3b342d; color: #e8e3d8; border-color: #5a5045; }
+.gze-ajout-page { display: block; margin: 22px auto 0; }
+.gz-en-edition .gz-rangee { position: relative; min-height: 60px; outline: 1px dashed transparent; outline-offset: 2px; }
+.gz-en-edition .gz-rangee:hover { outline-color: rgba(155, 28, 44, .45); }
+.gz-en-edition .gz-col { min-height: 50px; }
+.gze-outils-rangee {   /* au-dessus de la rangée, collée à son bord : jamais sur les outils des articles */
+  position: absolute; z-index: 6; bottom: calc(100% - 2px); left: 0; display: none; align-items: center; gap: 4px;
+  padding: 3px 5px; border: 1px solid #b9ab8e; border-radius: 4px; background: #fffaf0; box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+  font: 12px/1 var(--e-ui); color: #3b3128;
+}
+.gz-rangee:hover > .gze-outils-rangee, .gze-outils-rangee:focus-within { display: flex; }
+.gze-outils-rangee .gze-case { font-size: 11.5px; }
+.gze-motifs { display: flex; flex-wrap: wrap; gap: 3px; }
+.gze-motif-btn { width: 30px; height: 20px; padding: 2px; border: 1px solid #b9ab8e; border-radius: 3px; background: #fffaf0; cursor: pointer; }
+.gze-motif-btn.actif { border-color: #9b1c2c; box-shadow: inset 0 0 0 1px #9b1c2c; }
+.gze-motif { display: flex; gap: 2px; width: 100%; height: 100%; }
+.gze-motif span { background: #8b7b66; border-radius: 1px; }
+.gze-motif-btn.actif .gze-motif span { background: #9b1c2c; }
+.gze-ajout-rangee { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding: 8px; border: 1px dashed #b9ab8e; color: #6b5d4c; font: 12px/1 var(--e-ui); opacity: .55; }
+.gze-ajout-rangee:hover, .gze-ajout-rangee:focus-within { opacity: 1; }
+.gze-ajout-article { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; opacity: .25; }
+.gz-col:hover > .gze-ajout-article, .gze-ajout-article:focus-within { opacity: 1; }
+.gze-ajout-article select { max-width: 150px; }
+.gz-en-edition .gz-article { position: relative; cursor: pointer; outline: 1px dashed transparent; outline-offset: 3px; }
+.gz-en-edition .gz-article:hover { outline-color: rgba(59, 49, 40, .5); }
+.gz-en-edition .gz-article.gze-choisi { outline: 2px solid #9b1c2c; }
+.gz-en-edition .gz-article.gze-glisse { opacity: .4; }
+.gze-outils-article { position: absolute; z-index: 4; top: 2px; right: 2px; display: none; gap: 3px; padding: 2px; border-radius: 4px; background: rgba(255, 250, 240, .92); }
+.gz-article:hover > .gze-outils-article, .gz-article.gze-choisi > .gze-outils-article { display: flex; }
+.gze-insertion { height: 0; margin: 4px 0; border-top: 3px solid #9b1c2c; }
+.gz-en-edition .gz-vide { color: #9b8f7c; font-style: italic; text-indent: 0 !important; }
+
+/* ---------- Prévisualisation ---------- */
+.gze-apercu { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; background: #2b2520; }
+.gze-apercu-barre { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 8px 14px; background: #101115; border-bottom: 1px solid var(--e-ligne); }
+.gze-segment { display: inline-flex; border: 1px solid var(--e-ligne-2); border-radius: 4px; overflow: hidden; }
+.gze-segment button { height: 30px; padding: 0 12px; border: 0; background: var(--e-panneau-2); color: var(--e-pale); cursor: pointer; font-size: 12px; }
+.gze-segment button.actif { background: var(--e-sang); color: #fff; }
+.gze-apercu-info { font-size: 12.5px; color: var(--e-pale); }
+.gze-apercu-info.ok { color: var(--e-ok); }
+.gze-apercu-info.err { color: #ef8a95; font-weight: 600; }
+.gze-apercu-contenu { flex: 1; overflow: auto; padding: 26px 18px 60px; }
+.gze-a4 { background: #8a8a8a; padding: 20px 0; }
+.gze-a4 .gz-journal { gap: 16px !important; }
+.gze-a4 .gz-page { box-shadow: 0 2px 10px rgba(0, 0, 0, .35); }
+
+/* ---------- Fenêtres ---------- */
+.gze-fenetre-fond { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .6); }
+.gze-fenetre { width: min(480px, 100%); padding: 20px 22px; border: 1px solid var(--e-ligne-2); border-radius: 10px; background: var(--e-panneau); box-shadow: 0 20px 50px rgba(0, 0, 0, .5); }
+.gze-fenetre h2 { margin: 0 0 10px; font-size: 16px; }
+.gze-fenetre p { margin: 0 0 8px; color: var(--e-pale); }
+.gze-fenetre-boutons { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+@media (max-width: 980px) {
+  body.gze-page { overflow: auto; }
+  .gze-corps { flex-direction: column; }
+  .gze-panneau { width: auto; max-height: 45vh; border-right: 0; border-bottom: 1px solid var(--e-ligne); }
+  .gze-plan { padding: 16px 8px 40px; }
+}

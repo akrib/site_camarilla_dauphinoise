@@ -207,3 +207,6 @@ table.cam-table td textarea { min-height: 3rem; font-size: .82rem; }
 .cam-import-excel ul { margin: .4rem 0 0 1.2rem; padding: 0; }
 .cam-import-excel li { margin: .15rem 0; }
 .cam-import-excel li.inconnu, .cam-import-excel li.version { color: #a33; font-weight: 600; }
+
+/* Influences — conteur : action notée dans le pense-bête de la gazette */
+.cam-tag.gazette { background: #f3ead2; color: #5a4a2a; border: 1px solid #c9b48a; }

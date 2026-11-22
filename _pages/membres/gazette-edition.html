@@ -1,0 +1,75 @@
+---
+layout: null
+title: "Le Gratin Dauphinois — édition"
+permalink: /membres/gazette/edition/
+sitemap: false
+---
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Édition de la gazette — Le Gratin Dauphinois</title>
+  <link rel="stylesheet" href="{{ '/assets/css/membres.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/gazette.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/gazette-edition.css' | relative_url }}">
+</head>
+<body class="gze-page">
+
+<header class="gze-barre">
+  <a class="gze-marque" href="{{ '/membres/' | relative_url }}" title="Espace membres">
+    <span class="gze-sceau">✠</span>
+    <span><strong>Le Gratin Dauphinois</strong><small>Édition — conteurs</small></span>
+  </a>
+  <div class="gze-groupe">
+    <label for="choixMois">Numéro</label>
+    <select id="choixMois" class="gze-select"></select>
+    <button class="gze-btn" id="btnNouveau" title="Préparer le numéro d'un autre mois">＋ Nouveau numéro</button>
+  </div>
+  <span class="gze-badge" id="badgeStatut"></span>
+  <span class="gze-espace"></span>
+  <div class="gze-groupe">
+    <button class="gze-btn" id="btnLocal" title="Enregistrer dans ce navigateur (Ctrl+S) — aucune écriture en ligne">💾 Sauvegarde locale</button>
+    <button class="gze-btn" id="btnSite" title="Enregistrer sur le site : les autres conteurs le voient ; les joueurs seulement une fois publié">☁ Sauvegarder sur le site</button>
+    <button class="gze-btn" id="btnApercu" title="Voir le numéro comme les joueurs, ou tel qu'il sera imprimé">👁 Prévisualiser</button>
+    <button class="gze-btn principal" id="btnPublier">📰 Publier…</button>
+  </div>
+  <div class="gze-etat" id="etatSauvegarde" aria-live="polite"></div>
+</header>
+
+<div class="gze-corps">
+  <aside class="gze-panneau" aria-label="Outils">
+    <nav class="gze-onglets" id="onglets">
+      <button data-onglet="article" class="actif">Article</button>
+      <button data-onglet="reserve">Réserve <span class="n" id="nReserve">0</span></button>
+      <button data-onglet="pensebete">Pense-bête <span class="n" id="nPenseBete"></span></button>
+      <button data-onglet="reglages">Réglages</button>
+    </nav>
+    <div class="gze-panneau-corps" id="panneau"></div>
+  </aside>
+  <main class="gze-plan" id="plan" aria-label="Mise en page"></main>
+</div>
+
+<div class="gze-apercu" id="apercu" hidden>
+  <div class="gze-apercu-barre">
+    <strong>Prévisualisation</strong>
+    <div class="gze-segment" role="group" aria-label="Mode">
+      <button data-mode="ecran" class="actif">Écran (joueurs)</button>
+      <button data-mode="impression">Impression A4 (noir et blanc)</button>
+    </div>
+    <span class="gze-apercu-info" id="apercuInfo"></span>
+    <span class="gze-espace"></span>
+    <button class="gze-btn" id="btnImprimer">🖨 Imprimer</button>
+    <button class="gze-btn" id="btnFermerApercu">Fermer</button>
+    <button class="gze-btn principal" id="btnValiderPublier" hidden>✔ Valider et publier</button>
+  </div>
+  <div class="gze-apercu-contenu" id="apercuContenu"></div>
+</div>
+
+<div id="gz-impression"></div>
+<div id="gze-garde" class="cam-app cam-garde"><div class="cam-garde-boite"><p>Chargement…</p><noscript><p>Cette page nécessite JavaScript.</p></noscript></div></div>
+
+<script type="module" src="{{ '/assets/js/camarilla/pages/gazette-edition.js' | relative_url }}"></script>
+</body>
+</html>

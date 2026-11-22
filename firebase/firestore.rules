@@ -718,5 +718,61 @@ service cloud.firestore {
         && nouveau().debusques >= ancien().debusques && nouveau().debusques <= ancien().debusques + 5;
       allow delete: if admin();
     }
+
+    // ------------------------------------------------------------------
+    // Gazette « Le Gratin Dauphinois » : un numéro par mois (id AAAA-MM).
+    // gazettes/{mois} : document léger, pour les listes ;
+    // gazettes/{mois}/contenu/edition : le numéro complet (JSON compressé),
+    // écrit dans le même lot et au même statut.
+    // Les conteurs écrivent ; les membres actifs ne lisent que les numéros
+    // publiés. Chaque sauvegarde incrémente `version` : un conteur n'écrase
+    // pas la sauvegarde d'un autre sans l'avoir vue. Les images ne sont
+    // jamais stockées (seulement leur adresse, dans le contenu).
+    // ------------------------------------------------------------------
+    match /gazettes/{mois} {
+      function gazetteValide(d) {
+        return cles(['mois', 'numero', 'une', 'statut', 'version', 'majLe', 'majPar', 'majParNom', 'publieeLe'],
+                    ['mois', 'numero', 'une', 'statut', 'version', 'majLe', 'majPar', 'majParNom'])
+          && mois.matches('[0-9]{4}-(0[1-9]|1[0-2])') && d.mois == mois
+          && d.numero is int && d.numero >= 1 && d.numero <= 9999
+          && texte(d.une, 200)
+          && d.statut in ['brouillon', 'publiee']
+          && d.version is int
+          && d.majPar == uid() && d.majParNom == moi().nom && d.majLe == request.time;
+      }
+      allow get, list: if conteur() || (actif() && resource.data.statut == 'publiee');
+      allow create: if conteur() && gazetteValide(nouveau()) && nouveau().version == 1
+        && (!('publieeLe' in nouveau()) || nouveau().publieeLe == request.time);
+      // Date de publication : posée par le serveur à la publication, puis inchangée
+      allow update: if conteur() && gazetteValide(nouveau()) && nouveau().version == ancien().version + 1
+        && (!('publieeLe' in nouveau()) || nouveau().publieeLe == request.time
+            || nouveau().publieeLe == ancien().get('publieeLe', null));
+      // Brouillon : tout conteur ; numéro publié : un administrateur
+      allow delete: if (conteur() && ancien().statut == 'brouillon') || admin();
+
+      match /contenu/{doc} {
+        function legerApres() { return getAfter(chemin('gazettes', mois)).data; }
+        allow get: if conteur() || (actif() && resource.data.statut == 'publiee');
+        allow create, update: if conteur() && doc == 'edition'
+          && cles(['statut', 'donnees', 'majLe'], ['statut', 'donnees', 'majLe'])
+          && texteLong(nouveau().donnees, 900000)
+          && nouveau().majLe == request.time
+          && legerApres().majLe == request.time && legerApres().statut == nouveau().statut;
+        allow delete: if conteur() && !existsAfter(chemin('gazettes', mois));
+      }
+    }
+
+    // Pense-bête de la gazette : actions d'influence notées par les conteurs
+    // comme sujets d'articles (un document par mois des influences, résumé
+    // de chaque action). Conteurs seulement : les joueurs ne savent pas que
+    // leur action intéresse la presse.
+    match /gazette_pensebete/{mois} {
+      allow read: if conteur();
+      allow create, update: if conteur() && mois.matches('[0-9]{4}-(0[1-9]|1[0-2])')
+        && cles(['sujets', 'majLe'], ['sujets', 'majLe'])
+        && nouveau().sujets is map && nouveau().sujets.size() <= 300
+        && nouveau().majLe == request.time;
+      allow delete: if conteur();
+    }
   }
 }

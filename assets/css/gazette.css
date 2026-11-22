@@ -1,0 +1,188 @@
+/* =====================================================================
+   Gazette « Le Gratin Dauphinois »
+   - à l'écran : vieux journal (papier ivoire, filets, caractères d'époque),
+     contrasté et aéré pour une lecture sans fatigue ;
+   - à l'impression (.gz-impression) : noir et blanc sur fond blanc, filets
+     fins, images en gris éclaircies, A4 : économe en encre.
+   Polices hébergées sur le site (licence OFL, voir assets/fonts/gazette/).
+   ===================================================================== */
+@font-face { font-family: "Gz Fraktur"; src: url("../fonts/gazette/unifrakturmaguntia-latin-400-normal.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Gz Titre"; font-weight: 700; src: url("../fonts/gazette/old-standard-tt-latin-700-normal.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Gz Texte"; font-weight: 400; src: url("../fonts/gazette/libre-caslon-text-latin-400-normal.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Gz Texte"; font-weight: 400; font-style: italic; src: url("../fonts/gazette/libre-caslon-text-latin-400-italic.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Gz Texte"; font-weight: 700; src: url("../fonts/gazette/libre-caslon-text-latin-700-normal.woff2") format("woff2"); font-display: swap; }
+
+.gz-journal {
+  --gz-papier: #f4ecd8;
+  --gz-papier-2: #ece1c6;
+  --gz-encre: #2a231c;
+  --gz-encre-douce: #4e4336;
+  --gz-filet: #6f604d;
+  --gz-texte: "Gz Texte", "Libre Caslon Text", Georgia, "Times New Roman", serif;
+  --gz-titre: "Gz Titre", "Old Standard TT", Georgia, serif;
+  --gz-fraktur: "Gz Fraktur", "UnifrakturMaguntia", "Old English Text MT", Georgia, serif;
+  display: flex; flex-direction: column; align-items: center; gap: 28px;
+  color: var(--gz-encre); font: 400 1.03rem/1.55 var(--gz-texte);
+}
+
+/* ---------- Page ---------- */
+.gz-page {
+  position: relative; width: 100%; max-width: 210mm; min-height: 200px;
+  padding: 14mm 13mm 16mm; box-sizing: border-box;
+  background-color: var(--gz-papier);
+  background-image:
+    radial-gradient(ellipse at 50% 35%, rgba(255, 252, 240, .55) 0%, rgba(255, 252, 240, 0) 60%),
+    radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0) 62%, rgba(120, 90, 45, .13) 100%);
+  border: 1px solid #d8c9a6;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .25), 0 10px 28px rgba(0, 0, 0, .28);
+}
+.gz-page * { box-sizing: border-box; }
+
+/* ---------- Bandeau (première page) ---------- */
+.gz-bandeau {
+  display: grid; grid-template-columns: 1fr minmax(0, 3.2fr) 1fr; align-items: center; gap: 0 12px;
+  padding-bottom: 6px; margin-bottom: 14px; border-bottom: 4px double var(--gz-encre);
+}
+.gz-bandeau.gz-sans-oreilles { grid-template-columns: 1fr; }
+.gz-bandeau.gz-sans-oreilles .gz-oreille { display: none !important; }
+.gz-nom { text-align: center; }
+.gz-titre-journal {
+  margin: 0; font: 400 clamp(2rem, 6vw, 3.5rem)/1.05 var(--gz-fraktur); letter-spacing: .01em; color: var(--gz-encre);
+}
+.gz-sous-titre { margin: 4px 0 0; font: italic .95rem/1.2 var(--gz-texte); color: var(--gz-encre-douce); }
+.gz-oreille {
+  align-self: stretch; display: flex; align-items: center; justify-content: center; text-align: center;
+  font: .74rem/1.3 var(--gz-texte); color: var(--gz-encre-douce); padding: 4px 6px; white-space: pre-line;
+}
+.gz-oreille:not(:empty) { border: 1px solid var(--gz-filet); }
+.gz-ligne-info {
+  grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  margin-top: 8px; padding: 3px 2px; border-top: 1px solid var(--gz-encre); border-bottom: 1px solid var(--gz-encre);
+  font: .76rem/1.4 var(--gz-texte); letter-spacing: .12em; text-transform: uppercase;
+}
+.gz-devise { grid-column: 1 / -1; margin: 5px 0 0; text-align: center; font: italic .86rem/1.3 var(--gz-texte); color: var(--gz-encre-douce); }
+.gz-entete {
+  display: flex; justify-content: space-between; gap: 10px; margin-bottom: 12px; padding-bottom: 3px;
+  border-bottom: 3px double var(--gz-encre); font: .74rem/1.4 var(--gz-texte); letter-spacing: .14em; text-transform: uppercase;
+}
+.gz-entete span:first-child { font: 1.15rem/1 var(--gz-fraktur); letter-spacing: 0; text-transform: none; }
+
+/* ---------- Rangées et colonnes ---------- */
+.gz-rangee { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 0; padding: 4px 0 10px; }
+.gz-rangee.gz-filet { border-bottom: 1px solid var(--gz-filet); margin-bottom: 10px; }
+.gz-col { min-width: 0; padding: 0 9px; }
+.gz-col:first-child { padding-left: 0; }
+.gz-col:last-child { padding-right: 0; }
+.gz-col + .gz-col { border-left: 1px solid var(--gz-filet); }
+
+/* ---------- Articles ---------- */
+.gz-article { margin: 0 0 14px; }
+.gz-article:last-child { margin-bottom: 2px; }
+.gz-article + .gz-article { padding-top: 10px; border-top: 1px solid var(--gz-filet); }
+.gz-surtitre { margin: 0 0 2px; font: .74rem/1.3 var(--gz-texte); letter-spacing: .16em; text-transform: uppercase; color: var(--gz-encre-douce); }
+.gz-titre { margin: 0 0 6px; font: 700 1.32rem/1.15 var(--gz-titre); color: var(--gz-encre); hyphens: manual; text-wrap: balance; }
+.gz-chapeau { margin: 0 0 8px; font: italic 1.02rem/1.45 var(--gz-texte); color: var(--gz-encre-douce); }
+.gz-texte { text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+.gz-texte p { margin: 0 0 .55em; text-indent: 1.1em; }
+.gz-texte p:first-of-type, .gz-texte .gz-intertitre + p, .gz-texte .gz-citation + p { text-indent: 0; }
+.gz-texte.gz-cols-2 { columns: 2 13em; column-gap: 18px; column-rule: 1px solid var(--gz-filet); }
+.gz-texte.gz-cols-3 { columns: 3 11em; column-gap: 16px; column-rule: 1px solid var(--gz-filet); }
+.gz-intertitre { margin: .7em 0 .3em; font: 700 1rem/1.25 var(--gz-titre); text-align: left; break-after: avoid; }
+.gz-citation { margin: .6em 0; padding: 0 0 0 .8em; border-left: 2px solid var(--gz-filet); font-style: italic; text-align: left; }
+.gz-liste { margin: .3em 0 .6em; padding-left: 1.2em; text-align: left; }
+.gz-orne { margin: .4em 0; text-align: center !important; text-indent: 0 !important; color: var(--gz-encre-douce); letter-spacing: .4em; }
+.gz-lettrine::first-letter {
+  float: left; margin: .06em .08em 0 0; font: 700 3.4em/.78 var(--gz-titre); color: var(--gz-encre);
+}
+.gz-signature { margin: 4px 0 0; text-align: right; font: italic .9rem/1.3 var(--gz-texte); color: var(--gz-encre-douce); }
+
+/* Styles d'article */
+.gz-une .gz-titre { font-size: clamp(1.6rem, 3.6vw, 2.35rem); line-height: 1.08; text-align: center; margin-bottom: 8px; }
+.gz-une .gz-surtitre, .gz-une .gz-chapeau { text-align: center; }
+.gz-une .gz-chapeau { font-size: 1.1rem; }
+.gz-encadre { padding: 9px 11px 6px; border: 1px solid var(--gz-encre); outline: 1px solid var(--gz-filet); outline-offset: 2px; background: var(--gz-papier-2); }
+.gz-article + .gz-encadre { margin-top: 12px; border-top: 1px solid var(--gz-encre); }
+.gz-encadre .gz-titre { text-align: center; font-size: 1.12rem; }
+.gz-breve .gz-titre { font-size: 1.02rem; }
+.gz-breve .gz-texte { font-size: .93rem; }
+.gz-annonce { padding: 8px 10px; border: 1px dashed var(--gz-encre-douce); text-align: center; }
+.gz-annonce .gz-titre { font: 700 .95rem/1.2 var(--gz-titre); letter-spacing: .12em; text-transform: uppercase; }
+.gz-annonce .gz-texte { text-align: center; font-size: .92rem; }
+.gz-annonce .gz-texte p { text-indent: 0; }
+
+/* Images (liens externes) */
+.gz-image { margin: 0 0 8px; }
+.gz-image img { display: block; width: 100%; height: auto; filter: sepia(.25) contrast(.95); border: 1px solid var(--gz-filet); }
+/* Image au-dessus / sous le texte : hauteur limitée (proportions gardées, rien n'est coupé) */
+.gz-img-haut img, .gz-img-bas img { width: auto; max-width: 100%; max-height: 440px; margin: 0 auto; }
+.gz-image.gz-img-haut figcaption, .gz-image.gz-img-bas figcaption { text-align: center; }
+.gz-image figcaption { margin-top: 3px; font: italic .8rem/1.3 var(--gz-texte); color: var(--gz-encre-douce); text-align: left; }
+.gz-credit { margin-left: .4em; font-style: normal; font-size: .72rem; letter-spacing: .04em; }
+.gz-credit::before { content: "© "; }
+.gz-img-gauche { float: left; margin: .2em 12px 6px 0; }
+.gz-img-droite { float: right; margin: .2em 0 6px 12px; }
+.gz-img-petite { width: 34%; }
+.gz-img-moyenne { width: 50%; }
+.gz-img-bas { margin: 8px 0 0; }
+.gz-texte::after { content: ""; display: block; clear: both; }
+.gz-image-erreur img { display: none; }
+.gz-journal:not(.gz-en-edition) .gz-image-erreur { display: none; }
+.gz-image-msg { display: block; padding: 10px; border: 1px dashed #a33; color: #a33; font: .8rem/1.3 sans-serif; text-align: center; }
+
+/* ---------- Téléphone : une seule colonne, texte à gauche ---------- */
+@media (max-width: 720px) {
+  .gz-page { padding: 18px 14px 22px; }
+  .gz-rangee { display: block; }
+  .gz-col { padding: 0 !important; border-left: 0 !important; }
+  .gz-col + .gz-col { margin-top: 12px; padding-top: 10px !important; border-top: 1px solid var(--gz-filet); }
+  .gz-bandeau { grid-template-columns: 1fr; }
+  .gz-oreille { display: none; }
+  .gz-texte { text-align: left; }
+  .gz-texte.gz-cols-2, .gz-texte.gz-cols-3 { columns: auto; }
+}
+
+/* =====================================================================
+   Impression : noir et blanc, A4, économe
+   (classe gz-impression : posée juste avant d'imprimer, et dans la
+   prévisualisation « Impression A4 »)
+   ===================================================================== */
+.gz-impression .gz-journal {
+  --gz-papier: #fff; --gz-papier-2: #fff; --gz-encre: #000; --gz-encre-douce: #222; --gz-filet: #555;
+  gap: 0; font-size: 10pt; line-height: 1.38;
+}
+.gz-impression .gz-page {
+  width: 210mm; max-width: none; min-height: 297mm; padding: 11mm 11mm 12mm;
+  background: #fff; border: 0; box-shadow: none; outline: .4pt solid #888; outline-offset: -6mm;
+}
+.gz-impression .gz-rangee { display: grid !important; }
+.gz-impression .gz-col { padding: 0 3.2mm !important; border-left: 0 !important; }
+.gz-impression .gz-col:first-child { padding-left: 0 !important; }
+.gz-impression .gz-col:last-child { padding-right: 0 !important; }
+.gz-impression .gz-col + .gz-col { border-left: .5pt solid #555 !important; margin: 0 !important; border-top: 0 !important; }
+.gz-impression .gz-oreille { display: flex !important; }
+.gz-impression .gz-bandeau { grid-template-columns: 1fr minmax(0, 3.2fr) 1fr; border-bottom-width: 3px; }
+.gz-impression .gz-bandeau.gz-sans-oreilles { grid-template-columns: 1fr; }
+.gz-impression .gz-titre-journal { font-size: 34pt; }
+.gz-impression .gz-une .gz-titre { font-size: 21pt; }
+.gz-impression .gz-titre { font-size: 13pt; }
+.gz-impression .gz-texte { text-align: justify !important; }
+.gz-impression .gz-texte.gz-cols-2 { columns: 2 !important; }
+.gz-impression .gz-texte.gz-cols-3 { columns: 3 !important; }
+.gz-impression .gz-rangee.gz-filet, .gz-impression .gz-article + .gz-article { border-color: #555; }
+.gz-impression .gz-encadre { background: none; outline-width: .5pt; }
+.gz-impression .gz-image img { filter: grayscale(1) contrast(.85) brightness(1.12); border-width: .5pt; }
+.gz-impression .gz-img-haut img, .gz-impression .gz-img-bas img { max-height: 75mm; }
+.gz-impression .gz-img-gauche img, .gz-impression .gz-img-droite img { max-height: 90mm; object-fit: contain; }
+.gz-impression .gz-page.gz-deborde { outline: 2px dashed #c4283d; }
+.gz-impression .gz-article, .gz-impression .gz-image { break-inside: avoid-page; }
+
+#gz-impression { display: none; }
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+  html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+  body > *:not(#gz-impression) { display: none !important; }
+  #gz-impression { display: block !important; }
+  #gz-impression .gz-page { break-after: page; page-break-after: always; outline: 0; }
+  #gz-impression .gz-page:last-child { break-after: auto; page-break-after: auto; }
+  * { -webkit-print-color-adjust: economy; print-color-adjust: economy; }
+}

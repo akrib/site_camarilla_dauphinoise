@@ -10,6 +10,7 @@ import { compresser, donneesDoc } from '../compression.js';
 import {
   chargerCalendrier, calculerCalendrier, moisParDefaut, partie, libellePartie, resumeEtat, etat, LIBELLES_ETAT, MAX_PARTIES
 } from '../calendrier.js';
+import { lirePenseBete, marquerSujet, sujetDepuisAction } from '../gazette/stockage.js';
 
 const racine = document.getElementById('cam-influences-conteur');
 barreMembre(document.getElementById('cam-barre'));
@@ -49,17 +50,20 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
   majInfoPartie();
 
   let actions = [], persos = [], raisons = null;
+  let sujetsGazette = {};   // actions marquées pour la gazette (pense-bête du mois, conteurs seulement)
 
   // Personnages en jeu et raisons sociales ne dépendent pas du mois : lus une
   // fois (bouton « Actualiser » pour les relire), seules les actions changent.
   async function charger(tout = true) {
     message(msg, 'Chargement…', 'info');
     try {
-      const [a, p, r] = await Promise.all([
+      const [a, p, r, sg] = await Promise.all([
         fs.getDocs(fs.query(fs.collection(db, 'influences'), fs.where('mois', '==', mois.value))),
         tout || !persos.length ? fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('statut', '==', 'active'))) : null,
-        tout || !raisons ? fs.getDocs(fs.collection(db, 'raisons_sociales')) : null
+        tout || !raisons ? fs.getDocs(fs.collection(db, 'raisons_sociales')) : null,
+        lirePenseBete(mois.value).catch((e) => { console.warn('Pense-bête de la gazette illisible', e); return {}; })
       ]);
+      sujetsGazette = sg;
       actions = a.docs.map(donneesDoc).sort((x, y) => millis(y.creeLe) - millis(x.creeLe));
       if (p) persos = p.docs.map((d) => ({ id: d.id, ...d.data() })).sort((x, y) => (x.nom || '').localeCompare(y.nom || ''));
       if (r) raisons = r.docs.map(donneesDoc).sort((x, y) => (x.personnageNom || '').localeCompare(y.personnageNom || '') || (x.nom || '').localeCompare(y.nom || ''));
@@ -198,11 +202,33 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
     const reponse = h('textarea', { maxlength: 6000, placeholder: 'Résultat communiqué au joueur…' }, a.reponseConteur || '');
     const traitee = h('input', { type: 'checkbox', checked: a.statut === 'traitee' || !a.reponseConteur });
     const msgA = h('div', { class: 'cam-msg' });
+    // Pense-bête de la gazette : un sujet d'article à ne pas oublier
+    const tagGazette = h('span', { class: 'cam-tag gazette', hidden: !sujetsGazette[a.id] }, '📰 pense-bête gazette');
+    const btnGazette = h('button', { type: 'button', class: 'petit secondaire', title: 'Ajouter ou retirer cette action du pense-bête de la gazette (Le Gratin Dauphinois)' });
+    const majGazette = () => { const oui = !!sujetsGazette[a.id]; btnGazette.textContent = oui ? '📰 Retirer de la gazette' : '📰 Gazette'; tagGazette.hidden = !oui; };
+    majGazette();
+    btnGazette.addEventListener('click', async () => {
+      btnGazette.disabled = true;
+      try {
+        if (sujetsGazette[a.id]) {
+          await marquerSujet(a.mois, a.id, null);
+          delete sujetsGazette[a.id];
+          message(msgA, 'Retirée du pense-bête de la gazette.', 'ok');
+        } else {
+          const sujet = sujetDepuisAction({ ...a, reponseConteur: reponse.value.trim() || a.reponseConteur }, user.uid);
+          await marquerSujet(a.mois, a.id, sujet);
+          sujetsGazette[a.id] = sujet;
+          message(msgA, 'Ajoutée au pense-bête de la gazette (' + a.mois + ').', 'ok');
+        }
+        majGazette();
+      } catch (e) { message(msgA, messageErreur(e), 'err'); }
+      btnGazette.disabled = false;
+    });
     return h('div', { class: 'cam-element' },
       h('div', { class: 'meta' },
         h('span', { class: 'cam-tag ' + classeCat(a.categorie) }, a.categorie),
         h('span', { class: 'cam-tag' }, TYPES_ACTION[a.type] || a.type),
-        h('span', { class: 'cam-tag ' + a.statut }, a.statut === 'traitee' ? 'Traitée' : 'Sans réponse'),
+        h('span', { class: 'cam-tag ' + a.statut }, a.statut === 'traitee' ? 'Traitée' : 'Sans réponse'), tagGazette,
         (a.date ? dateFr(a.date) : '') + ' · ' + (a.ville || '') + ' · zone ' + (libelleZone(a.zone) || '?'),
         a.lieu ? [' · ', h('a', { href: '/utils/carte?mois=' + encodeURIComponent(a.mois) + '&action=' + encodeURIComponent(a.id) }, '📍 carte')] : ''),
       h('strong', {}, a.personnageNom), ' — ', a.nomAction, ' — ', a.pointsAction + ' pt(s)',
@@ -227,6 +253,7 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
             } catch (e) { message(msgA, messageErreur(e), 'err'); }
           }
         }, 'Enregistrer'),
+        btnGazette,
         h('button', {
           type: 'button', class: 'petit danger', onclick: async () => {
             if (!confirmer('Supprimer définitivement cette action ?')) return;

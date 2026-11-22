@@ -1,0 +1,11 @@
+Polices de la gazette « Le Gratin Dauphinois » (sous-ensemble latin, woff2,
+paquets npm @fontsource 5.3.0). Toutes sous licence SIL Open Font License 1.1 :
+https://openfontlicense.org
+
+- UnifrakturMaguntia (titre du journal) : Copyright 2010 J. 'Mach' Wust,
+  2009 Peter Wiegel (Reserved Font Name UnifrakturMaguntia).
+- Old Standard TT (gros titres) : Copyright 2011 The Old Standard Project Authors.
+- Libre Caslon Text (texte des articles) : Copyright 2012 The Libre Caslon Text
+  Project Authors (https://github.com/impallari/Libre-Caslon-Text).
+
+Les polices sont hébergées sur le site : aucune requête vers un service tiers.

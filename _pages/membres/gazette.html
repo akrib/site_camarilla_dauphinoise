@@ -1,0 +1,41 @@
+---
+layout: null
+title: "Le Gratin Dauphinois"
+permalink: /membres/gazette/
+sitemap: false
+---
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#2b2520">
+  <title>Le Gratin Dauphinois — gazette de la Camarilla Dauphinoise</title>
+  <link rel="stylesheet" href="{{ '/assets/css/membres.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/gazette.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/gazette-lecture.css' | relative_url }}">
+</head>
+<body class="gzl-page">
+
+<header class="gzl-barre">
+  <a class="gzl-retour" href="{{ '/membres/' | relative_url }}">← Espace membres</a>
+  <span class="gzl-nom">Le Gratin Dauphinois</span>
+  <span class="gzl-espace"></span>
+  <nav class="gzl-numeros" id="numeros" aria-label="Numéros" hidden>
+    <button class="gzl-btn" id="btnPrecedent" title="Numéro précédent">◀</button>
+    <select class="gzl-select" id="choixNumero" aria-label="Numéro"></select>
+    <button class="gzl-btn" id="btnSuivant" title="Numéro suivant">▶</button>
+  </nav>
+  <button class="gzl-btn" id="btnImprimer" hidden title="Imprimer en noir et blanc (A4)">🖨 Imprimer</button>
+  <a class="gzl-btn" id="lienEdition" href="{{ '/membres/gazette/edition/' | relative_url }}" hidden>✎ Édition</a>
+</header>
+
+<main class="gzl-lecture" id="lecture" aria-live="polite">
+  <p class="gzl-message">Chargement…</p>
+</main>
+
+<div id="gz-impression"></div>
+<script type="module" src="{{ '/assets/js/camarilla/pages/gazette.js' | relative_url }}"></script>
+</body>
+</html>
