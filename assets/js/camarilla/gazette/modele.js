@@ -38,7 +38,7 @@ export const BANDEAU_DEFAUT = {
   titre: NOM_GAZETTE,
   sousTitre: 'Gazette des nuits grenobloises',
   devise: 'Toutes les nouvelles qui ne voient jamais le jour',
-  prix: 'Prix : deux gouttes',
+  prix: '',
   lieu: 'Grenoble',
   dateAffichee: '',          // vide : le mois du numéro (« novembre 2026 »)
   oreilleGauche: '',         // petites cases de part et d'autre du titre
