@@ -239,6 +239,61 @@ export function depuisExcel(cell) {
   return normaliser(f);
 }
 
+// =====================================================================
+// Valeurs des listes déroulantes
+// ---------------------------------------------------------------------
+// Une fiche Excel d'une autre version, ou remplie à la main, peut écrire
+// « Toreador » pour « Toréador », « camarilla », « Humanité » pour « Voie de
+// l'Humanité »… On retrouve la valeur officielle (accents, majuscules,
+// espaces et tirets ignorés) ; ce qui reste inconnu est signalé au joueur.
+// =====================================================================
+const cleListe = (v) => String(v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  .replace(/[-'’`´_]/g, ' ').replace(/\s+/g, ' ').trim();   // tirets, apostrophes et espaces équivalents
+const echapper = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** { valeur, statut } : statut = 'vide' | 'ok' | 'corrige' (valeur officielle retrouvée) | 'inconnu'. */
+export function valeurDeListe(valeur, liste) {
+  const brut = String(valeur ?? '').trim();
+  if (!brut) return { valeur: '', statut: 'vide' };
+  const exacte = liste.find((x) => String(x) === brut);
+  if (exacte !== undefined) return { valeur: exacte, statut: 'ok' };
+  const k = cleListe(brut);
+  const memes = liste.filter((x) => cleListe(x) === k);
+  if (memes.length === 1) return { valeur: memes[0], statut: 'corrige' };
+  if (k.length >= 4) {   // « Humanité » -> « Voie de l'Humanité », si une seule valeur convient
+    const mot = new RegExp('(^| )' + echapper(k) + '($| )');
+    const contenant = liste.filter((x) => mot.test(cleListe(x)));
+    if (contenant.length === 1) return { valeur: contenant[0], statut: 'corrige' };
+  }
+  return { valeur: brut, statut: 'inconnu' };
+}
+
+/** Remet les champs à liste de la fiche sur les valeurs officielles. Renvoie les remarques pour le joueur. */
+export function harmoniserListes(f) {
+  const remarques = [];
+  const champ = (libelle, objet, cle, liste) => {
+    const v = objet[cle];
+    const r = valeurDeListe(v, liste);
+    if (r.statut === 'vide') return;
+    if (r.statut === 'inconnu') { remarques.push({ type: 'inconnu', texte: `${libelle} : « ${v} » ne fait pas partie des listes de la fiche ${REF.version}` }); return; }
+    objet[cle] = r.valeur;
+    if (r.statut === 'corrige') remarques.push({ type: 'corrige', texte: `${libelle} : « ${v} » lu comme « ${r.valeur} »` });
+  };
+  champ('Type de fiche', f, 'typeFiche', REF.typesFiche);
+  champ('Secte', f, 'secte', REF.sectes);
+  champ('Race', f, 'race', REF.races);
+  champ('Âge', f, 'age', REF.ages);
+  champ('Clan', f, 'clan', REF.clans.map((c) => c.nom));
+  champ('Génération', f, 'generation', REF.generations);
+  champ('Voie', f, 'voie', REF.voies);
+  champ('Archétype', f, 'archetype', REF.archetypes);
+  f.derangements.forEach((d, i) => champ('Dérangement ' + (i + 1), d, 'type', REF.derangements));
+  const nomsDisc = REF.disciplines.map((d) => d.nom);
+  f.disciplinesCaitiff.forEach((_, i) => champ('Discipline de Caïtiff ' + (i + 1), f.disciplinesCaitiff, i, nomsDisc));
+  f.disciplines.forEach((d, i) => { if (i >= 3) champ('Discipline ' + (i + 1), d, 'nom', nomsDisc); });
+  return remarques;
+}
+
 const isoLocal = (d) => `${String(d.getFullYear()).padStart(4, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 function texte(v) {

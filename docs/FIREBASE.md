@@ -152,6 +152,24 @@ Cette étape empêche d'autres sites d'utiliser votre configuration.
    - `http://localhost:4000/*` (pour tester en local)
 4. Enregistrez.
 
+## 10. Jeton Mapillary (jeu « Trouve le Sabbat »)
+
+Le jeu `/utils/sabbat` montre des photos de rue de Grenoble tirées de
+[Mapillary](https://www.mapillary.com) (photos libres, API gratuite). Il lui faut un
+jeton d'accès, gratuit :
+
+1. Créez un compte sur <https://www.mapillary.com> (ou connectez-vous), puis ouvrez
+   <https://www.mapillary.com/developer>.
+2. **Register application** : nom « Camarilla Dauphinoise », site
+   `https://www.camarilla-dauphinoise.fr`, autorisation **Read** seulement (pas d'écriture,
+   pas de téléversement).
+3. Copiez le **Client Token** (il commence par `MLY|`) dans
+   `assets/js/camarilla/mapillary-config.js`, à la place de `MLY|A_REMPLACER`.
+
+Comme la clé Firebase, ce jeton est fait pour être visible dans le code du site : il ne
+permet que de lire les photos publiques. Tant qu'il n'est pas rempli, la page du jeu
+l'indique et le bouton « Commencer » reste grisé.
+
 ---
 
 ## Ce que voient les membres
@@ -166,6 +184,7 @@ Cette étape empêche d'autres sites d'utiliser votre configuration.
 | Notifications | `/membres/notifications/` | membres actifs |
 | Challenge (générateur + challenges demandés) | `/utils/challenge` | tout le monde (demandes : personnages et conteurs) |
 | Carte de Grenoble | `/utils/carte` | personnages validés (et conteurs) |
+| Trouve le Sabbat (jeu) | `/utils/sabbat` | tout le monde (classement : membres actifs) |
 | Influences | `/influences/` | personnage incarné « en jeu » |
 | Tickets | `/membres/tickets/` | membres actifs (réponses : conteurs) |
 | Comptes | `/membres/comptes/` | conteurs (rôles, maintenance : admin) |
@@ -262,7 +281,13 @@ dérivées (sang, volonté, éthique, langues, scores de combat…).
   boutons « section suivante ».
 - **Import** : « Importer une fiche Excel (.xlsx) » lit une fiche MET existante dans
   le navigateur (le fichier n'est envoyé nulle part) et ouvre une nouvelle fiche
-  pré-remplie.
+  pré-remplie ; « Enregistrer le brouillon » l'envoie dans Firestore, « Enregistrer et
+  soumettre au conteur » la transmet pour validation. Les valeurs des listes sont
+  rapprochées des listes officielles sans tenir compte des accents, majuscules, tirets
+  et apostrophes (« Toreador » → « Toréador », « Humanité » → « Voie de l'Humanité ») ;
+  un encart au-dessus de la fiche liste ces corrections, les valeurs inconnues (en
+  rouge, à choisir dans la liste) et l'éventuelle différence de version de la fiche
+  Excel (le site suit la fiche MET 8.0.2).
 - Le calcul reproduit l'onglet « Calculs » de l'Excel, à quatre corrections près
   (listées dans la fiche, rubrique « Différences avec le fichier Excel ») : coût du
   changement de focus, 4e ligne de Représentation, 4e pouvoir d'ancien, compétences
@@ -443,6 +468,47 @@ changer de version de MapLibre, modifiez les adresses `unpkg.com` (en tête de
 l'état » : s'il disparaissait, il suffirait de changer les deux adresses de `FONDS` dans
 `carte-base.js` (n'importe quel style au schéma OpenMapTiles convient).
 
+Le style `dark` d'OpenFreeMap (fond Nuit) dessine les bois avec un motif `wood-pattern`
+absent de sa propre planche d'icônes (avertissement MapLibre « Image "wood-pattern" could
+not be loaded ») : `completerImages()` dans `carte-base.js` fabrique ce motif pour toutes
+les cartes du site (carte de Grenoble, territoires, choix d'un lieu, Trouve le Sabbat).
+
+### Trouve le Sabbat
+
+Jeu à la GeoGuessr, limité à la commune de Grenoble (`/utils/sabbat`, lien depuis
+l'espace membres). Une photo de rue montre l'entrée d'un repaire du Sabbat ; le joueur
+regarde autour de lui (vues à 360° quand il y en a, déplacement possible dans la rue),
+place son repère sur la mini-carte (agrandie au survol, en plein écran sur téléphone) et
+valide. **5 repaires par traque**, jusqu'à **5 000 points** chacun selon la distance
+(points pleins à moins de 50 m, environ 3 400 à 500 m, 2 300 à 1 km, 1 000 à 2 km, 400 à 3 km) ; à
+moins de 150 m, le repaire est **débusqué**. En fin de traque : bilan sur la carte et
+titre (de « Néonate égaré » à « Justicar »).
+
+- **Points au joueur** : les points vont au compte (`classement/{uid}`), pas à un
+  personnage. Champs : `nom` (nom affiché du compte), `total` (toutes les traques),
+  `parties`, `meilleure` (meilleure traque, sur 25 000), `derniere`, `debusques`,
+  `majLe`.
+- **Classement** (bouton en haut de page) : par total des points ou par meilleure
+  traque, 100 premiers. Réservé aux membres actifs ; un **admin** peut remettre un
+  joueur à zéro (✕ sur sa ligne).
+- **Sans compte actif** (visiteur, compte en attente) : on peut jouer, mais les points
+  ne sont pas inscrits.
+- **Garde-fous des règles** : chacun n'écrit que sa propre ligne, à son nom, une traque
+  à la fois (+25 000 points et +5 débusqués au plus, `parties` + 1, `meilleure` tenue
+  à jour), au plus une traque toutes les 30 secondes. Le score étant calculé dans le
+  navigateur, un tricheur déterminé pourrait encore gonfler ses points dans ces
+  limites : en cas d'abus, un admin remet sa ligne à zéro.
+- **Photos** : API Mapillary v4 (`graph.mapillary.com/images`, recherche dans un petit
+  carré tiré au hasard dans la commune, vues à 360° préférées, repaires d'une même
+  traque à 600 m les uns des autres si possible), visionneuse MapillaryJS 4.1.2
+  (`unpkg.com/mapillary-js@4.1.2`, licence MIT). Les photos sont sous licence
+  **CC BY-SA 4.0** : la mention Mapillary est toujours affichée en bas de page, et le
+  photographe, la date et le lien vers la photo apparaissent à chaque résultat et au
+  bilan. Pendant la manche, le crédit intégré de la visionneuse est masqué (son lien
+  donnerait le lieu).
+- **Coût** : Mapillary est gratuit (quotas très larges). Firestore : une lecture et une
+  écriture par traque terminée, une lecture par ligne affichée dans le classement.
+
 ### Images
 
 Les images (portraits, photos du tableau d'enquête, images en base64 dans les JSON
@@ -525,6 +591,7 @@ Puis ouvrez <http://localhost:4000/connexion/?emulateurs=1>. Le paramètre
 | `assets/js/camarilla/carte-base.js` | MapLibre à la demande, fonds, choix d'un lieu, territoires officiels |
 | `assets/js/camarilla/annuaire.js` | annuaire et répertoire gardés dans le navigateur |
 | `assets/js/camarilla/suivi.js` | nouvelles réponses, travail des conteurs, rappels du calendrier |
+| `assets/js/camarilla/mapillary-config.js` | jeton Mapillary du jeu « Trouve le Sabbat » (CSS : `assets/css/sabbat.css`) |
 | `assets/js/camarilla/outils/tableau.js`, `challenge.js` | scripts des pages tableau d'enquête et challenge (CSS : `assets/css/tableau.css`, `challenge.css`) |
 | `assets/js/camarilla/pages/*.js` | une page = un module |
 | `assets/js/camarilla/fiche/referentiel.js` | listes et coûts de la fiche MET (généré par `outils/fiche/extraire_excel.py`) |

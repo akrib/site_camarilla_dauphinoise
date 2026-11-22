@@ -201,3 +201,9 @@ table.cam-table td textarea { min-height: 3rem; font-size: .82rem; }
 .cam-edition h3 { margin-top: 0; }
 .cam-travail { padding: .3rem 0; font-size: .9rem; }
 .cam-incarne .petit { margin-left: auto; }
+
+/* Import d'une fiche Excel : remarques (valeurs corrigées, inconnues, autre version) */
+.cam-import-excel p { margin: 0; }
+.cam-import-excel ul { margin: .4rem 0 0 1.2rem; padding: 0; }
+.cam-import-excel li { margin: .15rem 0; }
+.cam-import-excel li.inconnu, .cam-import-excel li.version { color: #a33; font-weight: 600; }

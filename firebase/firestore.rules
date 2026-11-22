@@ -165,9 +165,11 @@ service cloud.firestore {
     // brouillon -> soumise -> validee -> active -> archivee
     //                     \-> refusee -> (corrigée) -> soumise
     // Le joueur ne modifie que ses fiches brouillon / soumise / refusee.
-    // La fiche complète est dans le champ `fiche` ; les champs de premier
-    // niveau (nom, clan, secte, influences, PX…) en sont recopiés pour les
-    // listes et la page Influences.
+    // Le document ne contient que les champs des listes (nom, clan, secte,
+    // influences, PX…) ; la fiche complète et les données complémentaires
+    // sont dans personnages/{id}/detail/fiche (compressées), écrites dans le
+    // même lot. Les anciennes fiches (champs `fiche` et `contenuJson` dans le
+    // document) restent valides jusqu'à leur migration.
     // ------------------------------------------------------------------
     match /personnages/{id} {
       function xpValide(x) {
@@ -184,10 +186,10 @@ service cloud.firestore {
           && d.specsGotha is list && d.specsGotha.size() <= 10
           && d.specsPegre is list && d.specsPegre.size() <= 10
           && xpValide(d.xp)
-          && d.fiche is map && d.fiche.keys().size() <= 120
-          && d.fiche.get('nom', '') == d.nom && d.fiche.get('clan', '') == d.clan && d.fiche.get('secte', '') == d.secte
+          && (!('fiche' in d) || (d.fiche is map && d.fiche.keys().size() <= 120
+              && d.fiche.get('nom', '') == d.nom && d.fiche.get('clan', '') == d.clan && d.fiche.get('secte', '') == d.secte))
           && refImage(d.portrait)
-          && texte(d.contenuJson, 600000)
+          && (!('contenuJson' in d) || texte(d.contenuJson, 600000))
           && texteLong(d.commentaireConteur, 4000)
           && d.statut in ['brouillon', 'soumise', 'refusee', 'validee', 'active', 'archivee'];
       }
@@ -205,7 +207,7 @@ service cloud.firestore {
       allow read: if (actif() && ancien().proprietaire == uid()) || conteur();
 
       allow create: if actif()
-        && cles(champsFiche(), ['schema', 'proprietaire', 'nom', 'fiche', 'statut', 'creeLe'])
+        && cles(champsFiche(), ['schema', 'proprietaire', 'nom', 'statut', 'creeLe'])
         && ficheValide(nouveau())
         && nouveau().creeLe == request.time
         && (
@@ -225,6 +227,25 @@ service cloud.firestore {
 
       allow delete: if (actif() && ancien().proprietaire == uid() && ancien().statut in ['brouillon', 'refusee'])
         || conteur();
+
+      // Détail : fiche MET complète + données complémentaires (deflate).
+      // Écrit seulement avec le document de la fiche (même lot : majLe du
+      // document = heure de l'écriture), donc aux mêmes conditions que lui.
+      match /detail/{partie} {
+        function fichePers() { return get(chemin('personnages', id)).data; }
+        function fichePersApres() { return getAfter(chemin('personnages', id)).data; }
+        allow read: if conteur() || (actif() && fichePers().proprietaire == uid());
+        allow create, update: if actif() && partie == 'fiche'
+          && cles(['fiche', 'contenuJson', 'majLe'], ['fiche', 'contenuJson', 'majLe'])
+          && (nouveau().fiche is map || texteLong(nouveau().fiche, 900000))
+          && texteLong(nouveau().contenuJson, 900000)
+          && nouveau().majLe == request.time
+          && existsAfter(chemin('personnages', id))
+          && fichePersApres().majLe == request.time
+          && (conteur() || (fichePersApres().proprietaire == uid() && fichePersApres().statut in ['brouillon', 'soumise']));
+        allow delete: if conteur()
+          || (actif() && fichePers().proprietaire == uid() && fichePers().statut in ['brouillon', 'refusee']);
+      }
     }
 
     // ------------------------------------------------------------------
@@ -263,7 +284,7 @@ service cloud.firestore {
     match /tableaux/{id} {
       function tableauValide(d) {
         return texteNonVide(d.titre, 100)
-          && texte(d.contenuJson, 950000)
+          && texteLong(d.contenuJson, 950000)
           && d.acces is list && d.acces.size() <= 40
           && d.droits is map
           && d.invites is map && d.invites.size() <= 39
@@ -494,6 +515,34 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------
+    // Carte de Grenoble d'un personnage : cartes/{idPersonnage}
+    // donnees = JSON compressé (havres, zones de chasse, rondes). Écrite par
+    // le membre pour son personnage validé ; lue aussi par les conteurs.
+    // ------------------------------------------------------------------
+    match /cartes/{id} {
+      allow read: if conteur() || (actif() && ancien().proprietaire == uid());
+      allow create, update: if actif()
+        && cles(['proprietaire', 'personnage', 'nom', 'donnees', 'majLe'], ['proprietaire', 'personnage', 'nom', 'donnees', 'majLe'])
+        && nouveau().personnage == id && persoIncarnable(id)
+        && nouveau().proprietaire == uid() && nouveau().nom == perso(id).nom
+        && texteLong(nouveau().donnees, 900000)
+        && nouveau().majLe == request.time;
+      allow delete: if admin() || (actif() && ancien().proprietaire == uid());
+    }
+
+    // Territoires officiels (zones 1 à 24, domaines…) : territoires/officiels,
+    // tracés par les conteurs, lus par tous les membres actifs.
+    match /territoires/{id} {
+      allow read: if actif();
+      allow create, update: if conteur() && id == 'officiels'
+        && cles(['donnees', 'majLe', 'majPar', 'majParNom'], ['donnees', 'majLe', 'majPar', 'majParNom'])
+        && texteLong(nouveau().donnees, 900000)
+        && nouveau().majPar == uid() && nouveau().majParNom == moi().nom
+        && nouveau().majLe == request.time;
+      allow delete: if admin();
+    }
+
+    // ------------------------------------------------------------------
     // Calendrier des parties : calendrier/parties (voir calendrier.js)
     // parties : { 'AAAA-MM': { date, limite, titre, ouverture, fermeture } }
     // (ouverture / fermeture en ms) ; anticipation : préparation des parties
@@ -559,9 +608,10 @@ service cloud.firestore {
       allow update: if actif() && (
         // Conteur : réponse et statut.
         (conteur()
-          && seulement(['reponseConteur', 'statut', 'majLe', 'traitePar'])
+          && seulement(['reponseConteur', 'statut', 'majLe', 'traitePar', 'reponduLe'])
           && nouveau().statut in ['attente', 'traitee']
-          && texteLong(nouveau().reponseConteur, 6000))
+          && texteLong(nouveau().reponseConteur, 6000)
+          && (!('reponduLe' in nouveau()) || nouveau().reponduLe == ancien().get('reponduLe', null) || nouveau().reponduLe == request.time))
         // Joueur : tant que l'action n'a pas de réponse et que la fenêtre de
         // la partie est ouverte (ou à venir, si l'anticipation est permise).
         || (ancien().proprietaire == uid() && ancien().statut == 'attente' && ancien().reponseConteur == ''
@@ -622,9 +672,10 @@ service cloud.firestore {
 
       allow update: if actif() && (
         // Conteur : statut et réponse.
-        (conteur() && seulement(['statut', 'resultat', 'majLe', 'traitePar'])
+        (conteur() && seulement(['statut', 'resultat', 'majLe', 'traitePar', 'reponduLe'])
           && nouveau().statut in ['En attente', 'En cours', 'Informations demandées', 'Complété', 'Refusé', 'Annulé']
-          && texteLong(nouveau().resultat, 6000))
+          && texteLong(nouveau().resultat, 6000)
+          && (!('reponduLe' in nouveau()) || nouveau().reponduLe == ancien().get('reponduLe', null) || nouveau().reponduLe == request.time))
         // Joueur : compléter sa demande quand le conteur demande des informations,
         // ou annuler une demande pas encore traitée.
         || (ancien().proprietaire == uid() && (
@@ -635,6 +686,37 @@ service cloud.firestore {
       );
 
       allow delete: if conteur();
+    }
+
+    // Classement du jeu « Trouve le Sabbat » (/utils/sabbat) : un document
+    // par compte (les points vont au joueur, pas à un personnage).
+    // Chacun n'y ajoute que le résultat d'une traque à la fois : 5 repaires,
+    // 5 000 points et 1 « débusqué » au plus chacun, au plus une traque
+    // toutes les 30 secondes. Lu par les membres actifs ; un admin peut
+    // remettre un joueur à zéro (suppression du document).
+    match /classement/{id} {
+      function champsClassement() { return ['nom', 'total', 'parties', 'meilleure', 'derniere', 'debusques', 'majLe']; }
+      function classementValide(d) {
+        return cles(champsClassement(), champsClassement())
+          && d.nom == moi().nom
+          && d.total is int && d.parties is int && d.meilleure is int && d.debusques is int
+          && d.derniere is int && d.derniere >= 0 && d.derniere <= 25000
+          && d.majLe == request.time;
+      }
+      allow read: if actif();
+      allow create: if actif() && id == uid() && classementValide(nouveau())
+        && nouveau().parties == 1
+        && nouveau().total == nouveau().derniere
+        && nouveau().meilleure == nouveau().derniere
+        && nouveau().debusques >= 0 && nouveau().debusques <= 5;
+      allow update: if actif() && id == uid() && classementValide(nouveau())
+        && request.time > ancien().majLe + duration.value(30, 's')
+        && nouveau().parties == ancien().parties + 1
+        && nouveau().total == ancien().total + nouveau().derniere
+        && ((nouveau().derniere > ancien().meilleure && nouveau().meilleure == nouveau().derniere)
+            || (nouveau().derniere <= ancien().meilleure && nouveau().meilleure == ancien().meilleure))
+        && nouveau().debusques >= ancien().debusques && nouveau().debusques <= ancien().debusques + 5;
+      allow delete: if admin();
     }
   }
 }

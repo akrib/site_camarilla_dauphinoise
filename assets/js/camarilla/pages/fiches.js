@@ -119,10 +119,17 @@ function afficherListes(ongletInitial) {
     if (!f) return;
     try {
       message(msgImport, 'Lecture de la fiche Excel…', 'info');
-      const { fiche, version } = await lireFicheExcel(f);
+      const { fiche, version, remarques } = await lireFicheExcel(f);
       message(msgImport, '');
-      afficherEditeur(null, { ...documentVide(), nom: fiche.nom, fiche },
-        'Fiche importée depuis Excel' + (version ? ' (' + version + ')' : '') + ' : vérifiez-la puis enregistrez.');
+      const aVoir = remarques.filter((r) => r.type !== 'corrige').length;
+      const corriges = remarques.length - aVoir;
+      const bilan = [aVoir ? aVoir + ' point' + (aVoir > 1 ? 's' : '') + ' à reprendre' : '',
+        corriges ? corriges + ' correction' + (corriges > 1 ? 's' : '') + ' automatique' + (corriges > 1 ? 's' : '') : ''].filter(Boolean).join(', ');
+      afficherEditeur(null, { ...documentVide(), nom: fiche.nom, fiche }, h('div', { class: 'cam-import-excel' },
+        h('p', {}, 'Fiche importée depuis Excel' + (version ? ' (' + version + ')' : '') + ' : vérifiez-la puis enregistrez.'
+          + (bilan ? ' ' + bilan[0].toUpperCase() + bilan.slice(1) + ' :' : '')),
+        remarques.length ? h('ul', {}, remarques.map((r) => h('li', { class: r.type },
+          r.texte + (r.type === 'inconnu' ? ' : choisissez la bonne valeur dans la liste.' : r.type === 'version' ? '.' : '.')))) : ''));
     } catch (e) { message(msgImport, 'Import impossible : ' + messageErreur(e), 'err'); }
   });
 

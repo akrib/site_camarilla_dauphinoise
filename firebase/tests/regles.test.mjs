@@ -713,3 +713,127 @@ describe('Textes longs compressés (octets)', () => {
   });
 });
 
+
+// ---------------------------------------------------------------------
+// Fiches en deux parties, cartes, territoires, dates de réponse
+// ---------------------------------------------------------------------
+describe('Fiches : document léger + détail', () => {
+  const leger = (uid, extra = {}) => {
+    const f = nouvelleFiche(uid, extra);
+    delete f.fiche; delete f.contenuJson;
+    return f;
+  };
+  const detail = () => ({ fiche: octets(400), contenuJson: '{}', majLe: serverTimestamp() });
+  test('création : document et détail dans le même lot', async () => {
+    const d = db('alice');
+    const lot = writeBatch(d);
+    lot.set(doc(d, 'personnages', 'n1'), leger('alice'));
+    lot.set(doc(d, 'personnages', 'n1', 'detail', 'fiche'), detail());
+    await assertSucceeds(lot.commit());
+    await assertSucceeds(getDoc(doc(d, 'personnages', 'n1', 'detail', 'fiche')));
+    await assertFails(getDoc(doc(db('bob'), 'personnages', 'n1', 'detail', 'fiche')));
+    await assertSucceeds(getDoc(doc(db('conteur'), 'personnages', 'n1', 'detail', 'fiche')));
+  });
+  test('le détail ne s\'écrit pas seul, ni sur une fiche validée', async () => {
+    await assertFails(setDoc(doc(db('alice'), 'personnages', 'pA2', 'detail', 'fiche'), detail()));
+    const d = db('alice');
+    const lot = writeBatch(d);
+    lot.update(doc(d, 'personnages', 'pA'), { nom: 'Amarok', majLe: serverTimestamp() });
+    lot.set(doc(d, 'personnages', 'pA', 'detail', 'fiche'), detail());
+    await assertFails(lot.commit());
+  });
+  test('brouillon : le joueur met à jour les deux ; le conteur migre une ancienne fiche', async () => {
+    const d = db('alice');
+    const lot = writeBatch(d);
+    lot.update(doc(d, 'personnages', 'pA2'), { fiche: deleteField(), contenuJson: deleteField(), majLe: serverTimestamp() });
+    lot.set(doc(d, 'personnages', 'pA2', 'detail', 'fiche'), detail());
+    await assertSucceeds(lot.commit());
+    const c = db('conteur');
+    const mig = writeBatch(c);
+    mig.update(doc(c, 'personnages', 'pB'), { fiche: deleteField(), contenuJson: deleteField(), majLe: serverTimestamp() });
+    mig.set(doc(c, 'personnages', 'pB', 'detail', 'fiche'), detail());
+    await assertSucceeds(mig.commit());
+  });
+});
+
+describe('Cartes des personnages', () => {
+  const carte = (uid, id, nom, extra = {}) => ({ proprietaire: uid, personnage: id, nom, donnees: octets(200), majLe: serverTimestamp(), ...extra });
+  test('écrite pour son personnage validé, lue par le conteur', async () => {
+    await assertSucceeds(setDoc(doc(db('alice'), 'cartes', 'pA'), carte('alice', 'pA', 'Amarok')));
+    await assertSucceeds(setDoc(doc(db('alice'), 'cartes', 'pAv'), carte('alice', 'pAv', 'Réserve')));
+    await assertFails(setDoc(doc(db('alice'), 'cartes', 'pA2'), carte('alice', 'pA2', 'Brouillon')));
+    await assertFails(setDoc(doc(db('alice'), 'cartes', 'pB'), carte('alice', 'pB', 'Bastien')));
+    await assertFails(setDoc(doc(db('alice'), 'cartes', 'pA'), carte('alice', 'pA', 'Faux nom')));
+    await assertSucceeds(getDoc(doc(db('conteur'), 'cartes', 'pA')));
+    await assertFails(getDoc(doc(db('bob'), 'cartes', 'pA')));
+    await assertFails(setDoc(doc(db('conteur'), 'cartes', 'pA'), carte('conteur', 'pA', 'Amarok')));
+  });
+});
+
+describe('Territoires officiels', () => {
+  const terr = (uid, nom, extra = {}) => ({ donnees: octets(300), majLe: serverTimestamp(), majPar: uid, majParNom: nom, ...extra });
+  test('tracés par les conteurs, lus par les membres actifs', async () => {
+    await assertFails(setDoc(doc(db('alice'), 'territoires', 'officiels'), terr('alice', 'Alice')));
+    await assertFails(setDoc(doc(db('conteur'), 'territoires', 'autre'), terr('conteur', 'Conteur')));
+    await assertFails(setDoc(doc(db('conteur'), 'territoires', 'officiels'), terr('conteur', 'Quelqu\'un d\'autre')));
+    await assertSucceeds(setDoc(doc(db('conteur'), 'territoires', 'officiels'), terr('conteur', 'Conteur')));
+    await assertSucceeds(getDoc(doc(db('alice'), 'territoires', 'officiels')));
+    await assertFails(getDoc(doc(db('eve'), 'territoires', 'officiels')));
+  });
+});
+
+describe('Dates de réponse des conteurs', () => {
+  test('reponduLe : heure du serveur, écrite par le conteur seulement', async () => {
+    await assertSucceeds(updateDoc(doc(db('conteur'), 'influences', 'iA'), { reponseConteur: 'Réussi', statut: 'traitee', reponduLe: serverTimestamp() }));
+    await assertFails(updateDoc(doc(db('conteur'), 'influences', 'iB'), { reponseConteur: 'Réussi', statut: 'traitee', reponduLe: passe }));
+    await assertSucceeds(updateDoc(doc(db('conteur'), 'tickets', 'kA'), { statut: 'En cours', resultat: 'Vu', reponduLe: serverTimestamp() }));
+    await assertFails(updateDoc(doc(db('alice'), 'tickets', 'kA'), { reponduLe: serverTimestamp() }));
+  });
+});
+
+describe('Classement de « Trouve le Sabbat »', () => {
+  const premiere = (nom, points, debusques = 0, extra = {}) => ({
+    nom, total: points, parties: 1, meilleure: points, derniere: points, debusques, majLe: serverTimestamp(), ...extra
+  });
+  const ancienne = Timestamp.fromMillis(Date.now() - 120000);
+  async function poser(uid, donnees) {
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'classement', uid), donnees));
+  }
+  test('première traque : son propre compte, à son nom, 25 000 points au plus', async () => {
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'bob'), premiere('Alice', 1000)));
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), premiere('Amarok', 1000)));
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), premiere('Alice', 25001)));
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), premiere('Alice', 1000, 6)));
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), premiere('Alice', 1000, 0, { parties: 3 })));
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), premiere('Alice', 1000, 0, { total: 9000 })));
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), premiere('Alice', 1000, 0, { majLe: passe })));
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), premiere('Alice', 1000, 0, { personnage: 'pA' })));
+    await assertFails(setDoc(doc(db('eve'), 'classement', 'eve'), premiere('Eve', 1000)));
+    await assertSucceeds(setDoc(doc(db('alice'), 'classement', 'alice'), premiere('Alice', 18250, 2)));
+  });
+  test('traque suivante : ajoute une seule traque, record tenu, 30 s d\'écart', async () => {
+    await poser('alice', { nom: 'Alice', total: 18000, parties: 2, meilleure: 12000, derniere: 6000, debusques: 3, majLe: ancienne });
+    const suite = (points, extra = {}) => ({ nom: 'Alice', total: 18000 + points, parties: 3, meilleure: Math.max(12000, points),
+      derniere: points, debusques: 4, majLe: serverTimestamp(), ...extra });
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), suite(9000, { total: 40000 })));
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), suite(9000, { parties: 5 })));
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), suite(9000, { meilleure: 20000 })));
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), suite(15000, { meilleure: 12000 })));
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), suite(9000, { debusques: 9 })));
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), suite(26000)));
+    await assertFails(setDoc(doc(db('bob'), 'classement', 'alice'), suite(9000, { nom: 'Bob' })));
+    await assertSucceeds(setDoc(doc(db('alice'), 'classement', 'alice'), suite(15000)));
+    // Trop tôt après la précédente
+    await assertFails(setDoc(doc(db('alice'), 'classement', 'alice'), { nom: 'Alice', total: 34000, parties: 4, meilleure: 15000,
+      derniere: 1000, debusques: 4, majLe: serverTimestamp() }));
+  });
+  test('lu par les membres actifs, remis à zéro par un admin seulement', async () => {
+    await poser('bob', { nom: 'Bob', total: 5000, parties: 1, meilleure: 5000, derniere: 5000, debusques: 1, majLe: ancienne });
+    await assertSucceeds(getDocs(collection(db('alice'), 'classement')));
+    await assertFails(getDocs(collection(db('eve'), 'classement')));
+    await assertFails(getDocs(collection(db(null), 'classement')));
+    await assertFails(deleteDoc(doc(db('bob'), 'classement', 'bob')));
+    await assertFails(deleteDoc(doc(db('conteur'), 'classement', 'bob')));
+    await assertSucceeds(deleteDoc(doc(db('admin'), 'classement', 'bob')));
+  });
+});

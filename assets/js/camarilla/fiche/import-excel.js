@@ -1,7 +1,8 @@
 // Import d'une fiche Excel MET (.xlsx) dans le navigateur.
 // Le fichier ne quitte pas l'ordinateur du joueur : il est lu localement
 // (bibliothèque SheetJS chargée à la demande), puis converti en fiche.
-import { depuisExcel } from './modele.js';
+import { depuisExcel, harmoniserListes } from './modele.js';
+import { REF } from './referentiel.js';
 
 export const URL_SHEETJS = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs';
 
@@ -17,5 +18,13 @@ export async function lireFicheExcel(fichier) {
     const c = feuille && feuille[adresse];
     return c ? c.v : null;
   };
-  return { fiche: depuisExcel(cell), version: String(cell('Personnage', 'A1') || '') };
+  const fiche = depuisExcel(cell);
+  const version = String(cell('Personnage', 'A1') || '').trim();
+  // Remarques pour le joueur : valeurs corrigées ou inconnues, autre version de la fiche
+  const remarques = harmoniserListes(fiche);
+  const numero = (t) => (/(\d+\.\d+(?:\.\d+)?)/.exec(t) || [])[1];
+  if (numero(version) && numero(REF.version) && numero(version) !== numero(REF.version)) {
+    remarques.unshift({ type: 'version', texte: `Fiche Excel en version ${numero(version)} : le site suit la fiche ${REF.version}, vérifiez bien chaque onglet` });
+  }
+  return { fiche, version, remarques };
 }
