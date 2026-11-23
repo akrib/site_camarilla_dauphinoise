@@ -1,0 +1,208 @@
+/* ==========================================================================
+   BARRES DE MENU DES OUTILS PLEIN ÉCRAN
+   Carte, territoires, tableau d'enquête, challenges, Trouve le Sabbat,
+   combat, gazette (lecture et édition).
+
+   Seules les barres changent : l'intérieur de chaque outil garde sa feuille
+   de style. À charger APRÈS la feuille de l'outil, et après palette.css :
+
+     <link rel="stylesheet" href="/assets/css/theme/palette.css">
+     <link rel="stylesheet" href="/assets/css/<outil>.css">
+     <link rel="stylesheet" href="/assets/css/theme/barre.css">
+
+   Classes à poser dans le HTML de la barre (les classes propres à l'outil
+   restent, pour sa mise en page et son JavaScript) :
+     .cd-barre            la barre (en-tête, ou pied pour le combat : .cd-barre--bas)
+     .cd-marque           logo + nom de l'outil (lien vers l'espace membres)
+     .cd-sceau            la pastille ronde
+     .cd-btn              bouton ou liste déroulante de la barre
+       .principal         action principale (sang)
+       .actif / [aria-pressed="true"]   outil ou mode sélectionné
+       .danger            action destructrice
+       .discret           sans fond
+     .cd-sep              séparateur vertical
+   ========================================================================== */
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap");
+
+.cd-barre {
+  background:
+    linear-gradient(180deg, rgba(125, 171, 111, .07), transparent 70%),
+    linear-gradient(180deg, var(--cd-vert-nuit, #0e1a12), var(--cd-noir, #0a0b0a));
+  border-bottom: 1px solid var(--cd-vert-marbre, #2e5539);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .7), 0 6px 18px rgba(0, 0, 0, .45);
+  color: var(--cd-os, #e6dcc6);
+  font-family: var(--cd-body, system-ui, sans-serif);
+}
+.cd-barre--bas {
+  border-bottom: 0;
+  border-top: 1px solid var(--cd-vert-marbre, #2e5539);
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, .7), 0 -6px 18px rgba(0, 0, 0, .45);
+  background:
+    linear-gradient(0deg, rgba(125, 171, 111, .07), transparent 70%),
+    linear-gradient(0deg, var(--cd-vert-nuit, #0e1a12), var(--cd-noir, #0a0b0a));
+}
+
+/* --- Marque : pastille + nom --- */
+.cd-marque {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+  color: var(--cd-os, #e6dcc6); text-decoration: none;
+}
+a.cd-marque:hover .cd-sceau,
+.cd-barre a.cd-marque:hover .cd-sceau { border-color: var(--cd-sang-clair, #d6504f); color: var(--cd-os, #e6dcc6); }
+/* .cd-barre devant : passe avant les règles des outils (.carte-marque .sceau…) */
+.cd-sceau,
+.cd-barre .cd-sceau {
+  flex: none; width: 32px; height: 32px; display: grid; place-items: center;
+  border: 1px solid var(--cd-sang-vif, #9e141d); border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, var(--cd-sang-nuit, #26070a), transparent 70%);
+  color: var(--cd-sang-clair, #d6504f); font-size: 15px; line-height: 1;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .55);
+  transition: border-color .15s, color .15s;
+}
+.cd-marque h1, .cd-marque strong {
+  display: block; margin: 0;
+  font: 700 13px/1.15 var(--cd-display, Georgia, serif);
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--cd-os, #e6dcc6);
+}
+.cd-marque small {
+  display: block; margin-top: 3px;
+  font: 500 10px/1.2 var(--cd-body, system-ui, sans-serif);
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--cd-os-pale, #a8a08e);
+}
+
+/* --- Boutons et listes --- */
+.cd-barre .cd-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 32px; padding: 0 11px;
+  background: var(--cd-noir-3, #181d19);
+  border: 1px solid var(--cd-filet-2, #34453a);
+  border-radius: 3px;
+  color: var(--cd-os, #e6dcc6);
+  font: 500 12.5px/1 var(--cd-body, system-ui, sans-serif);
+  letter-spacing: .02em; text-transform: none;
+  white-space: nowrap; text-decoration: none; cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.cd-barre select.cd-btn { padding-right: 6px; justify-content: flex-start; }
+.cd-barre .cd-btn:hover:not(:disabled) {
+  background: var(--cd-vert, #1c3524);
+  border-color: var(--cd-vert-vif, #7dab6f);
+  color: var(--cd-os, #e6dcc6);
+}
+.cd-barre .cd-btn:focus-visible { outline: 2px solid var(--cd-vert-vif, #7dab6f); outline-offset: 2px; }
+.cd-barre .cd-btn:disabled { opacity: .4; cursor: default; }
+
+.cd-barre .cd-btn.actif,
+.cd-barre .cd-btn[aria-pressed="true"] {
+  background: var(--cd-sang, #650c13);
+  border-color: var(--cd-sang-vif, #9e141d);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .35);
+}
+.cd-barre .cd-btn.principal {
+  background: var(--cd-sang, #650c13);
+  border-color: var(--cd-sang-vif, #9e141d);
+  color: #fff; font-weight: 600;
+}
+.cd-barre .cd-btn.principal:hover:not(:disabled) {
+  background: var(--cd-sang-vif, #9e141d);
+  border-color: var(--cd-sang-clair, #d6504f);
+}
+.cd-barre .cd-btn.principal small { color: rgba(255, 255, 255, .75); }
+.cd-barre .cd-btn.danger { color: var(--cd-sang-clair, #d6504f); }
+.cd-barre .cd-btn.danger:hover:not(:disabled) {
+  background: var(--cd-sang-nuit, #26070a);
+  border-color: var(--cd-sang-vif, #9e141d);
+  color: #ffb8b8;
+}
+.cd-barre .cd-btn.discret { background: transparent; }
+
+/* Libellés et séparateurs */
+.cd-barre label, .cd-barre .cd-libelle {
+  color: var(--cd-os-pale, #a8a08e);
+  font: 500 10.5px/1.2 var(--cd-body, system-ui, sans-serif);
+  letter-spacing: .12em; text-transform: uppercase;
+}
+.cd-sep {
+  align-self: center; width: 1px; height: 22px; margin: 0 4px;
+  background: var(--cd-filet-2, #34453a);
+}
+
+/* ==========================================================================
+   Ajustements par outil (mise en page propre à chaque barre)
+   ========================================================================== */
+
+/* --- Carte de Grenoble et territoires --- */
+.cd-barre .carte-groupe + .carte-groupe { border-left-color: var(--cd-filet-2, #34453a); }
+.cd-barre .carte-segment { border-color: var(--cd-filet-2, #34453a); border-radius: 3px; }
+.cd-barre .carte-segment .cd-btn {
+  border: 0; border-radius: 0; min-height: 30px;
+  font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+}
+.cd-barre .carte-segment .cd-btn:not(.actif) { color: var(--cd-os-pale, #a8a08e); }
+.cd-barre .carte-case { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.cd-barre .carte-case input { accent-color: var(--cd-sang-vif, #9e141d); }
+
+/* --- Tableau d'enquête --- */
+/* au-dessus du grain et du vignettage de la page (9000-9001), sous les fenêtres (9500) */
+.toolbar.cd-barre { z-index: 9050; }
+.cd-barre .zoom-group .cd-btn { min-width: 32px; padding: 0 8px; font-size: 13px; }
+.cd-barre #zoomLabel { color: var(--cd-os-pale, #a8a08e); font-family: var(--cd-body, system-ui, sans-serif); }
+.cd-barre .lbl { color: var(--cd-os-pale, #a8a08e); font-family: var(--cd-body, system-ui, sans-serif); }
+.cd-barre .cloud-status { font-family: var(--cd-body, system-ui, sans-serif); color: var(--cd-os-pale, #a8a08e); }
+.cd-barre .cloud-status.modifie { color: var(--cd-sang-clair, #d6504f); }
+.cd-barre .cloud-status.lecture { color: var(--cd-vert-clair, #a7cc98); }
+
+/* --- Challenges (la barre remplace l'ancien titre) --- */
+.chal-barre {
+  position: relative; z-index: 9050;   /* au-dessus du grain (9000), sous l'écran de garde (9500) */
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 8px 16px;
+}
+
+/* --- Trouve le Sabbat --- */
+.cd-barre .sabbat-compteurs { border-left-color: var(--cd-filet-2, #34453a); color: var(--cd-os-pale, #a8a08e); }
+.cd-barre .sabbat-compteurs b { color: var(--cd-os, #e6dcc6); font-family: var(--cd-display, Georgia, serif); }
+.cd-barre .sabbat-joueur { color: var(--cd-os-pale, #a8a08e); }
+.cd-barre .sabbat-joueur b { color: var(--cd-os, #e6dcc6); }
+
+/* --- Combat : grands boutons tactiles (tailles d'origine, couleurs communes) --- */
+.cd-barre .cb-btn, .cd-barre .cb-nav {
+  background: var(--cd-noir-3, #181d19);
+  border-color: var(--cd-filet-2, #34453a);
+  color: var(--cd-os, #e6dcc6);
+}
+.cd-barre .cb-btn:hover:not(:disabled), .cd-barre .cb-nav:hover:not(:disabled) {
+  background: var(--cd-vert, #1c3524);
+  border-color: var(--cd-vert-vif, #7dab6f);
+}
+.cd-barre .cb-nav.principal, .cd-barre .cb-btn.principal {
+  background: var(--cd-sang, #650c13);
+  border-color: var(--cd-sang-vif, #9e141d);
+  color: #fff;
+}
+.cd-barre .cb-nav.principal:hover:not(:disabled), .cd-barre .cb-btn.principal:hover:not(:disabled) {
+  background: var(--cd-sang-vif, #9e141d);
+  border-color: var(--cd-sang-clair, #d6504f);
+}
+.cd-barre .cb-nav small, .cd-barre .cb-lib-court { color: var(--cd-os-pale, #a8a08e); }
+.cd-barre .cb-nav.principal small { color: rgba(255, 255, 255, .75); }
+.cd-barre .cb-btn.danger { background: transparent; border-color: var(--cd-sang-vif, #9e141d); color: var(--cd-sang-clair, #d6504f); }
+.cd-barre .cb-titre { color: var(--cd-os-pale, #a8a08e); }
+.cd-barre .cb-titre strong { color: var(--cd-os, #e6dcc6); }
+.cd-barre .cb-compte { color: var(--cd-vert-clair, #a7cc98); }
+.cd-barre .cb-sceau { font-size: 15px; }
+.cd-barre :focus-visible { outline-color: var(--cd-vert-vif, #7dab6f); }
+
+/* --- Gazette : le titre garde sa gothique (c'est le nom du journal) --- */
+.cd-marque .gzl-nom,
+.cd-marque.gze-marque strong {
+  font: 400 1.3rem/1 "Gz Fraktur", Georgia, serif;
+  letter-spacing: 0; text-transform: none;
+}
+.cd-barre .gze-groupe label { text-transform: none; letter-spacing: .02em; font-size: 12px; }
+.cd-barre .gze-badge:not(.publiee):not(.modifie) { border-color: var(--cd-filet-2, #34453a); color: var(--cd-os-pale, #a8a08e); }
+.cd-barre .gze-etat:not(.ok):not(.attente):not(.err) { color: var(--cd-os-pale, #a8a08e); }
+.cd-barre .gzl-select, .cd-barre .gze-select { max-width: min(460px, 60vw); overflow: hidden; text-overflow: ellipsis; }

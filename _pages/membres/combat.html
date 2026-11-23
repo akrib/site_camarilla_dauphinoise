@@ -14,14 +14,16 @@ sitemap: false
   <link rel="manifest" href="{{ '/assets/favicon/site.webmanifest' | relative_url }}">
   <meta name="application-name" content="Camarilla Dauphinoise">
   <meta name="apple-mobile-web-app-title" content="Camarilla Dauphinoise">
-  <meta name="theme-color" content="#111111">
+  <meta name="theme-color" content="#0e1a12">
   <link rel="icon" type="image/png" href="{{ '/assets/favicon/favicon-96x96.png' | relative_url }}" sizes="96x96">
+  <link rel="stylesheet" href="{{ '/assets/css/theme/palette.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/combat.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/theme/barre.css' | relative_url }}">
 </head>
 <body class="cb-page">
 
-<header class="cb-barre">
-  <a class="cb-marque" href="{{ '/membres/' | relative_url }}" title="Espace membres"><span class="cb-sceau" aria-hidden="true">⚔</span><span>Combat</span></a>
+<header class="cb-barre cd-barre">
+  <a class="cb-marque cd-marque" href="{{ '/membres/' | relative_url }}" title="Espace membres"><span class="cb-sceau cd-sceau" aria-hidden="true">⚔</span><span><strong>Combat</strong><small>Initiatives</small></span></a>
   <div class="cb-titre" id="cbTitre" aria-live="polite"></div>
   <span class="cb-espace"></span>
   <button type="button" class="cb-btn" id="btnParticipants" title="Liste des participants : initiative, hors combat, retirer">👥 <span class="cb-lib">Participants</span></button>
@@ -30,7 +32,7 @@ sitemap: false
 
 <main class="cb-scene" id="scene" aria-label="Déroulé du combat"></main>
 
-<footer class="cb-pied">
+<footer class="cb-pied cd-barre cd-barre--bas">
   <button type="button" class="cb-nav" id="btnPrec"><span class="cb-fleche" aria-hidden="true">◀</span><span>Précédent<small id="precInfo"></small></span></button>
   <div class="cb-utiles" id="utiles"></div>
   <button type="button" class="cb-nav principal" id="btnSuiv"><span>Suivant<small id="suivInfo"></small></span><span class="cb-fleche" aria-hidden="true">▶</span></button>

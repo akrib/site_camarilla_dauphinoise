@@ -42,25 +42,7 @@
     display:flex;flex-direction:column;gap:18px;
   }
 
-  /* ---------- Masthead ---------- */
-  .hero{
-    text-align:center;
-    padding:8px 0 22px;
-    border-bottom:3px double var(--cream-dim);
-    margin-bottom:8px;
-  }
-  .hero h1{
-    font-family:Georgia,'Times New Roman',serif;
-    font-size:clamp(1.35rem,3.1vw,2.2rem);
-    font-weight:900;
-    letter-spacing:.04em;
-    text-transform:uppercase;
-    margin:6px 0 4px;
-    color:var(--cream);
-    text-shadow:2px 2px 0 rgba(0,0,0,.9);
-    line-height:1.35;
-  }
-  .hero h1 .accent{color:var(--gold)}
+  /* ---------- En-tête : barre commune des outils (theme/barre.css) ---------- */
 
   /* ---------- Challenges demandés / proposés (membres connectés) ---------- */
   .panel[hidden]{display:none}

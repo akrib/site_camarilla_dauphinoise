@@ -1,0 +1,69 @@
+/* ==========================================================================
+   PALETTE « CAMARILLA DAUPHINOISE »
+   Source unique des couleurs du site : vert « World of Darkness » (le marbre
+   vert des livres de jeu), sang, noir et os.
+
+   Chargée par toutes les pages :
+   - pages du thème (Minimal Mistakes) : _includes/theme.html ;
+   - outils plein écran (carte, tableau d'enquête, combat, gazette…) : lien
+     direct dans la page, avec theme/barre.css pour leurs barres de menu.
+
+   Règles de lecture (contraste mesuré sur le noir) :
+   - texte : os (14,5), os-pale (7,6), vert-vif (7,4), vert-clair (11) ;
+   - sang-clair (4,6) : accents et gros textes seulement ;
+   - sang-vif, sang, vert, vert-marbre : fonds, filets, bordures, jamais du texte.
+   ========================================================================== */
+:root {
+  /* --- Noir --- */
+  --cd-noir:        #0a0b0a;   /* fond des pages */
+  --cd-noir-2:      #111412;   /* panneaux */
+  --cd-noir-3:      #181d19;   /* cartes, boutons, relief */
+
+  /* --- Os --- */
+  --cd-os:          #e6dcc6;   /* texte principal */
+  --cd-os-pale:     #a8a08e;   /* texte secondaire */
+  --cd-os-sombre:   #6f695c;   /* mentions discrètes */
+
+  /* --- Vert World of Darkness --- */
+  --cd-vert-nuit:   #0e1a12;   /* fond des barres */
+  --cd-vert:        #1c3524;   /* aplats, survols */
+  --cd-vert-marbre: #2e5539;   /* filets forts, bordures actives */
+  --cd-vert-vif:    #7dab6f;   /* liens, repères (texte lisible) */
+  --cd-vert-clair:  #a7cc98;   /* survol des liens */
+
+  /* --- Sang --- */
+  --cd-sang-nuit:   #26070a;
+  --cd-sang:        #650c13;   /* boutons principaux, élément actif */
+  --cd-sang-vif:    #9e141d;   /* bordures, marqueurs */
+  --cd-sang-clair:  #d6504f;   /* accent en texte (titres, devise) */
+
+  /* --- Filets --- */
+  --cd-filet:       #263329;
+  --cd-filet-2:     #34453a;
+
+  /* Marbre vert (fonds de titres, emplacements d'image vides) */
+  --cd-marbre:
+    radial-gradient(120% 80% at 15% 20%, rgba(125,171,111,.16), transparent 55%),
+    radial-gradient(90% 70% at 85% 75%, rgba(46,85,57,.55), transparent 60%),
+    linear-gradient(135deg, #0e1a12 0%, #1c3524 45%, #0e1a12 100%);
+
+  /* --- Typographie --- */
+  --cd-display: "Cinzel", "Trajan Pro", Georgia, serif;
+  --cd-body:    "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --cd-read:    "Cormorant Garamond", Garamond, Georgia, serif;
+
+  --cd-halo: 0 18px 50px rgba(0, 0, 0, .6);
+
+  /* --- Anciens noms (compatibilité) --- */
+  --cd-black:      var(--cd-noir);
+  --cd-dark:       var(--cd-noir-2);
+  --cd-dark-2:     var(--cd-noir-3);
+  --cd-paper:      var(--cd-os);
+  --cd-paper-dim:  var(--cd-os-pale);
+  --cd-gold:       var(--cd-vert-vif);
+  --cd-gold-lit:   var(--cd-vert-clair);
+  --cd-red:        var(--cd-sang);
+  --cd-red-lit:    var(--cd-sang-vif);
+  --cd-green:      var(--cd-vert);
+  --cd-line:       var(--cd-filet);
+}

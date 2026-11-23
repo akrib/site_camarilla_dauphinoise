@@ -6,20 +6,22 @@
 
 .clan-v3 {
   /* --- Palette ---
-     Se raccorde aux jetons du theme du site (camarilla.css).
-     Les valeurs apres la virgule servent de repli si le theme est absent. */
-  --v3-ink:        var(--cd-black,     #111111);
-  --v3-ink-2:      var(--cd-dark,      #171513);
-  --v3-ink-3:      var(--cd-dark-2,    #211d18);
-  --v3-parchment:  var(--cd-paper,     #d8cdb8);
-  --v3-muted:      var(--cd-paper-dim, #96897a);
-  --v3-gold:       var(--cd-gold,      #9a7b45);
-  --v3-blood:      var(--cd-red,       #4a1018);
-  --v3-blood-lit:  var(--cd-red-lit,   #8c2230);
-  --v3-line:       var(--cd-line,      #4d412d);
+     Se raccorde aux jetons du site (assets/css/theme/palette.css) : vert
+     « World of Darkness », sang, noir et os. Les valeurs après la virgule
+     servent de repli si la palette est absente. */
+  --v3-ink:        var(--cd-noir,        #0a0b0a);
+  --v3-ink-2:      var(--cd-noir-2,      #111412);
+  --v3-ink-3:      var(--cd-noir-3,      #181d19);
+  --v3-parchment:  var(--cd-os,          #e6dcc6);
+  --v3-muted:      var(--cd-os-pale,     #a8a08e);
+  --v3-gold:       var(--cd-vert-vif,    #7dab6f);   /* surtitres (ancien nom gardé) */
+  --v3-blood:      var(--cd-sang,        #650c13);
+  --v3-blood-lit:  var(--cd-sang-vif,    #9e141d);
+  --v3-line:       var(--cd-filet-2,     #34453a);
+  --v3-marbre:     var(--cd-marbre, linear-gradient(135deg, #0e1a12, #1c3524 45%, #0e1a12));
 
-  /* --v3-accent est injecte par le layout (front matter `accent:`) */
-  --v3-accent:     var(--cd-gold, #9a7b45);
+  /* Accent du clan : sang par défaut ; une page peut le changer (front matter `accent:`) */
+  --v3-accent:     var(--cd-sang-clair,  #d6504f);
 
   /* --- Typo --- */
   --v3-display: var(--cd-display, "Cinzel", Georgia, serif);
@@ -128,7 +130,7 @@
   min-height: min(100svh, 980px);
   display: flex;
   align-items: flex-end;
-  padding: 8rem 0 clamp(3rem, 8vh, 7rem);
+  padding: 8rem 0 clamp(7.5rem, 14vh, 10rem);
   overflow: hidden;
 }
 
@@ -149,10 +151,22 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(120% 90% at 78% 30%, transparent 0%, rgba(8,6,10,.35) 45%, rgba(8,6,10,.9) 100%),
-    linear-gradient(180deg, rgba(8,6,10,.72) 0%, rgba(8,6,10,.25) 38%, rgba(8,6,10,.92) 88%, var(--v3-ink) 100%),
-    linear-gradient(90deg, rgba(8,6,10,.85) 0%, transparent 62%);
+    radial-gradient(120% 90% at 78% 30%, transparent 0%, rgba(10,11,10,.35) 45%, rgba(10,11,10,.9) 100%),
+    linear-gradient(180deg, rgba(10,11,10,.72) 0%, rgba(10,11,10,.25) 38%, rgba(10,11,10,.92) 88%, var(--v3-ink) 100%),
+    linear-gradient(90deg, rgba(10,11,10,.85) 0%, transparent 62%);
 }
+
+/* Pas encore de bannière : marbre vert, sceau plus présent */
+.v3-hero__bg--marbre {
+  background: var(--v3-marbre);
+  animation-duration: 40s;
+}
+.v3-sans-banniere .v3-hero__veil {
+  background:
+    radial-gradient(120% 90% at 78% 30%, transparent 0%, rgba(6,8,6,.25) 50%, rgba(6,8,6,.85) 100%),
+    linear-gradient(180deg, rgba(6,8,6,.55) 0%, transparent 40%, rgba(6,8,6,.85) 88%, var(--v3-ink) 100%);
+}
+.v3-sans-banniere .v3-hero__sigil { opacity: .2; color: var(--v3-parchment); }
 
 /* Le sceau géant, gravé dans le fond */
 .v3-hero__sigil {
@@ -252,7 +266,7 @@
 .v3-trait__pip {
   width: 22px;
   height: 4px;
-  background: rgba(236,229,216,.14);
+  background: rgba(230,220,198,.14);
 }
 .v3-trait__pip.is-on { background: var(--v3-accent); }
 
@@ -294,7 +308,7 @@
   position: sticky;
   top: 0;
   z-index: 30;
-  background: rgba(8,6,10,.82);
+  background: rgba(10,11,10,.82);
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-block: 1px solid var(--v3-line);
@@ -318,7 +332,7 @@
 }
 .v3-gauge__base,
 .v3-gauge__fill { position: absolute; inset: 0; }
-.v3-gauge__base { color: rgba(236,229,216,.2); }
+.v3-gauge__base { color: rgba(230,220,198,.2); }
 .v3-gauge__fill {
   color: var(--v3-blood-lit);
   clip-path: inset(calc(100% - var(--v3-progress, 0%)) 0 0 0);
@@ -456,7 +470,7 @@
   transition: background .22s, color .22s, border-color .22s;
   font-family: var(--v3-ui);
 }
-.v3-disc__tab:hover { background: rgba(236,229,216,.045); color: var(--v3-parchment); }
+.v3-disc__tab:hover { background: rgba(230,220,198,.045); color: var(--v3-parchment); }
 .v3-disc__tab[aria-selected="true"] {
   background: linear-gradient(90deg, rgba(255,255,255,.07), transparent);
   border-left-color: var(--v3-accent);
@@ -471,6 +485,27 @@
   transition: color .22s, filter .22s, scale .22s;
 }
 .v3-disc__tab:hover .v3-disc__icon { color: var(--v3-parchment); }
+/* Icônes de discipline (dessins en couleur) : grisées, en couleur une fois choisies */
+.v3-disc__icon--img {
+  object-fit: contain;
+  filter: grayscale(1) brightness(.8);
+  opacity: .7;
+  transition: filter .22s, opacity .22s, scale .22s;
+}
+.v3-disc__tab:hover .v3-disc__icon--img { filter: grayscale(.4); opacity: .9; }
+.v3-disc__tab[aria-selected="true"] .v3-disc__icon--img {
+  filter: drop-shadow(0 0 10px rgba(214, 80, 79, .45));
+  opacity: 1;
+}
+.v3-disc__icon--lettre {
+  display: grid;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-family: var(--v3-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
 .v3-disc__tab[aria-selected="true"] .v3-disc__icon {
   color: var(--v3-accent);
   scale: 1.08;
@@ -509,11 +544,32 @@
 }
 .v3-disc__media img,
 .v3-disc__media video { width: 100%; height: 100%; object-fit: cover; }
+.v3-disc__media--vide {
+  display: grid;
+  place-items: center;
+  background: var(--v3-marbre);
+}
+.v3-disc__media-icone {
+  width: 30%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  opacity: .5;
+  filter: grayscale(.35) drop-shadow(0 10px 30px rgba(0,0,0,.6));
+}
+.v3-disc__media-lettre {
+  font-family: var(--v3-display);
+  font-weight: 900;
+  font-size: clamp(4rem, 9vw, 7rem);
+  line-height: 1;
+  color: var(--v3-parchment);
+  opacity: .22;
+}
 .v3-disc__media::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 55%, rgba(8,6,10,.6));
+  background: linear-gradient(180deg, transparent 55%, rgba(10,11,10,.6));
   pointer-events: none;
 }
 
@@ -641,7 +697,7 @@
   display: none;
   place-items: center;
   padding: 3vh 4vw;
-  background: rgba(4,3,5,.94);
+  background: rgba(6,7,6,.94);
   backdrop-filter: blur(6px);
 }
 .v3-lightbox.is-open { display: grid; }

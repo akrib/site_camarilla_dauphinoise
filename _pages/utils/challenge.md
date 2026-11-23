@@ -4,20 +4,31 @@ title: "Génerateur de challenge"
 permalink: /utils/challenge
 ---
 
-<title>Générateur de challenge de la camarilla dauphinoise</title>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0e1a12">
+<title>Challenges — Camarilla Dauphinoise</title>
+<link rel="stylesheet" href="{{ '/assets/css/theme/palette.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/css/membres.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/css/challenge.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/css/theme/barre.css' | relative_url }}">
+</head>
 <body>
 <div class="grain"></div>
 <div class="vignette"></div>
 <!-- Réservé aux personnages incarnés (et aux conteurs) : voir challenge-en-ligne.js -->
 <div id="cam-garde" class="cam-app cam-garde"><div class="cam-garde-boite"><p>Chargement…</p><noscript><p>Cette page nécessite JavaScript.</p></noscript></div></div>
 
-<div class="app">
+<header class="chal-barre cd-barre">
+  <a class="cd-marque" href="{{ '/membres/' | relative_url }}" title="Espace membres">
+    <span class="cd-sceau" aria-hidden="true">✠</span>
+    <span><strong>Challenges</strong><small>Générateur de la Camarilla dauphinoise</small></span>
+  </a>
+</header>
 
-  <header class="hero">
-    <h1>Générateur de challenge<br>de la <span class="accent">camarilla dauphinoise</span></h1>
-  </header>
+<div class="app">
 
   <!-- ============ CHALLENGES DEMANDÉS PAR LES CONTEURS (membres connectés) ============ -->
   <section id="cam-defis" class="panel cam-defis" hidden></section>

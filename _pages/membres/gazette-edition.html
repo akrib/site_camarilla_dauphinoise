@@ -11,29 +11,31 @@ sitemap: false
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title>Édition de la gazette — Le Gratin Dauphinois</title>
+  <link rel="stylesheet" href="{{ '/assets/css/theme/palette.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/membres.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/gazette.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/gazette-edition.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/theme/barre.css' | relative_url }}">
 </head>
 <body class="gze-page">
 
-<header class="gze-barre">
-  <a class="gze-marque" href="{{ '/membres/' | relative_url }}" title="Espace membres">
-    <span class="gze-sceau">✠</span>
+<header class="gze-barre cd-barre">
+  <a class="gze-marque cd-marque" href="{{ '/membres/' | relative_url }}" title="Espace membres">
+    <span class="gze-sceau cd-sceau" aria-hidden="true">✠</span>
     <span><strong>Le Gratin Dauphinois</strong><small>Édition — conteurs</small></span>
   </a>
   <div class="gze-groupe">
     <label for="choixMois">Numéro</label>
-    <select id="choixMois" class="gze-select"></select>
-    <button class="gze-btn" id="btnNouveau" title="Préparer le numéro d'un autre mois">＋ Nouveau numéro</button>
+    <select id="choixMois" class="gze-select cd-btn"></select>
+    <button class="gze-btn cd-btn" id="btnNouveau" title="Préparer le numéro d'un autre mois">＋ Nouveau numéro</button>
   </div>
   <span class="gze-badge" id="badgeStatut"></span>
   <span class="gze-espace"></span>
   <div class="gze-groupe">
-    <button class="gze-btn" id="btnLocal" title="Enregistrer dans ce navigateur (Ctrl+S) — aucune écriture en ligne">💾 Sauvegarde locale</button>
-    <button class="gze-btn" id="btnSite" title="Enregistrer sur le site : les autres conteurs le voient ; les joueurs seulement une fois publié">☁ Sauvegarder sur le site</button>
-    <button class="gze-btn" id="btnApercu" title="Voir le numéro comme les joueurs, ou tel qu'il sera imprimé">👁 Prévisualiser</button>
-    <button class="gze-btn principal" id="btnPublier">📰 Publier…</button>
+    <button class="gze-btn cd-btn" id="btnLocal" title="Enregistrer dans ce navigateur (Ctrl+S) — aucune écriture en ligne">💾 Sauvegarde locale</button>
+    <button class="gze-btn cd-btn" id="btnSite" title="Enregistrer sur le site : les autres conteurs le voient ; les joueurs seulement une fois publié">☁ Sauvegarder sur le site</button>
+    <button class="gze-btn cd-btn" id="btnApercu" title="Voir le numéro comme les joueurs, ou tel qu'il sera imprimé">👁 Prévisualiser</button>
+    <button class="gze-btn cd-btn principal" id="btnPublier">📰 Publier…</button>
   </div>
   <div class="gze-etat" id="etatSauvegarde" aria-live="polite"></div>
 </header>

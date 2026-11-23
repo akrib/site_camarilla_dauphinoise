@@ -10,25 +10,29 @@ sitemap: false
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <meta name="theme-color" content="#2b2520">
+  <meta name="theme-color" content="#0e1a12">
   <title>Le Gratin Dauphinois — gazette de la Camarilla Dauphinoise</title>
+  <link rel="stylesheet" href="{{ '/assets/css/theme/palette.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/membres.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/gazette.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/gazette-lecture.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/theme/barre.css' | relative_url }}">
 </head>
 <body class="gzl-page">
 
-<header class="gzl-barre">
-  <a class="gzl-retour" href="{{ '/membres/' | relative_url }}">← Espace membres</a>
-  <span class="gzl-nom">Le Gratin Dauphinois</span>
+<header class="gzl-barre cd-barre">
+  <a class="gzl-marque cd-marque" href="{{ '/membres/' | relative_url }}" title="Espace membres">
+    <span class="cd-sceau" aria-hidden="true">✠</span>
+    <span><strong class="gzl-nom">Le Gratin Dauphinois</strong><small>← Espace membres</small></span>
+  </a>
   <span class="gzl-espace"></span>
   <nav class="gzl-numeros" id="numeros" aria-label="Numéros" hidden>
-    <button class="gzl-btn" id="btnPrecedent" title="Numéro précédent">◀</button>
-    <select class="gzl-select" id="choixNumero" aria-label="Numéro"></select>
-    <button class="gzl-btn" id="btnSuivant" title="Numéro suivant">▶</button>
+    <button class="gzl-btn cd-btn" id="btnPrecedent" title="Numéro précédent">◀</button>
+    <select class="gzl-select cd-btn" id="choixNumero" aria-label="Numéro"></select>
+    <button class="gzl-btn cd-btn" id="btnSuivant" title="Numéro suivant">▶</button>
   </nav>
-  <button class="gzl-btn" id="btnImprimer" hidden title="Imprimer en noir et blanc (A4)">🖨 Imprimer</button>
-  <a class="gzl-btn" id="lienEdition" href="{{ '/membres/gazette/edition/' | relative_url }}" hidden>✎ Édition</a>
+  <button class="gzl-btn cd-btn" id="btnImprimer" hidden title="Imprimer en noir et blanc (A4)">🖨 Imprimer</button>
+  <a class="gzl-btn cd-btn" id="lienEdition" href="{{ '/membres/gazette/edition/' | relative_url }}" hidden>✎ Édition</a>
 </header>
 
 <main class="gzl-lecture" id="lecture" aria-live="polite">

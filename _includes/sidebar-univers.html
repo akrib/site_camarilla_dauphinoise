@@ -1,36 +1,14 @@
 <div class="sidebar sticky page__sidebar">
-  <h3>Navigation Univers</h3>
+  <h3>L'univers</h3>
   <ul class="nav__list">
     <li class="{% if page.url == '/univers/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/">Vue d'ensemble</a></li>
-    <li class="{% if page.url == '/univers/mdt/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/mdt/">Le monde des ténebres</a></li>
+    <li class="{% if page.url == '/univers/mdt/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/mdt/">Le Monde des Ténèbres</a></li>
     <li class="{% if page.url == '/univers/met/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/met/">Mind’s Eye Theater</a></li>
     <li class="{% if page.url == '/univers/monde_vampirique/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/monde_vampirique/">Le monde vampirique</a></li>
     <li class="{% if page.url == '/univers/factions/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/factions/">Les factions</a></li>
     <li class="{% if page.url == '/univers/clans/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/clans/">Les clans</a></li>
     <li class="{% if page.url == '/univers/status_age/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/status_age/">Les statuts d’âge</a></li>
-    <li class="{% if page.url == '/univers/ennemis_vampire/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/ethnies/">Les Ennemis des Vampires</a></li>
-    <li class="{% if page.url == '/univers/autres_concepts/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/autres_concepts/">Autres Concepts Importants</a></li>
+    <li class="{% if page.url == '/univers/ennemis_vampire/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/ethnies/">Les ennemis des vampires</a></li>
+    <li class="{% if page.url == '/univers/autres_concepts/' %}active{% endif %}"><a href="{{ site.baseurl }}/univers/autres_concepts/">Autres concepts importants</a></li>
   </ul>
 </div>
-<style>
-.sidebar .nav__list .active > a {
-  font-weight: bold;
-  font-size: 1.15em;                   
-  border-left: 5px solid #73040d;
-  background: linear-gradient(90deg, #73040d 0%, #73040d 100%); 
-   padding-left: 14px;           
-  position: relative;
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  transition: all 0.2s ease;
-  padding: 5px;
-  color: white !important;
-  text-decoration: unset;
-}
-
-/* Petit effet hover pour renforcer encore */
-.sidebar .nav__list .active > a:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-</style>

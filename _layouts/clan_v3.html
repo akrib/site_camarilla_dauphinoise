@@ -7,7 +7,8 @@ layout: default
   clan_v3 — page de clan cinématique (style fiche de personnage)
   Camarilla Dauphinoise
 
-  Front matter attendu : voir _pages/clan-[CLAN]_v3.md
+  Front matter attendu : voir _pages/clan-ventrue.md (modèle commenté).
+  Ordre des clans (liens précédent / suivant) : _data/clans.yml.
   ============================================================
 {%- endcomment -%}
 
@@ -16,19 +17,59 @@ layout: default
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap">
 <link rel="stylesheet" href="{{ '/assets/css/module/clan-v3.css' | relative_url }}">
 
-{%- assign accent   = page.accent | default: '#b39861' -%}
-{%- assign sealurl  = page.header.overlay_icon | relative_url -%}
+{%- comment -%}
+  Images absentes : une page peut déjà nommer ses images (bannière, médias des
+  disciplines, galerie) avant qu'elles soient déposées dans le dépôt. Chaque
+  chemin est vérifié dans site.static_files : s'il manque, la page affiche un
+  fond de marbre vert à la place, et la galerie reste cachée.
+{%- endcomment -%}
+{%- assign fichiers = site.static_files | map: 'path' -%}
+{%- capture existe -%}|{{ fichiers | join: '|' }}|{%- endcapture -%}
+
 {%- assign clanname = page.clan_name | default: page.title -%}
 {%- assign romans   = "I,II,III,IV,V,VI,VII,VIII,IX,X" | split: "," -%}
 
-<article class="clan-v3"
-         style="--v3-accent: {{ accent }};{% if page.header.overlay_icon %} --v3-seal: url('{{ sealurl }}');{% endif %}">
+{%- assign banniere = page.header.overlay_image -%}
+{%- assign banniere_ok = false -%}
+{%- if banniere -%}{%- capture cle -%}|{{ banniere }}|{%- endcapture -%}{%- capture cle2 -%}|{{ banniere | remove_first: '/' }}|{%- endcapture -%}
+  {%- if existe contains cle or existe contains cle2 -%}{%- assign banniere_ok = true -%}{%- endif -%}{%- endif -%}
+
+{%- assign sceau = page.header.overlay_icon -%}
+{%- assign sceau_ok = false -%}
+{%- if sceau and sceau != '' -%}{%- capture cle -%}|{{ sceau }}|{%- endcapture -%}{%- capture cle2 -%}|{{ sceau | remove_first: '/' }}|{%- endcapture -%}
+  {%- if existe contains cle or existe contains cle2 -%}{%- assign sceau_ok = true -%}{%- endif -%}{%- endif -%}
+
+{%- comment -%} Galerie : seulement les images présentes {%- endcomment -%}
+{%- assign galerie = "" | split: "" -%}
+{%- for img in page.gallery -%}{%- capture cle -%}|{{ img }}|{%- endcapture -%}{%- capture cle2 -%}|{{ img | remove_first: '/' }}|{%- endcapture -%}
+  {%- if existe contains cle or existe contains cle2 -%}{%- assign galerie = galerie | push: img -%}{%- endif -%}{%- endfor -%}
+
+{%- comment -%} Clans voisins (bas de page) : _data/clans.yml, sauf prev / next dans la page {%- endcomment -%}
+{%- assign clans = site.data.clans -%}
+{%- assign nb_clans = clans | size -%}
+{%- assign rang = -1 -%}
+{%- for c in clans -%}{%- if c.url == page.url -%}{%- assign rang = forloop.index0 -%}{%- endif -%}{%- endfor -%}
+{%- if rang >= 0 -%}
+  {%- assign r_prec = rang | plus: nb_clans | minus: 1 | modulo: nb_clans -%}
+  {%- assign r_suiv = rang | plus: 1 | modulo: nb_clans -%}
+  {%- assign voisin_prec = clans[r_prec] -%}
+  {%- assign voisin_suiv = clans[r_suiv] -%}
+{%- endif -%}
+{%- if page.prev -%}{%- assign voisin_prec = page.prev -%}{%- endif -%}
+{%- if page.next -%}{%- assign voisin_suiv = page.next -%}{%- endif -%}
+
+<article class="clan-v3{% unless banniere_ok %} v3-sans-banniere{% endunless %}"
+         style="{% if page.accent %}--v3-accent: {{ page.accent }};{% endif %}{% if sceau_ok %} --v3-seal: url('{{ sceau | relative_url }}');{% endif %}">
 
   <!-- ============ 1. HÉROS ============ -->
   <header class="v3-hero">
-    <div class="v3-hero__bg" style="background-image: url('{{ page.header.overlay_image | relative_url }}');"></div>
+    {% if banniere_ok %}
+    <div class="v3-hero__bg" style="background-image: url('{{ banniere | relative_url }}');"></div>
+    {% else %}
+    <div class="v3-hero__bg v3-hero__bg--marbre" aria-hidden="true"></div>
+    {% endif %}
     <div class="v3-hero__veil"></div>
-    {% if page.header.overlay_icon %}<div class="v3-hero__sigil v3-seal" aria-hidden="true"></div>{% endif %}
+    {% if sceau_ok %}<div class="v3-hero__sigil v3-seal" aria-hidden="true"></div>{% endif %}
 
     <div class="v3-hero__inner v3-wrap">
       <p class="v3-hero__eyebrow v3-intro">{{ page.eyebrow | default: "Les Treize Clans" }}</p>
@@ -68,7 +109,7 @@ layout: default
   <!-- ============ 2. NAVIGATION COLLANTE ============ -->
   <nav class="v3-subnav" aria-label="Sections de la page">
     <div class="v3-subnav__inner">
-      {% if page.header.overlay_icon %}
+      {% if sceau_ok %}
       <div class="v3-gauge" aria-hidden="true" title="Progression de lecture">
         <div class="v3-gauge__base v3-seal"></div>
         <div class="v3-gauge__fill v3-seal"></div>
@@ -79,7 +120,7 @@ layout: default
         {% if page.disciplines %}<li><a href="#disciplines">Disciplines</a></li>{% endif %}
         {% if page.hierarchy %}<li><a href="#hierarchie">Hiérarchie</a></li>{% endif %}
         {% if page.chroniques %}<li><a href="#chroniques">Chroniques</a></li>{% endif %}
-        {% if page.gallery %}<li><a href="#galerie">Galerie</a></li>{% endif %}
+        {% if galerie.size > 0 %}<li><a href="#galerie">Galerie</a></li>{% endif %}
       </ul>
     </div>
   </nav>
@@ -129,9 +170,12 @@ layout: default
                   aria-controls="disc-pane-{{ forloop.index }}"
                   aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
                   tabindex="{% if forloop.first %}0{% else %}-1{% endif %}">
-            <span class="v3-disc__icon v3-seal"
-                  style="--v3-seal: url('{{ d.icon | relative_url }}');"
-                  aria-hidden="true"></span>
+            {%- capture cle -%}|{{ d.icon }}|{%- endcapture -%}{%- capture cle2 -%}|{{ d.icon | remove_first: '/' }}|{%- endcapture -%}
+            {% if d.icon and existe contains cle or d.icon and existe contains cle2 %}
+            <img class="v3-disc__icon v3-disc__icon--img" src="{{ d.icon | relative_url }}" alt="" aria-hidden="true">
+            {% else %}
+            <span class="v3-disc__icon v3-disc__icon--lettre" aria-hidden="true">{{ d.name | slice: 0 }}</span>
+            {% endif %}
             <span class="v3-disc__tabname">{{ d.name }}</span>
           </button>
           {% endfor %}
@@ -145,12 +189,23 @@ layout: default
                aria-labelledby="disc-tab-{{ forloop.index }}"
                {% unless forloop.first %}hidden{% endunless %}>
 
-            {% assign media = d.media | default: d.image | default: page.header.overlay_image %}
-            <div class="v3-disc__media">
-              {% if media contains '.mp4' or media contains '.webm' %}
-                <video src="{{ media | relative_url }}" autoplay muted loop playsinline></video>
+            {%- assign media = d.media | default: d.image -%}
+            {%- assign media_ok = false -%}
+            {%- if media -%}{%- capture cle -%}|{{ media }}|{%- endcapture -%}{%- capture cle2 -%}|{{ media | remove_first: '/' }}|{%- endcapture -%}
+              {%- if existe contains cle or existe contains cle2 -%}{%- assign media_ok = true -%}{%- endif -%}{%- endif -%}
+            {%- if media_ok == false and banniere_ok -%}{%- assign media = banniere -%}{%- assign media_ok = true -%}{%- endif -%}
+            {%- capture cle -%}|{{ d.icon }}|{%- endcapture -%}{%- capture cle2 -%}|{{ d.icon | remove_first: '/' }}|{%- endcapture -%}
+            <div class="v3-disc__media{% unless media_ok %} v3-disc__media--vide{% endunless %}">
+              {% if media_ok %}
+                {% if media contains '.mp4' or media contains '.webm' %}
+                  <video src="{{ media | relative_url }}" autoplay muted loop playsinline></video>
+                {% else %}
+                  <img src="{{ media | relative_url }}" alt="" loading="lazy">
+                {% endif %}
+              {% elsif d.icon and existe contains cle or d.icon and existe contains cle2 %}
+                <img class="v3-disc__media-icone" src="{{ d.icon | relative_url }}" alt="" aria-hidden="true">
               {% else %}
-                <img src="{{ media | relative_url }}" alt="" loading="lazy">
+                <span class="v3-disc__media-lettre" aria-hidden="true">{{ d.name | slice: 0 }}</span>
               {% endif %}
             </div>
 
@@ -201,13 +256,13 @@ layout: default
   {% endif %}
 
   <!-- ============ 7. GALERIE ============ -->
-  {% if page.gallery %}
+  {% if galerie.size > 0 %}
   <section class="v3-section" id="galerie">
     <div class="v3-wrap v3-reveal">
       <p class="v3-eyebrow">Visages du clan</p>
       <h2 class="v3-h2">Galerie</h2>
       <div class="v3-gallery" data-gallery>
-        {% for img in page.gallery %}
+        {% for img in galerie %}
         <button type="button" data-full="{{ img | relative_url }}" aria-label="Agrandir l'image {{ forloop.index }}">
           <img src="{{ img | relative_url }}" alt="{{ clanname }} — illustration {{ forloop.index }}" loading="lazy">
         </button>
@@ -220,19 +275,19 @@ layout: default
   <!-- ============ 8. PIED DE PAGE ============ -->
   <footer class="v3-foot">
     <div class="v3-foot__inner">
-      {% if page.prev %}
-        <a class="v3-foot__link" href="{{ page.prev.url | relative_url }}">
-          {% if page.prev.icon %}<span class="v3-seal" style="--v3-seal: url('{{ page.prev.icon | relative_url }}');"></span>{% endif %}
-          ← {{ page.prev.name }}
+      {% if voisin_prec %}
+        <a class="v3-foot__link" href="{{ voisin_prec.url | relative_url }}">
+          {% if voisin_prec.icon and voisin_prec.icon != '' %}<span class="v3-seal" style="--v3-seal: url('{{ voisin_prec.icon | relative_url }}');"></span>{% endif %}
+          ← {{ voisin_prec.name }}
         </a>
       {% else %}<span></span>{% endif %}
 
       <a class="v3-foot__link" href="{{ '/univers/clans/' | relative_url }}">Tous les clans</a>
 
-      {% if page.next %}
-        <a class="v3-foot__link" href="{{ page.next.url | relative_url }}">
-          {{ page.next.name }} →
-          {% if page.next.icon %}<span class="v3-seal" style="--v3-seal: url('{{ page.next.icon | relative_url }}');"></span>{% endif %}
+      {% if voisin_suiv %}
+        <a class="v3-foot__link" href="{{ voisin_suiv.url | relative_url }}">
+          {{ voisin_suiv.name }} →
+          {% if voisin_suiv.icon and voisin_suiv.icon != '' %}<span class="v3-seal" style="--v3-seal: url('{{ voisin_suiv.icon | relative_url }}');"></span>{% endif %}
         </a>
       {% else %}<span></span>{% endif %}
     </div>

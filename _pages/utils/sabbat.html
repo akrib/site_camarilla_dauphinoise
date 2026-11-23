@@ -9,15 +9,17 @@ sitemap: false
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b0c0f">
+  <meta name="theme-color" content="#0e1a12">
   <title>Trouve le Sabbat — Camarilla Dauphinoise</title>
+  <link rel="stylesheet" href="{{ '/assets/css/theme/palette.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/sabbat.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/theme/barre.css' | relative_url }}">
 </head>
 <body class="sabbat-page" data-etape="accueil">
 
-<header class="sabbat-barre">
-  <a class="sabbat-marque" href="{{ '/membres/' | relative_url }}" title="Espace membres">
-    <span class="sceau">✠</span>
+<header class="sabbat-barre cd-barre">
+  <a class="sabbat-marque cd-marque" href="{{ '/membres/' | relative_url }}" title="Espace membres">
+    <span class="sceau cd-sceau" aria-hidden="true">✠</span>
     <span><strong>Trouve le Sabbat</strong><small>Grenoble, la nuit</small></span>
   </a>
   <div class="sabbat-compteurs" id="compteurs" hidden>
@@ -25,8 +27,8 @@ sitemap: false
     <span>Score <b id="score">0</b></span>
   </div>
   <div class="sabbat-espace"></div>
-  <button class="sabbat-btn discret" id="btnAbandon" title="Abandonner la traque" hidden><span class="ico">✕</span><span class="txt">Abandonner</span></button>
-  <button class="sabbat-btn" id="btnClassement" title="Classement des traqueurs"><span class="ico">♛</span><span class="txt">Classement</span></button>
+  <button class="sabbat-btn cd-btn discret" id="btnAbandon" title="Abandonner la traque" hidden><span class="ico">✕</span><span class="txt">Abandonner</span></button>
+  <button class="sabbat-btn cd-btn" id="btnClassement" title="Classement des traqueurs"><span class="ico">♛</span><span class="txt">Classement</span></button>
   <span class="sabbat-joueur" id="joueur"></span>
 </header>
 

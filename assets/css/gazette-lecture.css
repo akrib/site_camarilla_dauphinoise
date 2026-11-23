@@ -13,8 +13,6 @@ body.gzl-page {
   position: sticky; top: 0; z-index: 10; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px;
   padding: 8px 16px; background: rgba(22, 19, 16, .94); border-bottom: 1px solid #4a4037; backdrop-filter: blur(4px);
 }
-.gzl-retour { color: #d9c9a5; text-decoration: none; font-size: 13px; }
-.gzl-retour:hover { text-decoration: underline; }
 .gzl-nom { font: 400 1.35rem/1 "Gz Fraktur", Georgia, serif; color: #f4ecd8; }
 .gzl-espace { flex: 1; }
 .gzl-numeros { display: flex; align-items: center; gap: 6px; }

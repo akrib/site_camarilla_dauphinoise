@@ -4,46 +4,47 @@ title: "Tableau d'Enquête"
 permalink: /utils/tableau
 ---
 
+<meta charset="utf-8">
 <title>Tableau d'Enquête</title>
+<link rel="stylesheet" href="{{ '/assets/css/theme/palette.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/css/tableau.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/css/theme/barre.css' | relative_url }}">
 <body>
 
 <div class="grain"></div>
 <div class="vignette"></div>
 <div id="cam-garde" class="cam-app cam-garde"><div class="cam-garde-boite"><p>Chargement…</p><noscript><p>Cette page nécessite JavaScript.</p></noscript></div></div>
 
-<header class="toolbar">
-  <div class="brand">
-    <div class="badge">★</div>
-    <div>
-      <h1>TABLEAU D'ENQUÊTE</h1>
-    </div>
-  </div>
+<header class="toolbar cd-barre">
+  <a class="brand cd-marque" href="{{ '/membres/' | relative_url }}" title="Espace membres">
+    <span class="badge cd-sceau" aria-hidden="true">✠</span>
+    <div><h1>Tableau d'enquête</h1><small>Camarilla dauphinoise</small></div>
+  </a>
 
   <div class="tools">
-    <button id="btnPhoto">＋ Photo</button>
-    <button id="btnNote">＋ Note</button>
-    <button id="btnArticle">＋ Article</button>
-    <button id="btnMap">＋ Lieu</button>
-    <div class="sep"></div>
+    <button class="cd-btn" id="btnPhoto">＋ Photo</button>
+    <button class="cd-btn" id="btnNote">＋ Note</button>
+    <button class="cd-btn" id="btnArticle">＋ Article</button>
+    <button class="cd-btn" id="btnMap">＋ Lieu</button>
+    <div class="sep cd-sep"></div>
     <div class="colors" id="colors"><span class="lbl">Fil&nbsp;:</span></div>
-    <div class="sep"></div>
+    <div class="sep cd-sep"></div>
     <div class="zoom-group">
-      <button id="btnZoomOut" title="Dézoomer (molette avec Ctrl)">−</button>
+      <button class="cd-btn" id="btnZoomOut" title="Dézoomer (molette avec Ctrl)">−</button>
       <span id="zoomLabel">100%</span>
-      <button id="btnZoomIn" title="Zoomer (molette avec Ctrl)">＋</button>
-      <button id="btnZoomReset" title="Réinitialiser le zoom">⟲</button>
+      <button class="cd-btn" id="btnZoomIn" title="Zoomer (molette avec Ctrl)">＋</button>
+      <button class="cd-btn" id="btnZoomReset" title="Réinitialiser le zoom">⟲</button>
     </div>
-    <div class="sep"></div>
-    <button id="btnSave" title="Sauvegarder vos 3 tableaux en ligne (Ctrl+S). Chaque personnage a un seul tableau en ligne, remplacé à chaque sauvegarde.">☁ Sauvegarder</button>
-    <button id="btnShare" title="Partager votre tableau avec d'autres personnages, en lecture ou en modification">⇄ Partager</button>
-    <button id="btnCloud" title="Ouvrir le tableau de votre personnage ou un tableau partagé avec lui">☰ Ouvrir</button>
-    <button id="btnPerso" title="Personnage incarné">☺ …</button>
+    <div class="sep cd-sep"></div>
+    <button class="cd-btn" id="btnSave" title="Sauvegarder vos 3 tableaux en ligne (Ctrl+S). Chaque personnage a un seul tableau en ligne, remplacé à chaque sauvegarde.">☁ Sauvegarder</button>
+    <button class="cd-btn" id="btnShare" title="Partager votre tableau avec d'autres personnages, en lecture ou en modification">⇄ Partager</button>
+    <button class="cd-btn" id="btnCloud" title="Ouvrir le tableau de votre personnage ou un tableau partagé avec lui">☰ Ouvrir</button>
+    <button class="cd-btn" id="btnPerso" title="Personnage incarné">☺ …</button>
     <span id="cloudStatus" class="cloud-status"></span>
-    <div class="sep"></div>
-    <button id="btnExport">⇩ Export JSON</button>
-    <button id="btnImport">⇧ Import JSON</button>
-    <button id="btnClear" class="danger">✕ Vider</button>
+    <div class="sep cd-sep"></div>
+    <button class="cd-btn" id="btnExport">⇩ Export JSON</button>
+    <button class="cd-btn" id="btnImport">⇧ Import JSON</button>
+    <button id="btnClear" class="cd-btn danger">✕ Vider</button>
   </div>
 </header>
 

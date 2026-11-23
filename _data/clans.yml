@@ -1,0 +1,42 @@
+# Clans du site : ordre des liens « précédent / suivant » en bas des pages de
+# clan (_layouts/clan_v3.html). Le dernier renvoie au premier.
+# icon : symbole du clan (laisser vide s'il n'y en a pas encore).
+- name: "Assamite"
+  url: /clan/assamite/
+  icon: ""
+- name: "Brujah"
+  url: /clan/brujah/
+  icon: /assets/images/icons/clan/330px-Brujah_symbol.png
+- name: "Gangrel"
+  url: /clan/gangrel/
+  icon: /assets/images/icons/clan/330px-Gangrel_symbol.png
+- name: "Giovanni"
+  url: /clan/giovanni/
+  icon: /assets/images/icons/clan/330px-Hecata_symbol.png
+- name: "Lasombra"
+  url: /clan/lasombra/
+  icon: /assets/images/icons/clan/330px-Lasombra_symbol.png
+- name: "Malkavien"
+  url: /clan/malkavian/
+  icon: /assets/images/icons/clan/330px-Malkavian_symbol.png
+- name: "Nosferatu"
+  url: /clan/nosferatu/
+  icon: /assets/images/icons/clan/330px-Nosferatu_symbol.png
+- name: "Ravnos"
+  url: /clan/ravnos/
+  icon: /assets/images/icons/clan/330px-Ravnos_symbol.png
+- name: "Disciples de Set"
+  url: /clan/sethite/
+  icon: /assets/images/icons/clan/330px-Ministry_symbol.png
+- name: "Toréador"
+  url: /clan/toreador/
+  icon: /assets/images/icons/clan/330px-Toreador_symbol.png
+- name: "Tremere"
+  url: /clan/tremere/
+  icon: /assets/images/icons/clan/330px-Tremere_symbol.png
+- name: "Tzimisce"
+  url: /clan/tzimisce/
+  icon: /assets/images/icons/clan/330px-Tzimisce_symbol.png
+- name: "Ventrue"
+  url: /clan/ventrue/
+  icon: /assets/images/icons/clan/330px-Ventrue_symbol.png

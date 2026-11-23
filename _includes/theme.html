@@ -22,6 +22,7 @@
 
 {%- case theme -%}
   {%- when 'camarilla' -%}
+    <link rel="stylesheet" href="{{ '/assets/css/theme/palette.css' | relative_url }}">
     <link rel="stylesheet" href="{{ '/assets/css/theme/camarilla.css' | relative_url }}">
   {%- when 'default' -%}
     {%- comment -%} Rien à charger : Minimal Mistakes tel quel. {%- endcomment -%}
