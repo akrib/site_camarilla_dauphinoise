@@ -511,6 +511,8 @@ el.reset.addEventListener('click', resetAll);
 el.drawBtn.addEventListener('click', drawRandom);
 
 document.addEventListener('keydown', e => {
+  const garde = document.getElementById('cam-garde');
+  if(garde && !garde.hidden) return;   // page réservée : pas de raccourcis derrière l'écran de garde
   const tag = (e.target.tagName || '').toLowerCase();
   const typing = tag === 'input' || tag === 'textarea' || e.target.isContentEditable;
   if(typing) return;

@@ -1,8 +1,10 @@
 // =====================================================================
 // Incarnation : un membre choisit lequel de ses personnages validés il
-// joue. Les outils de jeu (panneau d'affichage, tableau d'enquête) ne
-// s'ouvrent qu'à un personnage incarné, et tout ce qui s'y fait est au nom
-// du personnage. Les conteurs y ont accès sans personnage (modération).
+// joue. Les outils personnage (panneau d'affichage, tableau d'enquête,
+// carte de Grenoble, challenges, influences) ne s'ouvrent qu'à un personnage
+// incarné, et tout ce qui s'y fait est au nom du personnage. Les conteurs ont
+// accès aux quatre premiers sans personnage (modération) ; les influences
+// demandent un personnage « en jeu ».
 //
 // - Le choix est mémorisé dans le navigateur (un par compte), et revérifié
 //   dans la base à chaque page : une fiche archivée ou repassée en brouillon
@@ -108,7 +110,7 @@ export function blocChoixPersonnage(uid, { titre = 'Choisissez votre personnage'
   const actuel = incarnationMemorisee(uid);
   const bloc = h('div', { class: 'cam-bloc cam-incarnation' },
     h('h2', {}, titre),
-    h('p', {}, texte || 'Le panneau d\'affichage et le tableau d\'enquête sont des outils de jeu : on y agit en tant que personnage. Choisissez lequel de vos personnages validés vous incarnez.'),
+    h('p', {}, texte || 'Le panneau d\'affichage, le tableau d\'enquête, la carte de Grenoble, les challenges et les influences sont des outils de jeu : on y agit en tant que personnage. Choisissez lequel de vos personnages validés vous incarnez.'),
     liste, msg);
   mesPersonnagesIncarnables(uid).then((tous) => {
     const persos = filtre ? tous.filter(filtre) : tous;

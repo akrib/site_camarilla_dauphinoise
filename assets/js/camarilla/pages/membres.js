@@ -4,7 +4,7 @@ import {
   changerNom, renvoyerVerification, deconnexion, message, messageErreur, dateFr,
   estAdminReel, vueTest, changerVue, VUES_TEST, reglesAJour
 } from '../core.js';
-import { personnageIncarne, blocChoixPersonnage, quitterPersonnage } from '../incarnation.js';
+import { personnageIncarne, blocChoixPersonnage } from '../incarnation.js';
 import { chargerCalendrier, encartCalendrier } from '../calendrier.js';
 import { nouvellesReponses, travailConteur } from '../suivi.js';
 
@@ -80,23 +80,25 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
     }).catch((e) => console.warn('Vérification des règles impossible', e));
   }
 
-  // --- Outils du joueur (compte) ---
+  // --- Outils du joueur(se) (compte) ---
+  // Les outils de jeu (au nom d'un personnage) sont plus bas, sous le choix
+  // du personnage incarné.
   const compteur = (tuileEl) => { const c = h('span'); tuileEl.querySelector('strong').append(c); return c; };
-  const montrer = (c, n) => { if (n) c.replaceChildren(h('span', { class: 'cam-tag soumise', style: 'margin-left:.4rem' }, String(n))); };
+  const montrer = (c, n) => { c.replaceChildren(n ? h('span', { class: 'cam-tag soumise', style: 'margin-left:.4rem' }, String(n)) : ''); };
   const tuileNotifs = tuile('/membres/notifications/', 'Notifications', 'Réponses des conteurs, résultats de vos fiches, tableaux partagés, challenges demandés.');
-  const tuileInfluences = tuile('/influences/', 'Influences', 'Actions d\'influence et raisons sociales du personnage incarné.');
   const tuileTickets = tuile('/membres/tickets/', 'Tickets', 'Vos demandes aux conteurs : scènes, règles, XP, signalements…');
-  const [cNotifs, cInfluences, cTickets] = [tuileNotifs, tuileInfluences, tuileTickets].map(compteur);
+  const [cNotifs, cTickets] = [tuileNotifs, tuileTickets].map(compteur);
+  const cInfluences = h('span');   // posé sur la tuile Influences des outils personnage
   // Prochaine partie et fenêtre des influences (calendrier des conteurs)
   const zoneCalendrier = h('div');
   const cal = await chargerCalendrier().catch((e) => { console.warn(e); return null; });
   const encart = cal && encartCalendrier(cal);
   if (encart) zoneCalendrier.append(encart);
-  racine.append(zoneCalendrier, h('h2', {}, 'Mes outils'),
+  racine.append(zoneCalendrier, h('h2', {}, 'Mes outils joueur(se)'),
     h('div', { class: 'cam-grille' },
       tuileNotifs,
       tuile('/membres/fiches/', 'Mes fiches de personnage', 'Créer, compléter et soumettre vos fiches au conteur.'),
-      tuileInfluences, tuileTickets,
+      tuileTickets,
       tuile('/utils/sabbat', 'Trouve le Sabbat', 'Retrouver dans Grenoble le repaire photographié par un informateur. Points et classement des joueurs.'),
       tuile('/membres/gazette/', 'Le Gratin Dauphinois', 'La gazette des nuits grenobloises : tous les numéros parus, à lire ou à imprimer.')));
 
@@ -116,51 +118,60 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
     montrer(cTickets, rep.tickets.length);
   });
 
-  // --- Personnage incarné et outils de jeu ---
-  // Le panneau d'affichage et le tableau d'enquête ne s'ouvrent qu'à un
-  // personnage validé (les conteurs y ont accès sans personnage).
+  // --- Personnage incarné et outils personnage ---
+  // Le panneau d'affichage, le tableau d'enquête, la carte de Grenoble, les
+  // challenges et les influences ne s'ouvrent qu'à un personnage incarné.
+  // Les conteurs ont accès aux quatre premiers sans personnage (modération) ;
+  // les influences des joueurs sont dans « Influences — conteur ».
   const zonePerso = h('div');
   racine.append(h('h2', { id: 'personnage' }, 'Personnage incarné'), zonePerso);
-  const conteurSansPerso = estConteur(profil);
   async function dessinerPersonnage() {
     zonePerso.replaceChildren(h('p', { class: 'sous-titre' }, 'Chargement…'));
     const perso = await personnageIncarne(user.uid);
-    const defisPerso = perso ? mesDefis.filter((d) => d.personnage === perso.id).length : 0;
-    const tuileChallenges = tuile('/utils/challenge', 'Challenges', perso
-      ? (defisPerso ? defisPerso + ' challenge' + (defisPerso > 1 ? 's' : '') + ' demandé' + (defisPerso > 1 ? 's' : '') + ' à ' + perso.nom + ' par les conteurs.' : 'Le générateur de challenge, et les challenges que les conteurs demandent à ' + perso.nom + '.')
-      : 'Le générateur de challenge, et proposer un challenge à un personnage.');
-    if (defisPerso) tuileChallenges.querySelector('strong').append(h('span', { class: 'cam-tag soumise' }, String(defisPerso)));
-    const outils = h('div', { class: 'cam-grille' },
-      tuileChallenges,
-      tuile('/membres/affichage/', 'Panneau d\'affichage', perso
-        ? 'Épingler des notes et voir ce que les goules ont vu, en tant que ' + perso.nom + '.'
-        : 'Les notes épinglées sur le liège (en tant que conteur).'),
-      tuile('/utils/carte', 'Carte de Grenoble', perso
-        ? 'Havres, zones de chasse, rondes et actions d\'influence de ' + perso.nom + ', territoires de la ville, en plan ou en 3D.'
-        : 'Carte tactique de Grenoble (en tant que conteur).'),
-      tuile('/utils/tableau', 'Tableau d\'enquête', perso
-        ? 'Les 3 tableaux d\'enquête de ' + perso.nom + ', partageables avec d\'autres personnages.'
-        : 'Consulter les tableaux des personnages (en tant que conteur).'));
-    if (!perso) {
-      zonePerso.replaceChildren(blocChoixPersonnage(user.uid, {
-        titre: 'Aucun personnage incarné',
-        texte: 'Le panneau d\'affichage et le tableau d\'enquête sont réservés aux personnages. Choisissez lequel de vos personnages validés vous jouez :',
-        apresChoix: () => dessinerPersonnage()
-      }), conteurSansPerso ? h('div', {}, h('p', { class: 'sous-titre' }, 'En tant que conteur, vous y avez aussi accès sans personnage :'), outils) : '');
-      return;
+    const choix = blocChoixPersonnage(user.uid, {
+      titre: perso ? 'Vous incarnez ' + perso.nom : 'Aucun personnage incarné',
+      texte: perso
+        ? 'Les outils personnage ci-dessous agissent au nom de ' + perso.nom + '. Pour jouer un autre de vos personnages, choisissez-le :'
+        : 'Le panneau d\'affichage, le tableau d\'enquête, la carte de Grenoble, les challenges et les influences ne s\'ouvrent qu\'à un personnage. Choisissez lequel de vos personnages validés vous jouez :',
+      avecQuitter: true,
+      apresChoix: () => dessinerPersonnage()
+    });
+    if (perso) {
+      zonePerso.replaceChildren(choix,
+        h('h2', { id: 'outils-personnage' }, 'Mes outils personnage'),
+        h('p', { class: 'sous-titre' }, 'En tant que ', h('strong', {}, perso.nom),
+          ' · ' + [perso.clan, perso.secte, perso.statut === 'active' ? 'en jeu' : 'en réserve'].filter(Boolean).join(' · ')),
+        outilsPersonnage(perso));
+    } else if (estConteur(profil)) {
+      zonePerso.replaceChildren(choix,
+        h('p', { class: 'sous-titre' }, 'En tant que conteur, vous avez aussi accès sans personnage à :'), outilsConteurSansPersonnage());
+    } else {
+      zonePerso.replaceChildren(choix);
     }
-    const changer = h('div', { style: 'display:none' });
-    zonePerso.replaceChildren(
-      h('div', { class: 'cam-bloc' },
-        h('div', { class: 'cam-incarne' },
-          h('span', {}, 'Vous incarnez'), h('span', { class: 'nom' }, perso.nom),
-          h('span', { class: 'sous-titre', style: 'margin:0' }, [perso.clan, perso.secte, perso.statut === 'active' ? 'en jeu' : 'en réserve'].filter(Boolean).join(' · '))),
-        h('div', { class: 'cam-actions' },
-          h('button', { type: 'button', class: 'secondaire', onclick: () => { changer.style.display = changer.style.display === 'none' ? '' : 'none'; } }, 'Changer de personnage'),
-          h('button', { type: 'button', class: 'secondaire', onclick: () => { quitterPersonnage(user.uid); dessinerPersonnage(); } }, 'Ne plus incarner personne'))),
-      changer,
-      h('h3', {}, 'Outils de ' + perso.nom), outils);
-    changer.append(blocChoixPersonnage(user.uid, { titre: 'Changer de personnage', apresChoix: () => dessinerPersonnage() }));
+  }
+  function outilsPersonnage(perso) {
+    const n = mesDefis.filter((d) => d.personnage === perso.id).length;
+    const tuileChallenges = tuile('/utils/challenge', 'Challenges', n
+      ? n + ' challenge' + (n > 1 ? 's' : '') + ' demandé' + (n > 1 ? 's' : '') + ' à ' + perso.nom + ' par les conteurs.'
+      : 'Le générateur de challenge, et les challenges que les conteurs demandent à ' + perso.nom + '.', n ? String(n) : '');
+    const enJeu = perso.statut === 'active';
+    const tuileInfluences = tuile('/influences/', 'Influences', enJeu
+      ? 'Actions d\'influence et raisons sociales de ' + perso.nom + '.'
+      : 'Réservées aux personnages en jeu : ' + perso.nom + ' est en réserve.');
+    tuileInfluences.querySelector('strong').append(cInfluences);
+    return h('div', { class: 'cam-grille' },
+      tuile('/membres/affichage/', 'Panneau d\'affichage', 'Épingler des notes et voir ce que les goules ont vu, en tant que ' + perso.nom + '.'),
+      tuile('/utils/tableau', 'Tableau d\'enquête', 'Les 3 tableaux d\'enquête de ' + perso.nom + ', partageables avec d\'autres personnages.'),
+      tuile('/utils/carte', 'Carte de Grenoble', 'Havres, zones de chasse, rondes et actions d\'influence de ' + perso.nom + ', territoires de la ville, en plan ou en 3D.'),
+      tuileChallenges,
+      tuileInfluences);
+  }
+  function outilsConteurSansPersonnage() {
+    return h('div', { class: 'cam-grille' },
+      tuile('/membres/affichage/', 'Panneau d\'affichage', 'Les notes épinglées sur le liège (en tant que conteur).'),
+      tuile('/utils/tableau', 'Tableau d\'enquête', 'Consulter les tableaux des personnages (en tant que conteur).'),
+      tuile('/utils/carte', 'Carte de Grenoble', 'Carte tactique de Grenoble (en tant que conteur).'),
+      tuile('/utils/challenge', 'Challenges', 'Le générateur de challenge, et proposer un challenge à un personnage.'));
   }
   dessinerPersonnage();
 

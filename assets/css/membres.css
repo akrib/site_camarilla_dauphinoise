@@ -31,6 +31,8 @@
   background: var(--panneau); border: 1px solid var(--ligne); border-radius: 6px;
   padding: 1.2rem 1.4rem; margin-bottom: 1.2rem;
 }
+/* Le thème colore les paragraphes pour le fond sombre : dans les blocs clairs, texte à l'encre. */
+.cam-app :is(.cam-bloc, .cam-carte) p:not([class]) { color: var(--encre); }
 .cam-acces { text-align: center; padding: 2rem 1.4rem; }
 .cam-acces .cam-btn { margin-top: .6rem; }
 .cam-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; margin-bottom: 1.2rem; }

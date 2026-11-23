@@ -4,7 +4,9 @@
 Usage :
     python3 outils/fiche/extraire_descriptions.py regles.pdf
 
-Lit   : assets/js/camarilla/fiche/referentiel.js, outils/fiche/sortie/textes_excel.json
+Lit   : assets/js/camarilla/fiche/referentiel.js, outils/fiche/sortie/textes_excel.json (facultatif :
+        sans la fiche Excel, les archétypes sont lus dans le PDF et les faiblesses de clan
+        restent dans le texte de chaque clan)
 Écrit : outils/fiche/sortie/descriptions.json   (PRIVÉ : document confidentiel de la Fédération,
         à importer dans Firestore depuis la page Comptes > Référentiel, jamais commité)
         outils/fiche/sortie/couverture.txt       (éléments sans description)
@@ -19,7 +21,7 @@ SORTIE = ICI / 'sortie'
 # ----------------------------------------------------------------------------
 # Lecture du PDF
 # ----------------------------------------------------------------------------
-PAGE = re.compile(r'^(\d+) / [\d.]+$')
+PAGE = re.compile(r'^(\d{1,3}(?:\.\d{3})*) / [\d.]+$')   # « 12 / 1.131 », « 1.021 / 1.131 »
 SOUS_SECTION = re.compile(r'^(Focus\s*(?::|[\w’]+\s*:)|Succès|Système|FAQ|Score de [Tt]est|Exemple|Notes?\b|Spécial|Prérequis|'
                           r'Remarque|Option|Coût\b|Durée|Précision|Clarification|Conditions? préalables?|Approbation|Co[uû]ts?\s*:|(?:Basse|Moyenne|Haute)\b|\(.*\)$)')
 
@@ -31,7 +33,7 @@ def lignes(chemin):
         s = l.strip()
         m = PAGE.match(s)
         if m:
-            page = int(m.group(1)) + 1
+            page = int(m.group(1).replace('.', '')) + 1
             continue
         if s.startswith(('Fédération Camarilla Française', 'Document confidentiel')):
             continue
@@ -79,7 +81,7 @@ def norm(s, singulier=True):
     s = re.sub(r'\(.*?\)|\[.*?\]', ' ', str(s))
     s = s.replace('•', ' ').replace('’', "'").replace('œ', 'oe').replace('Œ', 'oe')
     s = unicodedata.normalize('NFKD', s).encode('ascii', 'ignore').decode().lower()
-    s = re.sub(r"^(lignee|atout|handicap)\s*[:\-]\s*", '', s.strip())
+    s = re.sub(r"^(lignee|atout|handicap|ritus de faction|ritus|rituel)\s*[:\-]\s*", '', s.strip())
     s = re.sub(r"\b(la|le|les|l|de|du|des|d|a|au|aux|en|et)\b", ' ', re.sub(r"[^a-z0-9]+", ' ', s))
     mots = s.split()
     if singulier:
@@ -98,13 +100,40 @@ class Index:
     def dans(self, plages):
         return [x for x in self.e if any(a <= x['page'] <= b for a, b in plages)]
 
-    def chercher(self, nom, plages, alias=(), approx=True):
+    def complete(self, x):
+        """Entrée au titre seul : son texte est le bloc suivant, s'il est sur la même page."""
+        if x['texte'].strip():
+            return x
+        i = self.e.index(x)
+        if i + 1 < len(self.e) and self.e[i + 1]['page'] == x['page']:
+            s = self.e[i + 1]
+            return {'titre': x['titre'], 'page': x['page'], 'texte': (s['titre'] + '\n' + s['texte']).strip()}
+        return None
+
+    def chercher(self, nom, plages, alias=(), approx=True, exact=False):
+        x = self._chercher(nom, plages, alias, approx, exact)
+        return self.complete(x) if x else None
+
+    def titre_interne(self, nom, plages, alias=()):
+        """Élément dont le titre est une ligne seule au milieu d'un bloc : texte jusqu'à la fin du bloc."""
+        cibles = {norm(n) for n in (nom, *alias) if n}
+        for x in self.dans(plages):
+            ls = x['texte'].split('\n')
+            for k, l in enumerate(ls[:-1]):
+                # suivi d'une vraie phrase (pas d'une simple liste de noms)
+                if len(l) < 70 and norm(l) in cibles and len(ls[k + 1].strip()) >= 40:
+                    return {'titre': l.strip(), 'page': x['page'], 'texte': '\n'.join(ls[k + 1:]).strip()}
+        return None
+
+    def _chercher(self, nom, plages, alias=(), approx=True, exact=False):
         cibles = [norm(n) for n in (nom, *alias) if n]
-        cand = self.dans(plages)
+        cand = [x for x in self.dans(plages) if x['texte'].strip() or self.complete(x)]
         for c in cibles:
             for x in cand:
                 if norm(x['titre']) == c:
                     return x
+        if exact:   # recherche dans tout le document : pas de rapprochement, trop de faux amis
+            return None
         for c in cibles:
             for x in cand:
                 t = norm(x['titre'])
@@ -161,6 +190,10 @@ ALIAS = {
     'Havre': ['Havres'], 'Fausses identités': ['Fausses Identités'], 'Rituels sabbatiques': ['Rituels'],
     'Force d\'âme': ['Force d’Âme'], "V. de l'Enfant de la Tombe": ['La Voie du Né de la Tombe'],
     "Voie de l'Humanité": ['L’Humanité', 'Humanité'],
+    'Numina (Vraie Foi)': ['La Vraie Foi', 'Vraie Foi'], 'Danse du Feu': ['La Danse du Feu'],
+    'Contrition': ['Rite de Contrition'],
+    # Rituel renommé dans les règles (même niveau, même effet : infiltrer le Sabbat)
+    'Manipulation du Traitre': ['Manipulation du parjure'],
 }
 
 
@@ -172,10 +205,42 @@ def nom_voie_discipline(nom):
 # ----------------------------------------------------------------------------
 # Construction
 # ----------------------------------------------------------------------------
+def date_pdf(pdf):
+    """Date de création du PDF (jj/mm/aaaa), pour dater le référentiel."""
+    try:
+        info = subprocess.run(['pdfinfo', pdf], capture_output=True, text=True, check=True).stdout
+        m = re.search(r'CreationDate:\s+\w+\s+(\w+)\s+(\d+)\s+[\d:]+\s+(\d{4})', info)
+        mois = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        if m and m.group(1) in mois:
+            return f'{int(m.group(2)):02d}/{mois.index(m.group(1)) + 1:02d}/{m.group(3)}'
+    except Exception:
+        pass
+    return ''
+
+
+def archetypes_du_pdf(ix, noms):
+    """Liste « Nom ? description » de l'entrée Archétypes (le tiret du PDF sort en « ? »)."""
+    x = ix.chercher('Archétypes', P['creation'])
+    if not x:
+        return {}
+    voulus = {norm(n): n for n in noms}
+    res = {}
+    for l in x['texte'].split('\n'):
+        m = re.match(r'^\s*(.{2,40}?)\s+[?–—-]\s+(.+)$', l)
+        if m and norm(m.group(1)) in voulus:
+            res[voulus[norm(m.group(1))]] = {'titre': m.group(1), 'page': x['page'], 'texte': m.group(2).strip()}
+    return res
+
+
 def construire(pdf):
     ref_js = (RACINE / 'assets/js/camarilla/fiche/referentiel.js').read_text(encoding='utf-8')
     REF = json.loads(ref_js[ref_js.index('{'):ref_js.rindex('}') + 1])
-    excel = json.loads((SORTIE / 'textes_excel.json').read_text(encoding='utf-8'))
+    chemin_excel = SORTIE / 'textes_excel.json'
+    if chemin_excel.exists():
+        excel = json.loads(chemin_excel.read_text(encoding='utf-8'))
+    else:
+        print('(textes_excel.json absent : archétypes lus dans le PDF, faiblesses de clan dans le texte des clans)')
+        excel = {'clans': {}, 'archetypes': {}, 'qualites': {}}
     ents = entrees(pdf)
     ix = Index(ents)
     D, manquants = {}, {}
@@ -190,7 +255,8 @@ def construire(pdf):
     def simple(cat, noms, plages, en_ligne=False):
         for nom in noms:
             a = ALIAS.get(nom, [])
-            x = ix.chercher(nom, plages, a) or (ix.element_en_ligne(nom, plages, a) if en_ligne else None)
+            x = ix.chercher(nom, plages, a) or (ix.element_en_ligne(nom, plages, a) if en_ligne else None) \
+                or ix.titre_interne(nom, plages, a)
             poser(cat, nom, x)
 
     # Clans : texte du PDF + faiblesse de la fiche Excel
@@ -205,6 +271,10 @@ def construire(pdf):
     # Archétypes, qualités d'équipement : textes de la fiche Excel (complétés par le PDF)
     for nom, v in excel['archetypes'].items():
         D.setdefault('archetypes', {})[nom] = {'t': v['t'], 's': 'Fiche MET 8.0.2'}
+    if not excel['archetypes']:
+        du_pdf = archetypes_du_pdf(ix, REF['archetypes'])
+        for nom in REF['archetypes']:
+            poser('archetypes', nom, du_pdf.get(nom))
     for t, noms in REF['qualites'].items():
         for nom in noms:
             x = ix.element_en_ligne(nom, P['equipement'])
@@ -227,7 +297,8 @@ def construire(pdf):
             x = None
             if groupe:
                 morceaux = re.split(r'(?=Un personnage focalisé)', groupe['texte'])
-                bon = next((m for m in morceaux if nom.lower() in m[:60].lower()), None)
+                # paragraphe propre au focus (« Un personnage focalisé sur la Force… »), sinon le texte du groupe
+                bon = next((m for m in morceaux if m.startswith('Un personnage focalisé') and nom.lower() in m[:60].lower()), None)
                 x = {'page': groupe['page'], 'texte': bon or groupe['texte']}
             poser('focus', nom, x)
 
@@ -259,7 +330,8 @@ def construire(pdf):
     # Disciplines et pouvoirs : chaque discipline couvre les pages jusqu'à la suivante.
     debuts = []
     for d in REF['disciplines']:
-        x = ix.chercher(nom_voie_discipline(d['nom']), P['disciplines'], ALIAS.get(d['nom'], []))
+        x = ix.chercher(nom_voie_discipline(d['nom']), P['disciplines'], ALIAS.get(d['nom'], [])) \
+            or ix.chercher(nom_voie_discipline(d['nom']), P['tout'], ALIAS.get(d['nom'], []), approx=False)
         poser('disciplines', d['nom'], x)
         if x:
             debuts.append((ents.index(x), d))
@@ -277,20 +349,29 @@ def construire(pdf):
             x = next((p for p in puces if norm(p['titre']) == norm(pouvoir)), None) \
                 or next((p for p in puces if niveau_points(p['titre']) == niv
                          and (norm(p['titre']) not in autres or norm(p['titre']) == norm(pouvoir))), None)
+            if not x and norm(pouvoir):   # rangé parmi les pouvoirs d'ancien dans les règles
+                x = ix.chercher(pouvoir, P['anciens'], approx=False)
+            if not x and not norm(pouvoir) and d['nom'] in limites:   # niveaux sans nom (Vraie Foi) : texte de la discipline
+                x = ents[limites[d['nom']][0]]
             poser('pouvoirs', f"{d['nom']} / {pouvoir}", x)
 
     # Pouvoirs d'anciens
     for d in REF['disciplines']:
+        segment = ents[limites[d['nom']][0]:limites[d['nom']][1]] if d['nom'] in limites else []
         for pouvoir in d['anciens']:
-            poser('anciens', f"{d['nom']} / {pouvoir}", ix.chercher(pouvoir, P['anciens'], ALIAS.get(pouvoir, [])))
+            x = ix.chercher(pouvoir, P['anciens'], ALIAS.get(pouvoir, [])) \
+                or next((p for p in segment if norm(p['titre']) == norm(pouvoir)), None)   # rangé parmi les pouvoirs
+            poser('anciens', f"{d['nom']} / {pouvoir}", x)
 
     # Techniques et rituels
     simple('techniques', REF['techniques'], P['techniques'])
     plages_rituel = {'Thaumaturgie': P['rituels_thauma'], 'Nécromancie': P['rituels_necro'], 'Abysse': P['rituels_abysse']}
     for r in REF['rituels']:
-        x = ix.chercher(r['nom'], plages_rituel.get(r['type'], P['tout'])) or ix.chercher(r['nom'], P['tout'], approx=False)
+        plages = plages_rituel.get(r['type'], P['tout'])
+        a = ALIAS.get(r['nom'], [])
+        x = ix.chercher(r['nom'], plages, a) or ix.titre_interne(r['nom'], plages, a) or ix.chercher(r['nom'], P['tout'], a, exact=True)
         poser('rituels', r['nom'], x)
-    simple('rituelsSabbat', [n.split(' (')[0] for n in REF['rituelsSabbat']], P['sabbat'] + P['historiques'])
+    simple('rituelsSabbat', [n.split(' (')[0] for n in REF['rituelsSabbat']], P['sabbat'] + P['historiques'], en_ligne=True)
 
     # Notions générales de la fiche
     notions = {
@@ -313,8 +394,9 @@ if __name__ == '__main__':
     D, manquants = construire(sys.argv[1])
     SORTIE.mkdir(exist_ok=True)
     total = sum(len(v) for v in D.values())
+    date = date_pdf(sys.argv[1])
     (SORTIE / 'descriptions.json').write_text(json.dumps({
-        'version': 'Règles MET (export du 27/10/2026) + fiche MET 8.0.2',
+        'version': 'Règles MET' + (f' (export du {date})' if date else '') + ' + fiche MET 8.0.2',
         'avertissement': 'Document confidentiel de la Fédération Camarilla Française : ne pas publier.',
         'categories': D}, ensure_ascii=False), encoding='utf-8')
     lignes_rapport = [f'{total} descriptions trouvées.', '']

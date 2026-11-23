@@ -127,9 +127,18 @@ python3 outils/fiche/extraire_descriptions.py chemin/vers/Regles_MET.pdf
 ```
 
 Le second script crée `outils/fiche/sortie/descriptions.json` (et `couverture.txt`, la
-liste des éléments sans description). Ce dossier est exclu du dépôt : ne le commitez
-jamais. Puis, connecté en administrateur : **Espace membres > Comptes > Référentiel des
-règles > Importer descriptions.json**. Réimportez quand les règles changent.
+liste des éléments sans description). Ce dossier est exclu du dépôt (`.gitignore`) : ne
+le commitez jamais, ne le déposez pas sur GitHub. Puis, connecté en administrateur :
+**Espace membres > Comptes > Référentiel des règles > Importer descriptions.json**.
+Réimportez quand les règles changent.
+
+Le premier script n'est pas indispensable pour les descriptions : sans la fiche Excel
+(`sortie/textes_excel.json` absent), les archétypes sont lus dans le PDF, et la faiblesse
+de chaque clan reste dans le texte du clan. Avec le PDF du 18/10/2026 : 1 195
+descriptions ; manquent seulement les éléments de la fiche absents des règles (atouts
+« Morale Flexible », « Prodige Machiavélique » — retiré des règles —, « Réputation »,
+handicap « Chemise Empaillé », rituel « Sentinelle Numérique », technique « Piège de
+Force ») et l'archétype « Autre (Préciser) ».
 
 Le premier script régénère aussi `assets/js/camarilla/fiche/referentiel.js` (listes et
 coûts : noms des clans, disciplines, atouts…, sans texte de règles ni valeur de
@@ -195,7 +204,7 @@ l'indique et le bouton « Commencer » reste grisé.
 | Tableau d'enquête (sauvegarde en ligne + partage) | `/utils/tableau` | personnages validés (et conteurs) |
 | Panneau d'affichage | `/membres/affichage/` | personnages validés (et conteurs) |
 | Notifications | `/membres/notifications/` | membres actifs |
-| Challenge (générateur + challenges demandés) | `/utils/challenge` | tout le monde (demandes : personnages et conteurs) |
+| Challenge (générateur + challenges demandés) | `/utils/challenge` | personnages validés (et conteurs) |
 | Carte de Grenoble | `/utils/carte` | personnages validés (et conteurs) |
 | Trouve le Sabbat (jeu) | `/utils/sabbat` | tout le monde (classement : membres actifs) |
 | Le Gratin Dauphinois (gazette) | `/membres/gazette/` | membres actifs (numéros publiés) |
@@ -369,21 +378,31 @@ changement d'appareil.
 
 ### Personnage incarné
 
-Le panneau d'affichage et le tableau d'enquête sont des **outils de jeu** : seuls les
-personnages y ont accès, pas les membres en tant que tels.
+Le panneau d'affichage, le tableau d'enquête, la carte de Grenoble, les challenges
+et les influences sont des **outils de jeu** : seuls les personnages y ont accès,
+pas les membres en tant que tels. Un joueur qui n'incarne personne tombe, sur chacune
+de ces pages, sur un écran qui lui demande de choisir son personnage.
 
-- Dans **Espace membres > Personnage incarné**, le joueur choisit lequel de ses
-  personnages validés il joue (fiche « Validée (en réserve) » ou « En jeu »). Les
-  deux outils n'apparaissent qu'ensuite. On change de personnage depuis la même
-  page, ou depuis le nom du personnage affiché dans chaque outil.
+- L'**Espace membres** sépare les outils du compte et ceux du personnage :
+  - **Mes outils joueur(se)** : notifications, fiches, tickets, Trouve le Sabbat,
+    gazette ;
+  - **Personnage incarné** : la liste des personnages validés du joueur (fiche
+    « Validée (en réserve) » ou « En jeu »), celui qu'il incarne coché ; un clic
+    change de personnage, « Ne plus incarner personne » referme les outils ;
+  - **Mes outils personnage**, sous cette liste, seulement quand le joueur incarne
+    un personnage : panneau d'affichage, tableau d'enquête, carte de Grenoble,
+    challenges, influences (ces dernières demandent un personnage « en jeu »).
+- On change aussi de personnage depuis le nom du personnage affiché dans chaque outil.
 - Le choix est mémorisé dans le navigateur, et revérifié dans la base à chaque
   page : une fiche archivée ou repassée en brouillon ne s'incarne plus.
 - Tout ce qui se fait dans les outils est au nom du personnage : lignes du journal
   du panneau, tableaux d'enquête, « modifié par … ».
 - Les règles Firestore vérifient à chaque écriture que le personnage appartient au
   membre et qu'il est validé : impossible d'agir au nom du personnage d'un autre.
-- Les **conteurs** ont accès aux deux outils sans personnage (sous leur propre nom),
-  pour modérer. Ils peuvent aussi incarner un de leurs personnages (un PNJ).
+- Les **conteurs** ont accès au panneau, au tableau d'enquête, à la carte et aux
+  challenges sans personnage (sous leur propre nom), pour modérer ; les influences
+  des joueurs sont dans « Influences — conteur ». Ils peuvent aussi incarner un de
+  leurs personnages.
 - Le **répertoire** (`repertoire/{idPersonnage}` : nom du personnage et compte du
   joueur) liste les personnages validés, pour pouvoir partager un tableau avec eux.
   Il est tenu à jour quand un conteur valide, met en jeu ou archive une fiche, quand
@@ -442,7 +461,8 @@ le lien « Notifications » en haut des pages membres.
 
 ### Challenges demandés
 
-La page **Challenge** (`/utils/challenge`) reste un générateur libre. En plus :
+La page **Challenge** (`/utils/challenge`) est un outil de jeu : le générateur ne s'ouvre
+qu'à un personnage incarné ou à un conteur. En plus :
 
 - un **conteur** compose une demande pour un personnage validé : un titre, un message,
   et un ou plusieurs challenges (10 au plus), chacun pris sur le réglage affiché de la

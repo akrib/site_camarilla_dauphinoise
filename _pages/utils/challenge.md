@@ -5,10 +5,13 @@ permalink: /utils/challenge
 ---
 
 <title>Générateur de challenge de la camarilla dauphinoise</title>
+<link rel="stylesheet" href="{{ '/assets/css/membres.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/css/challenge.css' | relative_url }}">
 <body>
 <div class="grain"></div>
 <div class="vignette"></div>
+<!-- Réservé aux personnages incarnés (et aux conteurs) : voir challenge-en-ligne.js -->
+<div id="cam-garde" class="cam-app cam-garde"><div class="cam-garde-boite"><p>Chargement…</p><noscript><p>Cette page nécessite JavaScript.</p></noscript></div></div>
 
 <div class="app">
 

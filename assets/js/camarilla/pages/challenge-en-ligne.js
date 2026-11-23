@@ -2,15 +2,17 @@
 // Page /utils/challenge : challenges demandés par les conteurs.
 // S'appuie sur le pont window.ChallengeDuJeu défini dans _pages/utils/challenge.md.
 //
-// - Le générateur reste libre pour tout le monde.
+// - Réservé aux personnages : le générateur ne s'ouvre qu'à un membre qui
+//   incarne un de ses personnages validés, ou à un conteur (écran de garde
+//   #cam-garde, comme la carte et le tableau d'enquête).
 // - Un membre qui incarne un personnage voit les challenges que les conteurs
 //   ont demandés à ce personnage, et les résout UNE fois : le résultat part au
 //   conteur (collection defis, voir defis.js).
 // - Un conteur compose une demande (un ou plusieurs challenges, à partir du
 //   réglage affiché sur la page) et l'envoie à un personnage validé.
 // =====================================================================
-import { h, db, fs, surSession, estActif, estConteur, messageErreur, dateFr, millis } from '../core.js';
-import { personnageIncarne, incarner } from '../incarnation.js';
+import { h, db, fs, surSession, estConteur, messageErreur, dateFr, millis } from '../core.js';
+import { accesOutil, incarner } from '../incarnation.js';
 import { normaliserChallenge, descriptionChallenge, resultat, bilan, MAX_CHALLENGES } from '../defis.js';
 import { compresser, donneesDoc } from '../compression.js';
 import { personnagesValides } from '../annuaire.js';
@@ -27,11 +29,14 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 surSession(async (s) => {
   if (!s.pret || demarre) return;
   demarre = true;
-  if (!s.user || !estActif(s.profil)) return;   // visiteurs : le générateur libre seulement
-  const uid = s.user.uid;
+  // Personnage incarné (ou conteur) : sinon l'écran de garde reste affiché et explique quoi faire.
+  const acces = await accesOutil(document.getElementById('cam-garde'), s, {
+    outil: 'ce générateur de challenge',
+    reserve: 'Les challenges sont réservés aux personnages des membres de l\'association.'
+  }).catch((e) => { console.error(e); return null; });
+  if (!acces) return;
   try {
-    const perso = await personnageIncarne(uid);
-    await afficherDemandes(uid, perso);
+    await afficherDemandes(s.user.uid, acces.perso);
   } catch (e) { console.error(e); }
   if (estConteur(s.profil)) afficherComposeur(s);
 });
