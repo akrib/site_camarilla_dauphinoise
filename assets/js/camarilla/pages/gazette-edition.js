@@ -7,6 +7,10 @@
 // articles se déplacent par glisser-déposer ou avec les flèches ; ceux qui
 // ne sont placés nulle part restent « en réserve ».
 //
+// On écrit au choix dans le panneau de gauche ou directement dans la page
+// (titres, chapeau, texte, légende, bandeau : voir gazette/edition-en-place.js) ;
+// les deux restent synchronisés.
+//
 // Sauvegardes (économes en Firestore) :
 //   - « Sauvegarde locale » (et automatique) : dans ce navigateur, sans
 //     aucune lecture ni écriture en ligne ;
@@ -22,7 +26,8 @@ import {
   normaliserGazette, gazetteNeuve, nouvelArticle, nouvelleRangee, changerMotif, nouvelId,
   enReserve, position, retirerDesColonnes, urlImageValide, nomMois, moisValide, moisVoisin
 } from '../gazette/modele.js';
-import { rendreGazette, rendreArticle, preparerImpression, pagesQuiDebordent } from '../gazette/rendu.js';
+import { rendreGazette, rendreArticle, rendreBandeau, rendreEnTete, preparerImpression, pagesQuiDebordent } from '../gazette/rendu.js';
+import { rendreModifiable, barreFormat } from '../gazette/edition-en-place.js';
 import {
   listerGazettes, lireContenu, enregistrerGazette, supprimerGazette, refGazette, lirePenseBete, marquerSujet,
   lireBrouillon, ecrireBrouillon, oublierBrouillon
@@ -273,12 +278,13 @@ function supprimerArticle(id) {
   dessinerPanneau();
 }
 function choisirArticle(id, { ouvrirOnglet = true } = {}) {
+  const deja = choisi === id && onglet === 'article';
   choisi = id;
   if (ouvrirOnglet) onglet = 'article';
   document.querySelectorAll('#plan .gze-choisi').forEach((el) => el.classList.remove('gze-choisi'));
   const el = document.querySelector('#plan [data-article="' + CSS.escape(id) + '"]');
   if (el) el.classList.add('gze-choisi');
-  dessinerPanneau();
+  if (!deja) dessinerPanneau();   // (re)cliquer dans l'article déjà ouvert ne refait pas le panneau
 }
 function libelleColonne(page, rangee, colonne) {
   const ip = d().pages.indexOf(page) + 1, ir = page.rangees.indexOf(rangee) + 1, ic = rangee.colonnes.indexOf(colonne) + 1;
@@ -302,15 +308,67 @@ function choixMotif(actuel, surChoix) {
 // Plan (rendu de la gazette + outils d'édition)
 // ---------------------------------------------------------------------
 let glisse = null;   // id de l'article en cours de glisser-déposer
+const format = barreFormat();   // barre G / I / intertitre… au-dessus de la zone en cours d'écriture
 function dessinerPlan() {
   const defilement = $('plan').scrollTop;
+  format.cacher();
   const journal = rendreGazette(d(), { mois, numero: g.numero }, { edition: true });
   decorer(journal);
   $('plan').replaceChildren(journal,
     d().pages.length < MAX_PAGES ? h('button', { type: 'button', class: 'gze-btn gze-ajout-page', onclick: () => {
       d().pages.push({ id: nouvelId('p'), rangees: [nouvelleRangee('4-4-4')] }); changer();
-    } }, '＋ Ajouter une page') : '');
+    } }, '＋ Ajouter une page') : '',
+    format.el);
   $('plan').scrollTop = defilement;
+}
+
+// ---------------------------------------------------------------------
+// Écriture directe dans la page
+// ---------------------------------------------------------------------
+/** Recopie dans le panneau de gauche ce qui vient d'être écrit dans la page. */
+function synchroniserChamp(champ, valeur) {
+  const el = $('panneau').querySelector('[data-champ="' + CSS.escape(champ) + '"]');
+  if (el && el !== document.activeElement) el.value = valeur;
+}
+function saisieArticle(id, champ, valeur) {
+  const a = d().articles[id];
+  if (!a) return;
+  if (champ.startsWith('image.')) a.image[champ.slice(6)] = valeur; else a[champ] = valeur;
+  if (choisi === id && onglet === 'article') synchroniserChamp(champ, valeur);
+  changer({ plan: false });
+}
+const MODELE_TITRE = /^Titre (de la une|de l'article)$/;
+// Entrée dans un paragraphe recopie ses classes : la lettrine ne doit rester qu'au premier.
+function reparerLettrine(z, lettrine) {
+  z.querySelectorAll(':scope > .gz-lettrine').forEach((el) => el.classList.remove('gz-lettrine'));
+  const premier = [...z.children].find((el) => el.tagName !== 'FIGURE');
+  if (lettrine && premier && premier.tagName === 'P') premier.classList.add('gz-lettrine');
+}
+
+function decorerBandeau(bEl) {
+  if (!bEl) return;
+  const versReglages = () => { if (onglet !== 'reglages') { onglet = 'reglages'; dessinerPanneau(); } };
+  bEl.querySelectorAll('[data-champ]').forEach((z) => {
+    const cle = z.dataset.champ.replace(/^bandeau\./, '');
+    rendreModifiable(z, {
+      entree: versReglages,
+      saisie: (v) => { d().bandeau[cle] = v; synchroniserChamp(z.dataset.champ, v); changer({ plan: false }); }
+    });
+  });
+  bEl.addEventListener('click', (e) => { if (!e.target.closest('[data-champ]')) versReglages(); });
+  bEl.addEventListener('focusout', (e) => { if (!bEl.contains(e.relatedTarget)) rafraichirBandeau(); });
+}
+/** Redessine le bandeau et les en-têtes des pages (titre, date) une fois sorti du bandeau. */
+function rafraichirBandeau() {
+  setTimeout(() => {
+    const ancien = document.querySelector('#plan .gz-bandeau');
+    if (!ancien || ancien.contains(document.activeElement)) return;
+    const meta = { mois, numero: g.numero };
+    const nouveau = rendreBandeau(d().bandeau, meta, { edition: true });
+    decorerBandeau(nouveau);
+    ancien.replaceWith(nouveau);
+    document.querySelectorAll('#plan .gz-entete').forEach((el, i) => el.replaceWith(rendreEnTete(d().bandeau, meta, i + 1)));
+  }, 150);
 }
 
 function decorer(journal) {
@@ -380,19 +438,46 @@ function decorer(journal) {
     // Articles : sélection, glisser, outils
     pageEl.querySelectorAll('.gz-article').forEach((aEl) => decorerArticle(aEl));
   });
+  decorerBandeau(journal.querySelector('.gz-bandeau'));
 }
 
 function decorerArticle(aEl) {
   const id = aEl.dataset.article;
-  aEl.draggable = true;
+  // Glisser l'article : par sa poignée ⠿, ou en le saisissant hors des zones de
+  // texte (dans une zone de texte, la souris sélectionne le texte).
+  aEl.draggable = false;
   aEl.tabIndex = 0;
   if (id === choisi) aEl.classList.add('gze-choisi');
+  aEl.addEventListener('pointerdown', (e) => {
+    aEl.draggable = !e.target.closest('[contenteditable="true"], button, select, input, label');
+  });
   aEl.addEventListener('click', (e) => { if (!e.target.closest('.gze-outils-article')) choisirArticle(id); });
   aEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target === aEl) choisirArticle(id); });
-  aEl.addEventListener('dragstart', (e) => { glisse = id; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', id); aEl.classList.add('gze-glisse'); });
-  aEl.addEventListener('dragend', () => { glisse = null; aEl.classList.remove('gze-glisse'); effacerInsertion(); });
+  aEl.addEventListener('dragstart', (e) => {
+    glisse = id; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', id); aEl.classList.add('gze-glisse');
+    if (e.target !== aEl && e.dataTransfer.setDragImage) e.dataTransfer.setDragImage(aEl, 16, 16);
+  });
+  aEl.addEventListener('dragend', () => { glisse = null; aEl.draggable = false; aEl.classList.remove('gze-glisse'); effacerInsertion(); });
+  // Zones de texte modifiables en place
+  aEl.querySelectorAll('[data-champ]').forEach((z) => {
+    const champ = z.dataset.champ;
+    const avecFormat = champ === 'texte' || champ === 'chapeau';
+    rendreModifiable(z, {
+      modele: champ === 'titre' ? MODELE_TITRE : null,
+      entree: () => { choisirArticle(id); if (avecFormat) format.montrer(z); },
+      saisie: (v) => {
+        if (champ === 'texte') reparerLettrine(z, d().articles[id] && d().articles[id].lettrine);
+        saisieArticle(id, champ, v);
+        if (avecFormat) format.montrer(z);
+      }
+    });
+    z.addEventListener('blur', () => format.cacher(z));
+  });
+  // Sorti de l'article : il est redessiné (mise en forme définitive, zones vides…).
+  aEl.addEventListener('focusout', (e) => { if (!aEl.contains(e.relatedTarget)) rafraichirArticle(id); });
   const p = position(d(), id);
   aEl.prepend(h('div', { class: 'gze-outils-article' },
+    h('span', { class: 'gze-mini gze-poignee', draggable: 'true', title: 'Glisser pour déplacer l\'article', 'aria-hidden': 'true' }, '⠿'),
     p && p.index > 0 ? h('button', { type: 'button', class: 'gze-mini', title: 'Monter', onclick: () => { deplacerArticle(id, p.colonne, p.index - 1); changer(); } }, '↑') : '',
     p && p.index < p.colonne.articles.length - 1 ? h('button', { type: 'button', class: 'gze-mini', title: 'Descendre', onclick: () => { deplacerArticle(id, p.colonne, p.index + 2); changer(); } }, '↓') : '',
     h('button', { type: 'button', class: 'gze-mini', title: 'Retirer de la page (garder en réserve)', onclick: () => { retirerDesColonnes(d(), id); changer(); dessinerPanneau(); } }, '⤴'),
@@ -416,17 +501,20 @@ function marquerInsertion(cEl, y) {
 }
 function effacerInsertion() { document.querySelectorAll('.gze-insertion').forEach((el) => el.remove()); }
 
-/** Redessine un seul article (frappe dans le formulaire) sans tout reconstruire. */
-let minuteurArticle = null;
+/** Redessine un seul article (frappe dans le formulaire, sortie de l'article) sans tout reconstruire. */
+const minuteursArticle = new Map();
 function rafraichirArticle(id) {
-  clearTimeout(minuteurArticle);
-  minuteurArticle = setTimeout(() => {
+  clearTimeout(minuteursArticle.get(id));
+  minuteursArticle.set(id, setTimeout(() => {
+    minuteursArticle.delete(id);
     const ancien = document.querySelector('#plan [data-article="' + CSS.escape(id) + '"]');
-    if (!ancien) return;
+    if (!ancien || !d().articles[id]) return;
+    // On écrit encore dans cet article, dans la page : il sera redessiné en le quittant.
+    if (ancien.contains(document.activeElement) && document.activeElement.isContentEditable) return;
     const nouveau = rendreArticle(d().articles[id], { edition: true });
     decorerArticle(nouveau);
     ancien.replaceWith(nouveau);
-  }, 200);
+  }, 200));
 }
 
 // ---------------------------------------------------------------------
@@ -445,14 +533,16 @@ function panneauArticle() {
   const a = choisi && d().articles[choisi];
   if (!a) {
     return h('div', { class: 'gze-vide' },
-      h('p', {}, 'Cliquez sur un article de la page pour le modifier.'),
+      h('p', {}, 'Cliquez sur un article de la page pour le modifier : écrivez directement dans la page (titre, chapeau, texte, signature…), ou dans les champs qui s\'affichent ici. Les deux restent identiques.'),
+      h('p', {}, 'Le bandeau de la une (titre du journal, devise, lieu, date, prix) s\'écrit aussi dans la page ; ses réglages sont dans l\'onglet « Réglages ».'),
       h('p', {}, 'Pour découper la page : survolez une rangée et choisissez son découpage en colonnes, ou ajoutez une rangée en bas de la page.'),
       h('p', {}, 'Les articles se déplacent par glisser-déposer, d\'une colonne à l\'autre ou d\'une page à l\'autre.'));
   }
   const maj = (cle, valeur) => { a[cle] = valeur; modifie = true; rafraichirArticle(a.id); changer({ plan: false }); };
   const majImage = (cle, valeur) => { a.image[cle] = valeur; rafraichirArticle(a.id); changer({ plan: false }); };
-  const texte = (cle, max, attrs = {}) => h('input', { type: 'text', maxlength: max, value: a[cle], oninput: (e) => maj(cle, e.target.value), ...attrs });
-  const zone = (cle, max, lignes) => h('textarea', { maxlength: max, rows: lignes, oninput: (e) => maj(cle, e.target.value) }, a[cle]);
+  // data-champ : le même nom que la zone de la page, pour recopier ce qui s'écrit dans l'une vers l'autre.
+  const texte = (cle, max, attrs = {}) => h('input', { type: 'text', maxlength: max, value: a[cle], 'data-champ': cle, oninput: (e) => maj(cle, e.target.value), ...attrs });
+  const zone = (cle, max, lignes) => h('textarea', { maxlength: max, rows: lignes, 'data-champ': cle, oninput: (e) => maj(cle, e.target.value) }, a[cle]);
   const select = (valeurs, actuel, surChange) => h('select', { onchange: (e) => surChange(e.target.value) },
     Object.entries(valeurs).map(([v, l]) => h('option', { value: v, selected: String(v) === String(actuel) }, l)));
 
@@ -485,7 +575,8 @@ function panneauArticle() {
     champ('Texte', zone('texte', 20000, 12)),
     h('details', { class: 'gze-aide' }, h('summary', {}, 'Mise en forme du texte'),
       h('ul', {},
-        h('li', {}, 'Ligne vide : nouveau paragraphe'),
+        h('li', {}, 'Dans la page : barre de mise en forme au-dessus du texte, Entrée pour un nouveau paragraphe, Maj+Entrée pour aller à la ligne'),
+        h('li', {}, 'Ici : ligne vide pour un nouveau paragraphe'),
         h('li', {}, h('code', {}, '**gras**'), ' et ', h('code', {}, '*italique*')),
         h('li', {}, h('code', {}, '## Intertitre'), ' (seul sur sa ligne)'),
         h('li', {}, h('code', {}, '> citation'), ', ', h('code', {}, '- liste'), ', ', h('code', {}, '---'), ' (ornement)'))),
@@ -495,8 +586,8 @@ function panneauArticle() {
     champ('Signature', texte('signature', 200), 'Par exemple : « Notre envoyé spécial à la Bastille ».'),
     h('fieldset', { class: 'gze-image-champs' }, h('legend', {}, 'Image (lien externe, jamais stockée sur le site)'),
       champ('Adresse de l\'image', url), msgImg, apercuImg,
-      champ('Légende', h('input', { type: 'text', maxlength: 200, value: a.image.legende, oninput: (e) => majImage('legende', e.target.value) })),
-      champ('Crédit', h('input', { type: 'text', maxlength: 200, value: a.image.credit, oninput: (e) => majImage('credit', e.target.value) }), 'Auteur ou source de l\'image.'),
+      champ('Légende', h('input', { type: 'text', maxlength: 200, value: a.image.legende, 'data-champ': 'image.legende', oninput: (e) => majImage('legende', e.target.value) })),
+      champ('Crédit', h('input', { type: 'text', maxlength: 200, value: a.image.credit, 'data-champ': 'image.credit', oninput: (e) => majImage('credit', e.target.value) }), 'Auteur ou source de l\'image.'),
       h('div', { class: 'gze-ligne' },
         champ('Position', select(POSITIONS_IMAGE, a.image.position, (v) => { majImage('position', v); })),
         champ('Taille (à gauche / à droite)', select(TAILLES_IMAGE, a.image.taille, (v) => { majImage('taille', v); })))),
@@ -589,7 +680,7 @@ function panneauPenseBete() {
 function panneauReglages() {
   const b = d().bandeau;
   const majB = (cle) => (e) => { b[cle] = e.target.value; changer(); };
-  const t = (cle, max = 200, attrs = {}) => h('input', { type: 'text', maxlength: max, value: b[cle], onchange: majB(cle), ...attrs });
+  const t = (cle, max = 200, attrs = {}) => h('input', { type: 'text', maxlength: max, value: b[cle], 'data-champ': 'bandeau.' + cle, onchange: majB(cle), ...attrs });
   const fichier = h('input', { type: 'file', accept: 'application/json,.json', hidden: true, onchange: async (e) => {
     const f = e.target.files[0]; e.target.value = '';
     if (!f) return;
@@ -612,9 +703,9 @@ function panneauReglages() {
     champ('Devise', t('devise')),
     h('div', { class: 'gze-ligne' }, champ('Lieu', t('lieu')), champ('Prix', t('prix'))),
     h('div', { class: 'gze-ligne' },
-      champ('Oreille gauche', h('textarea', { rows: 3, maxlength: 200, onchange: majB('oreilleGauche') }, b.oreilleGauche)),
-      champ('Oreille droite', h('textarea', { rows: 3, maxlength: 200, onchange: majB('oreilleDroite') }, b.oreilleDroite))),
-    h('p', { class: 'gze-note' }, 'Les oreilles sont les petites cases de part et d\'autre du titre (météo nocturne, citation, lune…).'),
+      champ('Oreille gauche', h('textarea', { rows: 3, maxlength: 200, 'data-champ': 'bandeau.oreilleGauche', onchange: majB('oreilleGauche') }, b.oreilleGauche)),
+      champ('Oreille droite', h('textarea', { rows: 3, maxlength: 200, 'data-champ': 'bandeau.oreilleDroite', onchange: majB('oreilleDroite') }, b.oreilleDroite))),
+    h('p', { class: 'gze-note' }, 'Les oreilles sont les petites cases de part et d\'autre du titre (météo nocturne, citation, lune…). Tout le bandeau s\'écrit aussi directement dans la page.'),
     h('h3', {}, 'Sauvegarde et fichiers'),
     h('div', { class: 'gze-actions' },
       h('button', { type: 'button', class: 'gze-btn', onclick: () => telecharger(JSON.stringify({ mois, numero: g.numero, donnees: d() }, null, 1), 'gazette-' + mois + '.json') }, 'Exporter (JSON)'),
@@ -728,6 +819,8 @@ surSession(async (s) => {
   demarre = true;
   session = s;
   try {
+    // Entrée dans le texte d'un article (écrit dans la page) : un nouveau paragraphe <p>.
+    try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) { /* ancien navigateur */ }
     brancherCommandes();
     liste = await listerGazettes();
     const demande = decodeURIComponent(location.hash.slice(1));

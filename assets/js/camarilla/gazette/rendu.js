@@ -45,6 +45,17 @@ export function texteMisEnForme(texte) {
 }
 
 // ---------------------------------------------------------------------
+// Édition en place : dans l'éditeur, chaque zone de texte porte
+// data-champ (nom du champ) et data-ph (texte indicatif quand elle est
+// vide) ; l'éditeur la rend modifiable. Les zones vides sont rendues
+// quand même (classe gz-champ-vide), pour pouvoir y écrire.
+// ---------------------------------------------------------------------
+function zone(edition, classe, champ, ph, valeur) {
+  if (!edition) return { class: classe };
+  return { class: classe + (String(valeur || '').trim() ? '' : ' gz-champ-vide'), 'data-champ': champ, 'data-ph': ph };
+}
+
+// ---------------------------------------------------------------------
 // Article
 // ---------------------------------------------------------------------
 function figure(img, { edition }) {
@@ -59,7 +70,15 @@ function figure(img, { edition }) {
     }
   });
   fig.append(el);
-  if (img.legende || img.credit) fig.append(h('figcaption', {}, img.legende, img.credit ? h('span', { class: 'gz-credit' }, img.credit) : ''));
+  if (edition) {
+    // Légende et crédit modifiables en place (l'image elle-même ne l'est pas).
+    fig.contentEditable = 'false';
+    fig.append(h('figcaption', {},
+      h('span', zone(true, 'gz-legende', 'image.legende', 'Légende', img.legende), img.legende),
+      h('span', zone(true, 'gz-credit', 'image.credit', 'Crédit', img.credit), img.credit)));
+  } else if (img.legende || img.credit) {
+    fig.append(h('figcaption', {}, img.legende, img.credit ? h('span', { class: 'gz-credit' }, img.credit) : ''));
+  }
   return fig;
 }
 
@@ -70,17 +89,20 @@ export function rendreArticle(a, { edition = false } = {}) {
   if (a.lettrine && blocs[0] && blocs[0].tagName === 'P') blocs[0].classList.add('gz-lettrine');
   const fig = figure(a.image, { edition });
   const cote = fig && (a.image.position === 'gauche' || a.image.position === 'droite');
-  const texte = h('div', { class: 'gz-texte' + (a.colonnes > 1 ? ' gz-cols-' + a.colonnes : '') },
+  const texte = h('div', zone(edition, 'gz-texte' + (a.colonnes > 1 ? ' gz-cols-' + a.colonnes : ''), 'texte', 'Cliquez ici pour écrire l\'article…', blocs.length ? 'x' : ''),
     cote ? fig : '', blocs,
-    edition && !blocs.length ? h('p', { class: 'gz-vide' }, 'Cliquez ici pour écrire l\'article.') : '');
+    edition && !blocs.length ? h('p', { class: a.lettrine ? 'gz-lettrine' : null }, h('br')) : '');
+  // En lecture, une zone vide n'est pas rendue ; dans l'éditeur, elle l'est (vide, avec son texte indicatif).
+  const ligne = (balise, classe, champ, ph, ...contenu) => (a[champ] || edition)
+    ? h(balise, zone(edition, classe, champ, ph, a[champ]), ...contenu) : '';
   return h('article', { class: 'gz-article gz-' + a.style, dataset: { article: a.id } },
-    a.surtitre ? h('p', { class: 'gz-surtitre' }, a.surtitre) : '',
-    a.titre ? h(a.style === 'une' ? 'h2' : 'h3', { class: 'gz-titre' }, a.titre) : '',
-    a.chapeau ? h('p', { class: 'gz-chapeau' }, ...enLigne(a.chapeau)) : '',
+    ligne('p', 'gz-surtitre', 'surtitre', 'Surtitre (rubrique, lieu…)', a.surtitre),
+    ligne(a.style === 'une' ? 'h2' : 'h3', 'gz-titre', 'titre', 'Titre', a.titre),
+    ligne('p', 'gz-chapeau', 'chapeau', 'Chapeau : introduction en italique', ...enLigne(a.chapeau)),
     fig && a.image.position === 'haut' ? fig : '',
     texte,
     fig && a.image.position === 'bas' ? fig : '',
-    a.signature ? h('p', { class: 'gz-signature' }, a.signature) : '');
+    ligne('p', 'gz-signature', 'signature', 'Signature', a.signature));
 }
 
 // ---------------------------------------------------------------------
@@ -89,20 +111,25 @@ export function rendreArticle(a, { edition = false } = {}) {
 const majuscule = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 export const dateGazette = (bandeau, mois) => bandeau.dateAffichee || majuscule(nomMois(mois));
 
-function bandeau(b, meta) {
+export function rendreBandeau(b, meta, { edition = false } = {}) {
+  const z = (balise, classe, cle, ph, ...contenu) => h(balise, zone(edition, classe, 'bandeau.' + cle, ph, b[cle]), ...contenu);
   return h('header', { class: 'gz-bandeau' + (b.oreilleGauche || b.oreilleDroite ? '' : ' gz-sans-oreilles') },
-    h('div', { class: 'gz-oreille gz-oreille-g' }, b.oreilleGauche),
+    z('div', 'gz-oreille gz-oreille-g', 'oreilleGauche', 'Oreille gauche', b.oreilleGauche),
     h('div', { class: 'gz-nom' },
-      h('h1', { class: 'gz-titre-journal' }, b.titre),
-      b.sousTitre ? h('p', { class: 'gz-sous-titre' }, b.sousTitre) : ''),
-    h('div', { class: 'gz-oreille gz-oreille-d' }, b.oreilleDroite),
+      z('h1', 'gz-titre-journal', 'titre', 'Titre du journal', b.titre),
+      b.sousTitre || edition ? z('p', 'gz-sous-titre', 'sousTitre', 'Sous-titre', b.sousTitre) : ''),
+    z('div', 'gz-oreille gz-oreille-d', 'oreilleDroite', 'Oreille droite', b.oreilleDroite),
     h('div', { class: 'gz-ligne-info' },
       h('span', {}, 'N° ' + (meta.numero || '?')),
-      h('span', {}, [b.lieu, dateGazette(b, meta.mois)].filter(Boolean).join(', ')),
-      h('span', {}, b.prix)),
-    b.devise ? h('p', { class: 'gz-devise' }, b.devise) : '');
+      edition
+        // Lieu et date séparés, pour les modifier chacun à sa place ; date vide = mois du numéro.
+        ? h('span', {}, z('span', 'gz-lieu', 'lieu', 'Lieu', b.lieu), ', ',
+          h('span', { ...zone(true, 'gz-date gz-ph-encre', 'bandeau.dateAffichee', dateGazette({}, meta.mois), b.dateAffichee) }, b.dateAffichee))
+        : h('span', {}, [b.lieu, dateGazette(b, meta.mois)].filter(Boolean).join(', ')),
+      z('span', 'gz-prix', 'prix', 'Prix', b.prix)),
+    b.devise || edition ? z('p', 'gz-devise', 'devise', 'Devise', b.devise) : '');
 }
-function enTete(b, meta, i) {
+export function rendreEnTete(b, meta, i) {
   return h('header', { class: 'gz-entete' },
     h('span', {}, b.titre), h('span', {}, dateGazette(b, meta.mois)), h('span', {}, 'Page ' + (i + 1)));
 }
@@ -121,7 +148,7 @@ export function rendreRangee(d, r, opts = {}) {
 export function rendreGazette(d, meta, opts = {}) {
   return h('div', { class: 'gz-journal' + (opts.edition ? ' gz-en-edition' : ''), lang: 'fr' },
     d.pages.map((page, i) => h('section', { class: 'gz-page', dataset: { page: page.id, numero: i + 1 } },
-      i === 0 ? bandeau(d.bandeau, meta) : enTete(d.bandeau, meta, i),
+      i === 0 ? rendreBandeau(d.bandeau, meta, opts) : rendreEnTete(d.bandeau, meta, i),
       page.rangees.map((r) => rendreRangee(d, r, opts)))));
 }
 

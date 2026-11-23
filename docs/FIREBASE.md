@@ -61,7 +61,13 @@ données, et que seuls les conteurs voient et valident le reste.
 2. Remplacez tout le contenu par celui du fichier **`firebase/firestore.rules`** du dépôt.
 3. **Publier**.
 
-À refaire à chaque modification de ce fichier.
+À refaire à chaque modification de ce fichier. Le site sait si c'est fait : les règles
+portent une version (bloc `match /regles/{version}`, même date que `VERSION_REGLES` dans
+`assets/js/camarilla/core.js`, les deux à changer ensemble). Si les règles publiées sont
+en retard, le tableau de bord d'un administrateur affiche « Règles de sécurité pas à
+jour », et **Comptes > Maintenance > Vérifier les règles** liste ce qui est refusé. Sans
+cela, des actions sont refusées même à un administrateur (« vous n'avez pas les droits
+nécessaires »).
 
 Recommandé (mais pas obligatoire) : les fiches de personnage et les descriptions des
 règles contiennent beaucoup de champs qu'il est inutile d'indexer. Dans **Firestore
@@ -94,6 +100,13 @@ reconstruit le site en une à deux minutes.
 C'est la seule manipulation à faire dans la console. Ensuite, tout se gère depuis le site :
 page **Espace membres > Comptes**, pour activer les inscriptions et nommer les conteurs
 (colonne « Rôle »).
+
+Un administrateur a tous les droits d'un conteur. Pour **tester le site comme un conteur
+ou un joueur**, choisissez une vue dans la barre « Connecté : … » (ou « Tester le site »
+dans l'espace membres). Seul l'affichage change : pour les règles Firestore, vous restez
+administrateur (une action refusée à un vrai joueur peut donc passer pour vous). Un
+bandeau en bas de chaque page rappelle la vue et ramène à la vue administrateur. Le choix
+est gardé dans le navigateur, et oublié à la déconnexion.
 
 ## 7 bis. Importer les descriptions des règles (fiches de personnage)
 
@@ -531,8 +544,17 @@ Dauphinois » de l'espace membres ; « Gazette — édition » côté conteurs).
   taille. Hauteur limitée pour tenir sur la page ; en gris éclairci à l'impression. Une
   image refusée par le site qui l'héberge est signalée dans l'éditeur et masquée aux
   joueurs.
-- **Bandeau** (onglet Réglages) : titre du journal, sous-titre, devise, lieu, prix, date
-  affichée (le mois du numéro par défaut), « oreilles » de part et d'autre du titre.
+- **Écrire dans la page** : titre, surtitre, chapeau, texte, signature, légende et crédit
+  des images, et tout le bandeau s'écrivent directement dans la page, avec les champs du
+  panneau remplis au fur et à mesure (et inversement). Une zone vide de l'article choisi
+  montre ce qu'on peut y mettre (« Chapeau », « Signature »…). Dans le texte : Entrée =
+  nouveau paragraphe, Maj+Entrée = retour à la ligne, barre de mise en forme (gras,
+  italique, intertitre, citation, liste, ornement) convertie dans le format ci-dessus.
+  Collage : texte seul. Les articles se déplacent par leur poignée ⠿ (ou en les saisissant
+  hors du texte).
+- **Bandeau** (onglet Réglages, ou dans la page) : titre du journal, sous-titre, devise,
+  lieu, prix, date affichée (le mois du numéro par défaut), « oreilles » de part et
+  d'autre du titre.
 - **Pense-bête** : dans **Influences — conteur**, le bouton **« 📰 Gazette »** d'une action
   la note comme sujet d'article (document `gazette_pensebete/{mois}`, conteurs seulement :
   le joueur ne voit rien). L'onglet Pense-bête de l'éditeur liste les sujets du mois
@@ -645,7 +667,7 @@ Puis ouvrez <http://localhost:4000/connexion/?emulateurs=1>. Le paramètre
 | `assets/js/camarilla/annuaire.js` | annuaire et répertoire gardés dans le navigateur |
 | `assets/js/camarilla/suivi.js` | nouvelles réponses, travail des conteurs, rappels du calendrier |
 | `assets/js/camarilla/mapillary-config.js` | jeton Mapillary du jeu « Trouve le Sabbat » (CSS : `assets/css/sabbat.css`) |
-| `assets/js/camarilla/gazette/modele.js`, `rendu.js`, `stockage.js` | gazette : structure d'un numéro, rendu (écran, impression), Firestore et navigateur (CSS : `gazette.css`, `gazette-edition.css`, `gazette-lecture.css` ; polices : `assets/fonts/gazette/`) |
+| `assets/js/camarilla/gazette/modele.js`, `rendu.js`, `stockage.js`, `edition-en-place.js` | gazette : structure d'un numéro, rendu (écran, impression), Firestore et navigateur, écriture directe dans la page de l'éditeur (CSS : `gazette.css`, `gazette-edition.css`, `gazette-lecture.css` ; polices : `assets/fonts/gazette/`) |
 | `assets/js/camarilla/outils/tableau.js`, `challenge.js` | scripts des pages tableau d'enquête et challenge (CSS : `assets/css/tableau.css`, `challenge.css`) |
 | `assets/js/camarilla/pages/*.js` | une page = un module |
 | `assets/js/camarilla/fiche/referentiel.js` | listes et coûts de la fiche MET (généré par `outils/fiche/extraire_excel.py`) |

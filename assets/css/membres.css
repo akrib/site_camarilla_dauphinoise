@@ -22,6 +22,7 @@
   margin-bottom: 1.2rem;
 }
 .cam-barre span { margin-right: auto; }
+.cam-barre .cam-vue-choix { width: auto; min-width: 0; margin: 0; padding: .15rem .4rem; font-size: .8rem; }
 
 /* Blocs */
 .cam-bloc, .cam-carte {
@@ -210,3 +211,9 @@ table.cam-table td textarea { min-height: 3rem; font-size: .82rem; }
 
 /* Influences — conteur : action notée dans le pense-bête de la gazette */
 .cam-tag.gazette { background: #f3ead2; color: #5a4a2a; border: 1px solid #c9b48a; }
+
+/* Comptes > Maintenance : vérification des règles */
+.cam-liste-regles { list-style: none; margin: .4rem 0 0; padding: 0; columns: 2 16rem; font-size: .85rem; }
+.cam-liste-regles li { margin: 0 0 .15rem; break-inside: avoid; }
+.cam-liste-regles li.ok { color: var(--ok); }
+.cam-liste-regles li.err { color: #a33; font-weight: 600; }

@@ -43,13 +43,47 @@ export const ROLES = { joueur: 'Joueur', conteur: 'Conteur', admin: 'Administrat
 export const STATUTS_COMPTE = { en_attente: 'En attente de validation', actif: 'Actif', suspendu: 'Suspendu' };
 
 export const estActif = (p) => !!p && p.statut === 'actif';
+// Un administrateur a tous les droits d'un conteur (ici comme dans les règles Firestore).
 export const estConteur = (p) => estActif(p) && (p.role === 'conteur' || p.role === 'admin');
 export const estAdmin = (p) => estActif(p) && p.role === 'admin';
+
+// Version des règles Firestore attendue par ce code. Le document
+// regles/{VERSION_REGLES} n'est lisible que si les règles publiées dans la
+// console Firebase sont celles de firebase/firestore.rules : à changer ici ET
+// dans firebase/firestore.rules (match /regles/) à chaque modification des règles.
+export const VERSION_REGLES = '2026-11-22';
+
+// ---------------------------------------------------------------------
+// Vue de test (administrateurs)
+// Un administrateur peut regarder le site comme un conteur ou un joueur,
+// pour tester. Seule l'interface change : pour les règles Firestore, il
+// reste administrateur (ses actions passent avec ses vrais droits).
+// Choix gardé dans le navigateur (par compte) ; un bandeau le rappelle sur
+// toutes les pages, avec de quoi revenir à la vue administrateur.
+// ---------------------------------------------------------------------
+export const VUES_TEST = { conteur: 'Conteur', joueur: 'Joueur' };
+const CLE_VUE = (uid) => 'cam-vue-test-' + uid;
+function lireVue(uid) {
+  try { const v = localStorage.getItem(CLE_VUE(uid)); return VUES_TEST[v] ? v : null; } catch (e) { return null; }
+}
+function appliquerVue(user, p) {
+  if (!estAdmin(p)) return p;
+  const vue = lireVue(user.uid);
+  return vue ? { ...p, role: vue, roleReel: 'admin', vueTest: vue } : p;
+}
+/** Change de vue ('conteur', 'joueur', ou '' pour revenir administrateur) et recharge la page. */
+export function changerVue(vue) {
+  const u = auth.currentUser;
+  if (!u) return;
+  try { if (VUES_TEST[vue]) localStorage.setItem(CLE_VUE(u.uid), vue); else localStorage.removeItem(CLE_VUE(u.uid)); } catch (e) { /* navigation privée */ }
+  location.reload();
+}
 
 // ---------------------------------------------------------------------
 // Session : utilisateur Firebase + profil Firestore (utilisateurs/{uid})
 // ---------------------------------------------------------------------
-let etat = { user: null, profil: null, pret: false };
+let etat = { user: null, profil: null, pret: false };   // profil : celui de la vue (vue de test comprise)
+let profilReel = null;                                  // profil enregistré, vrai rôle
 const abonnes = new Set();
 let arreterProfil = null;
 let nomInscription = null;   // nom saisi à l'inscription, utilisé pour créer le profil
@@ -58,7 +92,7 @@ function notifier() { abonnes.forEach((cb) => { try { cb(etat); } catch (e) { co
 
 authMod.onAuthStateChanged(auth, async (user) => {
   if (arreterProfil) { arreterProfil(); arreterProfil = null; }
-  if (!user) { etat = { user: null, profil: null, pret: true }; notifier(); return; }
+  if (!user) { profilReel = null; etat = { user: null, profil: null, pret: true }; notifier(); bandeauVue(); return; }
 
   // Le profil est suivi en direct ; s'il n'existe pas encore (inscription),
   // on le crée, et le suivi reçoit aussitôt la nouvelle version.
@@ -77,11 +111,14 @@ authMod.onAuthStateChanged(auth, async (user) => {
         return;
       } catch (e) { console.error('Création du profil impossible', e); }
     }
-    etat = { user, profil: snap.exists() ? { id: snap.id, ...snap.data() } : null, pret: true };
-    synchroniserAnnuaire(user, etat.profil);
+    profilReel = snap.exists() ? { id: snap.id, ...snap.data() } : null;
+    etat = { user, profil: appliquerVue(user, profilReel), pret: true };
+    synchroniserAnnuaire(user, profilReel);   // toujours le vrai rôle
     notifier();
+    bandeauVue();
   }, (err) => {
     console.error(err);
+    profilReel = null;
     etat = { user, profil: null, pret: true };
     notifier();
   });
@@ -115,6 +152,45 @@ export function surSession(cb) {
 }
 
 export function sessionCourante() { return etat; }
+/** Vrai administrateur, même en vue de test. */
+export const estAdminReel = () => estAdmin(profilReel);
+/** Vue de test en cours ('conteur' | 'joueur') ou null. */
+export const vueTest = () => (etat.profil && etat.profil.vueTest) || null;
+
+/** Les règles publiées dans Firebase sont-elles à jour ? (1 lecture) */
+export async function reglesAJour() {
+  try { await fs.getDoc(fs.doc(db, 'regles', VERSION_REGLES)); return true; }
+  catch (e) { if (e.code === 'permission-denied') return false; throw e; }
+}
+
+// Bandeau de la vue de test, sur toutes les pages (styles en ligne : il
+// s'affiche aussi sur les pages qui n'ont pas la feuille de style des membres).
+function bandeauVue() {
+  let el = document.getElementById('cam-vue-test');
+  const vue = vueTest();
+  if (!vue || !document.body) { if (el) el.remove(); return; }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'cam-vue-test';
+    el.setAttribute('role', 'status');
+    document.body.append(el);
+  }
+  el.style.cssText = 'position:fixed;left:12px;bottom:12px;z-index:2147483000;max-width:min(620px,calc(100vw - 24px));'
+    + 'display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:8px 12px;border:1px solid #c9a227;border-radius:6px;'
+    + 'background:#1b1712;color:#f1e6cc;font:13px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.45);text-align:left';
+  const bouton = (texte, valeur, principal) => h('button', {
+    type: 'button', onclick: () => changerVue(valeur),
+    style: 'cursor:pointer;padding:4px 10px;border-radius:4px;font:inherit;font-size:12px;'
+      + (principal ? 'border:1px solid #c9a227;background:#c9a227;color:#1b1712;font-weight:600' : 'border:1px solid #6b5d45;background:transparent;color:#f1e6cc')
+  }, texte);
+  const autre = vue === 'joueur' ? 'conteur' : 'joueur';
+  el.replaceChildren(
+    h('span', {}, '👁 ', h('strong', {}, 'Vue de test : ' + VUES_TEST[vue].toLowerCase()),
+      h('br'), h('small', { style: 'opacity:.8' }, 'Seul l\'affichage change : vos actions passent avec vos droits d\'administrateur.')),
+    h('span', { style: 'display:flex;gap:6px;flex-wrap:wrap' },
+      bouton('Voir en ' + VUES_TEST[autre].toLowerCase(), autre, false),
+      bouton('Revenir administrateur', '', true)));
+}
 
 // ---------------------------------------------------------------------
 // Connexion / inscription
@@ -148,7 +224,7 @@ export async function renvoyerVerification() {
 export async function deconnexion(redirection = '/') {
   try { const { viderCacheImages } = await import('./images.js'); await viderCacheImages(); } catch (e) { /* ignore */ }
   // L'annuaire gardé dans le navigateur sera relu à la prochaine connexion.
-  try { const u = auth.currentUser; if (u) { localStorage.removeItem(CLE_ANNUAIRE(u.uid)); localStorage.removeItem(CLE_MON_ENTREE(u.uid)); } } catch (e) { /* ignore */ }
+  try { const u = auth.currentUser; if (u) { localStorage.removeItem(CLE_ANNUAIRE(u.uid)); localStorage.removeItem(CLE_MON_ENTREE(u.uid)); localStorage.removeItem(CLE_VUE(u.uid)); } } catch (e) { /* ignore */ }
   await authMod.signOut(auth);
   location.href = redirection;
 }
@@ -180,7 +256,11 @@ const ERREURS_AUTH = {
 export function messageErreur(err) {
   if (!err) return 'Erreur inconnue.';
   if (ERREURS_AUTH[err.code]) return ERREURS_AUTH[err.code];
-  if (err.code === 'permission-denied') return 'Action refusée : vous n\'avez pas les droits nécessaires.';
+  if (err.code === 'permission-denied') {
+    return 'Action refusée : vous n\'avez pas les droits nécessaires.' + (estAdmin(profilReel)
+      ? ' (Administrateur : si cela ne devrait pas arriver, vérifiez que les règles publiées dans Firebase sont à jour : Comptes > Maintenance > « Vérifier les règles ».)'
+      : '');
+  }
   if (err.code === 'unavailable') return 'Service momentanément injoignable, vérifiez votre connexion.';
   return err.message || String(err);
 }
@@ -255,9 +335,20 @@ export function barreMembre(conteneur) {
         h('a', { href: '/connexion/?retour=' + encodeURIComponent(location.pathname) }, 'Se connecter')));
       return;
     }
-    const role = profil ? (ROLES[profil.role] || profil.role) : '';
+    const vue = profil && profil.vueTest;
+    const role = !profil ? '' : vue ? 'Administrateur, vue ' + VUES_TEST[vue].toLowerCase()
+      : profil.role === 'admin' ? 'Administrateur (et conteur)' : (ROLES[profil.role] || profil.role);
+    // Vrai administrateur : choix de la vue de test.
+    const choixVue = estAdmin(profilReel) ? h('select', {
+      class: 'cam-vue-choix', 'aria-label': 'Voir le site en tant que',
+      title: 'Voir le site comme un conteur ou un joueur, pour tester. Vos droits ne changent pas.',
+      onchange: (e) => changerVue(e.target.value)
+    },
+    h('option', { value: '', selected: !vue }, 'Vue administrateur'),
+    ...Object.entries(VUES_TEST).map(([v, l]) => h('option', { value: v, selected: vue === v }, 'Vue ' + l.toLowerCase()))) : '';
     conteneur.replaceChildren(h('div', { class: 'cam-barre' },
       h('span', {}, 'Connecté : ', h('strong', {}, profil ? profil.nom : user.email), role ? ' · ' + role : ''),
+      choixVue,
       h('a', { href: '/membres/' }, 'Espace membres'),
       h('a', { href: '/membres/notifications/' }, 'Notifications'),
       h('a', { href: '#', onclick: (e) => { e.preventDefault(); deconnexion('/'); } }, 'Déconnexion')));

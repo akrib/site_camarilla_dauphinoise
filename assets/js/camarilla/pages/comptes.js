@@ -1,7 +1,8 @@
 // Page /membres/comptes/ : validation des inscriptions, rôles, maintenance.
 import {
   h, db, fs, pageProtegee, barreMembre, estAdmin, ROLES, STATUTS_COMPTE,
-  message, messageErreur, dateFr, millis, onglets, confirmer, options, telecharger
+  message, messageErreur, dateFr, millis, onglets, confirmer, options, telecharger,
+  reglesAJour, VERSION_REGLES
 } from '../core.js';
 import { collecterRefs } from '../images.js';
 import { estCompresse, decompresserJson, compresserJson } from '../compression.js';
@@ -45,7 +46,8 @@ pageProtegee(racine, 'conteur', async ({ user, profil }) => {
     admin ? panneauMaintenance() : '',
     msg);
   racine.append(bloc);
-  onglets(bloc)('attente');
+  const ouvrirOnglet = onglets(bloc);
+  ouvrirOnglet(admin && location.hash === '#maintenance' ? 'maintenance' : 'attente');
 
   let comptes = [];
   let annuaireVerifie = false;
@@ -276,7 +278,45 @@ function panneauMaintenance() {
     finally { exporter.disabled = false; }
   });
 
+  // --- Règles de sécurité publiées dans Firebase ---
+  const sortieRegles = h('div', { class: 'cam-msg' });
+  const listeRegles = h('ul', { class: 'cam-liste-regles' });
+  const verifierRegles = h('button', { type: 'button', class: 'secondaire' }, 'Vérifier les règles');
+  const LECTURES = [
+    ['utilisateurs', 'Comptes'], ['annuaire', 'Annuaire'], ['repertoire', 'Répertoire des personnages'],
+    ['personnages', 'Fiches de personnage'], ['referentiel', 'Référentiel des règles'], ['images_index', 'Images'],
+    ['tableaux', 'Tableaux d\'enquête'], ['panneau', 'Panneau d\'affichage'], ['notifications', 'Notifications'],
+    ['defis', 'Challenges'], ['cartes', 'Cartes des personnages'], ['territoires', 'Territoires'],
+    ['calendrier', 'Calendrier des parties'], ['influences', 'Influences'], ['raisons_sociales', 'Raisons sociales'],
+    ['tickets', 'Tickets'], ['classement', 'Classement « Trouve le Sabbat »'], ['gazettes', 'Gazette'],
+    ['gazette_pensebete', 'Pense-bête de la gazette']
+  ];
+  verifierRegles.addEventListener('click', async () => {
+    verifierRegles.disabled = true;
+    message(sortieRegles, 'Vérification…', 'info');
+    listeRegles.replaceChildren();
+    try {
+      const aJour = await reglesAJour();
+      // Une lecture par collection (un document au plus) : un refus montre ce qui est bloqué.
+      const resultats = await Promise.all(LECTURES.map(async ([c, libelle]) => {
+        try { await fs.getDocs(fs.query(fs.collection(db, c), fs.limit(1))); return { libelle, ok: true }; }
+        catch (e) { return { libelle, ok: false, raison: e.code === 'permission-denied' ? 'lecture refusée' : messageErreur(e) }; }
+      }));
+      const refus = resultats.filter((r) => !r.ok);
+      listeRegles.replaceChildren(...resultats.map((r) => h('li', { class: r.ok ? 'ok' : 'err' }, (r.ok ? '✔ ' : '✘ ') + r.libelle + (r.ok ? '' : ' : ' + r.raison))));
+      if (aJour && !refus.length) message(sortieRegles, 'Les règles publiées sont à jour (version du ' + VERSION_REGLES + ').', 'ok');
+      else {
+        message(sortieRegles, (aJour ? 'Version des règles à jour, mais certaines lectures sont refusées. ' : 'Les règles publiées dans Firebase ne sont pas celles de cette version du site (version du ' + VERSION_REGLES + ' attendue). ')
+          + 'Console Firebase > Firestore Database > Règles : remplacez tout par le contenu de firebase/firestore.rules, puis « Publier ».', 'err');
+      }
+    } catch (e) { message(sortieRegles, messageErreur(e), 'err'); }
+    finally { verifierRegles.disabled = false; }
+  });
+
   return h('div', { dataset: { panneau: 'maintenance' } },
+    h('h3', {}, 'Règles de sécurité'),
+    h('p', { class: 'sous-titre' }, 'Les règles de sécurité se publient à la main dans la console Firebase, à chaque mise à jour du fichier firebase/firestore.rules. Si elles sont en retard, des actions sont refusées même à un administrateur (« vous n\'avez pas les droits nécessaires »). Cette vérification fait une vingtaine de lectures.'),
+    h('div', { class: 'cam-actions' }, verifierRegles), sortieRegles, listeRegles,
     h('h3', {}, 'Sauvegarde complète'),
     h('p', { class: 'sous-titre' }, 'Un fichier JSON avec toutes les données (comptes, fiches complètes, tableaux, panneau, influences, tickets, cartes, territoires…), textes en clair. Les descriptions des règles n\'y sont pas (elles se réimportent depuis le PDF). Une lecture par document : à faire de temps en temps, pas tous les jours.'),
     h('label', { class: 'cam-coche' }, avecImages, 'Inclure les images (fichier beaucoup plus lourd)'),

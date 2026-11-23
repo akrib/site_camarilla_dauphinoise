@@ -903,3 +903,25 @@ describe('Gazette « Le Gratin Dauphinois »', () => {
     await assertFails(getDoc(doc(db('alice'), 'gazette_pensebete', '2026-11')));
   });
 });
+
+describe('Administrateur : droits de conteur, version des règles', () => {
+  test('un admin fait tout ce que fait un conteur (gazette, territoires, calendrier)', async () => {
+    const d = db('admin');
+    const lot = writeBatch(d);
+    lot.set(doc(d, 'gazettes', '2026-11'), { mois: '2026-11', numero: 1, une: '', statut: 'brouillon', version: 1, majLe: serverTimestamp(), majPar: 'admin', majParNom: 'Admin' });
+    lot.set(doc(d, 'gazettes', '2026-11', 'contenu', 'edition'), { statut: 'brouillon', donnees: octets(300), majLe: serverTimestamp() });
+    await assertSucceeds(lot.commit());
+    await assertSucceeds(setDoc(doc(d, 'gazette_pensebete', '2026-11'), { sujets: {}, majLe: serverTimestamp() }));
+    await assertSucceeds(setDoc(doc(d, 'territoires', 'officiels'), { donnees: '{}', majLe: serverTimestamp(), majPar: 'admin', majParNom: 'Admin' }));
+    await assertSucceeds(setDoc(doc(d, 'calendrier', 'parties'), { parties: {}, anticipation: false, majLe: serverTimestamp(), majPar: 'admin' }));
+    await assertSucceeds(getDocs(collection(d, 'utilisateurs')));
+  });
+  test('regles/{version} : lisible pour la version publiée seulement, par les membres actifs', async () => {
+    const VERSION = readFileSync(join(ici, '..', '..', 'assets', 'js', 'camarilla', 'core.js'), 'utf8').match(/VERSION_REGLES = '([^']+)'/)[1];
+    await assertSucceeds(getDoc(doc(db('admin'), 'regles', VERSION)));
+    await assertSucceeds(getDoc(doc(db('alice'), 'regles', VERSION)));
+    await assertFails(getDoc(doc(db('admin'), 'regles', '2000-01-01')));
+    await assertFails(getDoc(doc(db('eve'), 'regles', VERSION)));
+    await assertFails(setDoc(doc(db('admin'), 'regles', VERSION), { x: 1 }));
+  });
+});

@@ -1,7 +1,8 @@
 // Page /membres/ : tableau de bord de l'espace membres.
 import {
   h, db, fs, pageProtegee, barreMembre, estActif, estConteur, estAdmin, ROLES, STATUTS_COMPTE,
-  changerNom, renvoyerVerification, deconnexion, message, messageErreur, dateFr
+  changerNom, renvoyerVerification, deconnexion, message, messageErreur, dateFr,
+  estAdminReel, vueTest, changerVue, VUES_TEST, reglesAJour
 } from '../core.js';
 import { personnageIncarne, blocChoixPersonnage, quitterPersonnage } from '../incarnation.js';
 import { chargerCalendrier, encartCalendrier } from '../calendrier.js';
@@ -58,6 +59,25 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
         ? 'Votre compte est suspendu. Contactez un conteur.'
         : 'Votre inscription est bien enregistrée. Un conteur doit maintenant activer votre compte ; cette page se mettra à jour toute seule.'));
     return;
+  }
+
+  // --- Administrateur : vue de test, règles publiées à jour ---
+  if (estAdminReel() && !vueTest()) {
+    const alerteRegles = h('div');
+    racine.append(alerteRegles, h('div', { class: 'cam-bloc' },
+      h('h2', {}, 'Tester le site'),
+      h('p', { class: 'sous-titre' }, 'Vous avez les droits d\'administrateur et ceux de conteur. Pour voir le site comme un conteur ou un joueur, choisissez une vue : seul l\'affichage change, vos actions gardent vos droits d\'administrateur (une action refusée à un vrai joueur peut donc passer pour vous). Un bandeau en bas de l\'écran permet de revenir à tout moment.'),
+      h('div', { class: 'cam-actions' },
+        ...Object.entries(VUES_TEST).map(([v, l]) => h('button', { type: 'button', class: 'secondaire', onclick: () => changerVue(v) }, '👁 Voir en ' + l.toLowerCase())))));
+    // 1 lecture : les règles publiées dans Firebase sont-elles celles du site ?
+    reglesAJour().then((ok) => {
+      if (ok) return;
+      alerteRegles.replaceChildren(h('div', { class: 'cam-encart erreur' },
+        h('strong', {}, 'Règles de sécurité pas à jour. '),
+        'Les règles publiées dans la console Firebase ne sont pas celles de cette version du site : certaines actions sont refusées, même à un administrateur (« vous n\'avez pas les droits nécessaires »). ',
+        'Dans la console Firebase, Firestore Database > Règles : remplacez tout par le contenu du fichier firebase/firestore.rules du dépôt, puis « Publier ». Détail : ',
+        h('a', { href: '/membres/comptes/#maintenance' }, 'Comptes > Maintenance'), '.'));
+    }).catch((e) => console.warn('Vérification des règles impossible', e));
   }
 
   // --- Outils du joueur (compte) ---

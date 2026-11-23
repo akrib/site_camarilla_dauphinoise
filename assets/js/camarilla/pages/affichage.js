@@ -49,6 +49,8 @@ function demarrer(session, perso) {
   const coque = $('panneau');
   const couches = $('panneauCouches');
   document.body.append(couches);   // les fenêtres passent au-dessus de l'en-tête du thème
+  // Le thème ajoute un lien « permalien » aux titres de la page : inutile ici.
+  [coque, couches].forEach((el) => el.querySelectorAll('.header-link').forEach((a) => a.remove()));
   coque.hidden = false;
   couches.hidden = false;
   racine.hidden = true;

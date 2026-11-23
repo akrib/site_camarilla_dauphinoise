@@ -61,7 +61,7 @@ body.gze-page { display: flex; flex-direction: column; overflow: hidden; backgro
 .gze-onglets .n { margin-left: 4px; padding: 0 6px; border-radius: 999px; background: var(--e-ligne-2); font-size: 11px; }
 .gze-onglets .n:empty { display: none; }
 .gze-panneau-corps { flex: 1; overflow: auto; padding: 14px 16px 30px; }
-.gze-plan { flex: 1; overflow: auto; padding: 24px 28px 60px; }
+.gze-plan { position: relative; flex: 1; overflow: auto; padding: 24px 28px 60px; }
 
 /* ---------- Formulaires du panneau ---------- */
 .gze-form h3 { margin: 18px 0 8px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--e-pale); }
@@ -135,7 +135,39 @@ body.gze-page { display: flex; flex-direction: column; overflow: hidden; backgro
 .gze-outils-article { position: absolute; z-index: 4; top: 2px; right: 2px; display: none; gap: 3px; padding: 2px; border-radius: 4px; background: rgba(255, 250, 240, .92); }
 .gz-article:hover > .gze-outils-article, .gz-article.gze-choisi > .gze-outils-article { display: flex; }
 .gze-insertion { height: 0; margin: 4px 0; border-top: 3px solid #9b1c2c; }
-.gz-en-edition .gz-vide { color: #9b8f7c; font-style: italic; text-indent: 0 !important; }
+.gze-poignee { display: inline-flex; align-items: center; cursor: grab; user-select: none; }
+.gze-poignee:active { cursor: grabbing; }
+
+/* ---------- Écriture directe dans la page ---------- */
+.gz-en-edition [data-champ] { cursor: text; outline: none; border-radius: 2px; transition: box-shadow .12s ease, background-color .12s ease; }
+.gz-en-edition [data-champ]:hover { box-shadow: 0 0 0 1px rgba(155, 28, 44, .3); }
+.gz-en-edition [data-champ]:focus { box-shadow: 0 0 0 2px rgba(201, 162, 39, .7); background-color: rgba(255, 252, 240, .55); }
+.gz-en-edition figure[contenteditable="false"] { cursor: default; }
+/* Petites zones en ligne (lieu, date, prix, légende, crédit) : en bloc en ligne, sinon le
+   curseur ne se pose pas dans une zone vide. */
+.gz-en-edition span[data-champ] { display: inline-block; min-width: 1ch; max-width: 100%; vertical-align: baseline; }
+/* Zone vide : son texte indicatif, en pâle (jamais imprimé ni enregistré). */
+.gz-en-edition .gz-champ-vide::before { content: attr(data-ph); color: #9b8f7c; font-style: italic; font-weight: 400; pointer-events: none; }
+.gz-en-edition .gz-credit.gz-champ-vide::before { content: "© " attr(data-ph); }
+.gz-en-edition .gz-ph-encre.gz-champ-vide::before { color: inherit; font-style: inherit; }   /* date vide = mois du numéro */
+/* Texte vide : l'indication occupe la place, le paragraphe vide (où se trouve le curseur) est posé dessus. */
+.gz-en-edition .gz-texte.gz-champ-vide { position: relative; }
+.gz-en-edition .gz-texte.gz-champ-vide::before { display: block; text-align: left; text-indent: 0; }
+.gz-en-edition .gz-texte.gz-champ-vide > p:first-of-type { position: absolute; top: 0; left: 0; right: 0; margin: 0; }
+/* Zones vides d'un article : seulement dans l'article choisi (sinon la page reste celle des joueurs). */
+.gz-en-edition .gz-article:not(.gze-choisi):not(:focus-within) .gz-champ-vide:not(.gz-texte) { display: none; }
+/* Bandeau : sous-titre et devise vides au survol, oreilles vides pendant l'écriture dans le bandeau. */
+.gz-en-edition .gz-bandeau:not(:hover):not(:focus-within) :is(.gz-sous-titre, .gz-devise).gz-champ-vide { display: none; }
+.gz-en-edition .gz-bandeau.gz-sans-oreilles:focus-within { grid-template-columns: 1fr minmax(0, 3.2fr) 1fr; }
+.gz-en-edition .gz-bandeau.gz-sans-oreilles:focus-within .gz-oreille { display: flex !important; border: 1px dashed var(--gz-filet); }
+.gz-en-edition .gz-oreille.gz-champ-vide::before { font-size: .9em; }
+/* Barre de mise en forme, au-dessus de la zone en cours d'écriture */
+.gze-format {
+  position: absolute; z-index: 8; display: flex; flex-wrap: wrap; gap: 3px; padding: 3px; border: 1px solid #b9ab8e; border-radius: 4px;
+  background: #fffaf0; box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+}
+.gze-format .gze-mini { font-family: var(--e-ui); }
+.gze-format-court .gze-bloc { display: none; }
 
 /* ---------- Prévisualisation ---------- */
 .gze-apercu { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; background: #2b2520; }

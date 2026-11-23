@@ -8,6 +8,8 @@ rules_version = '2';
 // À coller dans Console Firebase > Firestore > Règles, puis « Publier ».
 //
 // Rôles (champ `role` de utilisateurs/{uid}) : joueur, conteur, admin.
+// Un admin a tous les droits d'un conteur (fonction conteur() ci-dessous),
+// plus la gestion des comptes et quelques suppressions.
 // Statut (champ `statut`) : en_attente, actif, suspendu.
 // Un compte n'accède à rien tant qu'un conteur ne l'a pas activé.
 // =====================================================================
@@ -60,6 +62,17 @@ service cloud.firestore {
     function auteurValide(nom, p) {
       return (p != '' && persoIncarnable(p) && nom == perso(p).nom)
         || (p == '' && conteur() && nom == moi().nom);
+    }
+
+    // ------------------------------------------------------------------
+    // Version de ces règles. Le site lit regles/{version} (document qui
+    // n'existe pas) pour savoir si les règles publiées dans la console
+    // Firebase sont à jour : la lecture n'est permise que pour la version
+    // ci-dessous. À changer ICI ET dans assets/js/camarilla/core.js
+    // (VERSION_REGLES) à chaque modification de ce fichier.
+    // ------------------------------------------------------------------
+    match /regles/{version} {
+      allow get: if actif() && version == '2026-11-22';
     }
 
     // ------------------------------------------------------------------
