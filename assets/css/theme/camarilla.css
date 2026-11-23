@@ -46,24 +46,27 @@ h1, h2, h3, h4, h5, h6,
   font-weight: 600;
   letter-spacing: .14em;
   text-transform: uppercase;
-  color: var(--cd-os);
 }
+/* Couleur des titres : pas dans l'espace membres, dont les cadres clairs ont leurs couleurs */
+:is(h1, h2, h3, h4, h5, h6):not(.cam-app *),
+.page__title, .archive__item-title, .site-title { color: var(--cd-os); }
 
 .page__content h1 { font-size: 2rem; }
-.page__content h2 {
+.page__content h2:not(.cam-app *) {
   font-size: 1.5rem;
   color: var(--cd-vert-vif);
   padding-bottom: .5rem;
   border-bottom: 1px solid var(--cd-filet);
 }
-.page__content h3 { font-size: 1.2rem; color: var(--cd-os); }
-.page__content h4,
-.page__content h5,
-.page__content h6 { color: var(--cd-os-pale); letter-spacing: .18em; }
+.page__content h3:not(.cam-app *) { font-size: 1.2rem; color: var(--cd-os); }
+.page__content :is(h4, h5, h6):not(.cam-app *) { color: var(--cd-os-pale); letter-spacing: .18em; }
 
-p, li, dd, figcaption, .page__content { color: var(--cd-os); }
+/* Le texte hérite de son bloc : os sur les pages, encre dans les cadres clairs
+   de l'espace membres (.cam-app, qui gère ses propres couleurs). */
+.page__content { color: var(--cd-os); }
+:is(p, li, dd, figcaption):not(.cam-app *) { color: inherit; }
 .page__content p { line-height: 1.75; }
-.page__content strong { color: #fff6e6; font-weight: 600; }
+.page__content strong:not(.cam-app *) { color: #fff6e6; font-weight: 600; }
 
 a {
   color: var(--cd-vert-vif);
@@ -350,9 +353,10 @@ blockquote p:last-child { margin-bottom: 0; }
 /* --------------------------------------------------------------------------
    Boutons
    -------------------------------------------------------------------------- */
+/* (pas dans l'espace membres : .cam-app a ses propres boutons) */
 .btn,
-button,
-input[type="submit"] {
+button:not(.cam-app *),
+input[type="submit"]:not(.cam-app *) {
   background: transparent;
   border: 1px solid var(--cd-vert-marbre);
   border-radius: 0;
@@ -366,8 +370,8 @@ input[type="submit"] {
   transition: background .25s, color .25s, border-color .25s;
 }
 .btn:hover,
-button:hover,
-input[type="submit"]:hover {
+button:not(.cam-app *):hover,
+input[type="submit"]:not(.cam-app *):hover {
   background: var(--cd-vert);
   border-color: var(--cd-vert-vif);
   color: var(--cd-os);
@@ -379,14 +383,15 @@ input[type="submit"]:hover {
 /* --------------------------------------------------------------------------
    Tableaux
    -------------------------------------------------------------------------- */
-table {
+/* (pas dans l'espace membres : ses tableaux sont dans des cadres clairs) */
+table:not(.cam-app *) {
   border: 1px solid var(--cd-filet);
   border-collapse: collapse;
   width: 100%;
   font-size: .95em;
 }
-thead { background: var(--cd-vert); }
-th {
+thead:not(.cam-app *) { background: var(--cd-vert); }
+th:not(.cam-app *) {
   font-family: var(--cd-display);
   font-weight: 600;
   letter-spacing: .12em;
@@ -396,8 +401,8 @@ th {
   padding: .8em 1em;
   text-align: left;
 }
-td { border-bottom: 1px solid var(--cd-filet); padding: .8em 1em; color: var(--cd-os); }
-tbody tr:hover { background: var(--cd-noir-3); }
+td:not(.cam-app *) { border-bottom: 1px solid var(--cd-filet); padding: .8em 1em; color: var(--cd-os); }
+tbody:not(.cam-app *) tr:hover { background: var(--cd-noir-3); }
 
 /* --------------------------------------------------------------------------
    Encarts, code, sommaire, pagination
@@ -460,19 +465,19 @@ pre code { background: transparent; color: inherit; }
 .breadcrumbs .current { color: var(--cd-vert-vif); }
 
 /* Formulaires */
-input[type="text"], input[type="email"], input[type="password"],
+:is(input[type="text"], input[type="email"], input[type="password"],
 input[type="search"], input[type="number"], input[type="month"],
-select, textarea {
+select, textarea):not(.cam-app *) {
   background: var(--cd-noir-2);
   border: 1px solid var(--cd-filet-2);
   border-radius: 0;
   color: var(--cd-os);
 }
-input:focus, select:focus, textarea:focus {
+:is(input, select, textarea):not(.cam-app *):focus {
   border-color: var(--cd-vert-vif);
   outline: none;
 }
-label { color: var(--cd-os-pale); font-size: .85em; letter-spacing: .06em; }
+label:not(.cam-app *) { color: var(--cd-os-pale); font-size: .85em; letter-spacing: .06em; }
 
 /* --------------------------------------------------------------------------
    Pied de page
@@ -525,12 +530,35 @@ label { color: var(--cd-os-pale); font-size: .85em; letter-spacing: .06em; }
 .cam-app .cam-barre a { color: var(--cd-vert-vif); font-family: var(--cd-display); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; }
 .cam-app .cam-barre a:hover { color: var(--cd-os); }
 
-/* Titres de section posés sur le fond noir (hors des cadres clairs) */
-.page__content .cam-app h2:not(:is(.cam-bloc, .cam-carte, .cam-modal, .cam-encart) h2) {
+/* Espace membres (.cam-app) : des cadres clairs posés sur le fond noir.
+   Ce qui est directement sur le noir (titres de section, onglets, liens de
+   retour, sous-titres) prend les couleurs du thème ; le contenu des cadres
+   garde les siennes (membres.css, fiche.css). Les cadres clairs : */
+/*   .cam-bloc, .cam-carte, .cam-tuile, .cam-encart, .cam-element, .cam-fiche-carte, .cam-modal, .cam-edition, .cam-notif-message, .cam-table-defil, .fiche-section, .fiche-carte, .fiche-desc, .fiche-resume, .fiche-entete-collante, .cam-garde-boite */
+.page__content .cam-app h2:not(:is(.cam-bloc, .cam-carte, .cam-tuile, .cam-encart, .cam-element, .cam-fiche-carte, .cam-modal, .cam-edition, .cam-notif-message, .cam-table-defil, .fiche-section, .fiche-carte, .fiche-desc, .fiche-resume, .fiche-entete-collante, .cam-garde-boite) *) {
   color: var(--cd-vert-vif);
   border-bottom-color: var(--cd-filet);
 }
-.page__content .cam-app h3:not(:is(.cam-bloc, .cam-carte, .cam-modal, .cam-encart, .cam-element) h3) { color: var(--cd-os); }
+.page__content .cam-app h3:not(:is(.cam-bloc, .cam-carte, .cam-tuile, .cam-encart, .cam-element, .cam-fiche-carte, .cam-modal, .cam-edition, .cam-notif-message, .cam-table-defil, .fiche-section, .fiche-carte, .fiche-desc, .fiche-resume, .fiche-entete-collante, .cam-garde-boite) *) { color: var(--cd-os); }
+.page__content .cam-app .sous-titre:not(:is(.cam-bloc, .cam-carte, .cam-tuile, .cam-encart, .cam-element, .cam-fiche-carte, .cam-modal, .cam-edition, .cam-notif-message, .cam-table-defil, .fiche-section, .fiche-carte, .fiche-desc, .fiche-resume, .fiche-entete-collante, .cam-garde-boite) *) { color: var(--cd-os-pale); }
+.page__content .cam-app p:not(:is(.cam-bloc, .cam-carte, .cam-tuile, .cam-encart, .cam-element, .cam-fiche-carte, .cam-modal, .cam-edition, .cam-notif-message, .cam-table-defil, .fiche-section, .fiche-carte, .fiche-desc, .fiche-resume, .fiche-entete-collante, .cam-garde-boite) *) a:not(.cam-btn) { color: var(--cd-vert-vif); }
+.page__content .cam-app :is(p, label, span):not(:is(.cam-bloc, .cam-carte, .cam-tuile, .cam-encart, .cam-element, .cam-fiche-carte, .cam-modal, .cam-edition, .cam-notif-message, .cam-table-defil, .fiche-section, .fiche-carte, .fiche-desc, .fiche-resume, .fiche-entete-collante, .cam-garde-boite) *):not([class*="cam-tag"]) { color: var(--cd-os-pale); }
+.page__content .cam-app .cam-coche:not(:is(.cam-bloc, .cam-carte, .cam-tuile, .cam-encart, .cam-element, .cam-fiche-carte, .cam-modal, .cam-edition, .cam-notif-message, .cam-table-defil, .fiche-section, .fiche-carte, .fiche-desc, .fiche-resume, .fiche-entete-collante, .cam-garde-boite) *) { color: var(--cd-os) !important; }
+.page__content .cam-app .cam-onglets:not(:is(.cam-bloc, .cam-carte, .cam-tuile, .cam-encart, .cam-element, .cam-fiche-carte, .cam-modal, .cam-edition, .cam-notif-message, .cam-table-defil, .fiche-section, .fiche-carte, .fiche-desc, .fiche-resume, .fiche-entete-collante, .cam-garde-boite) *) { border-bottom-color: var(--cd-filet); }
+.page__content .cam-app .cam-onglets:not(:is(.cam-bloc, .cam-carte, .cam-tuile, .cam-encart, .cam-element, .cam-fiche-carte, .cam-modal, .cam-edition, .cam-notif-message, .cam-table-defil, .fiche-section, .fiche-carte, .fiche-desc, .fiche-resume, .fiche-entete-collante, .cam-garde-boite) *) > button { color: var(--cd-os-pale) !important; }
+.page__content .cam-app .cam-onglets:not(:is(.cam-bloc, .cam-carte, .cam-tuile, .cam-encart, .cam-element, .cam-fiche-carte, .cam-modal, .cam-edition, .cam-notif-message, .cam-table-defil, .fiche-section, .fiche-carte, .fiche-desc, .fiche-resume, .fiche-entete-collante, .cam-garde-boite) *) > button:hover { color: var(--cd-os) !important; }
+.page__content .cam-app .cam-onglets:not(:is(.cam-bloc, .cam-carte, .cam-tuile, .cam-encart, .cam-element, .cam-fiche-carte, .cam-modal, .cam-edition, .cam-notif-message, .cam-table-defil, .fiche-section, .fiche-carte, .fiche-desc, .fiche-resume, .fiche-entete-collante, .cam-garde-boite) *) > button.actif {
+  color: var(--cd-os) !important;
+  border-bottom-color: var(--cd-sang-vif);
+}
+/* Tableaux posés à même le noir (page Comptes…) : le même cadre clair que le reste */
+.page__content .cam-app .cam-table-defil:not(:is(.cam-bloc, .cam-carte, .cam-tuile, .cam-encart, .cam-element, .cam-fiche-carte, .cam-modal, .cam-edition, .cam-notif-message, .fiche-section, .fiche-carte, .fiche-desc, .fiche-resume, .fiche-entete-collante, .cam-garde-boite) *) {
+  background: var(--panneau, #fafaf8);
+  color: var(--encre, #2b2b2b);
+  border: 1px solid var(--ligne, #e2ddd6);
+  border-radius: 6px;
+  padding: .3rem .8rem;
+}
 
 /* --------------------------------------------------------------------------
    Accessibilité

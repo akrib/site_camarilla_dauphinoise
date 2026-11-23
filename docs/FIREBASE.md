@@ -259,6 +259,11 @@ mois de la partie est celui de ses actions d'influence (champ `mois`).
   du mois). Les influences de ce mois s'ouvrent le lendemain de la partie précédente et
   ferment à sa date limite ; celles du mois suivant s'ouvrent le lendemain. Partout, ce
   mois s'affiche « août 2026 (sans partie) ».
+- **Modifier le calendrier** : les dates se changent directement dans le tableau. La case
+  « Sans partie » de chaque ligne passe une partie existante en mois sans partie (le mois
+  et la date limite sont gardés, les influences restent ouvertes), ou l'inverse (la date de
+  la partie revient). Puis « Enregistrer le calendrier ». Une partie sans date est signalée
+  au lieu d'être supprimée sans prévenir.
 
 Ces fenêtres sont vérifiées par les **règles Firestore** (heure du serveur), pas seulement
 par la page. Document : `calendrier/parties`
@@ -527,6 +532,15 @@ Grenoble et de ses environs :
   **Influence** ouvre la gestion des influences avec le lieu cliqué déjà rempli. Un
   conteur voit toutes les actions du mois (lecture seule). Dans la gestion des
   influences, chaque formulaire a aussi « 📍 Choisir sur la carte ».
+- **Territoire d'une action** : quand le joueur place ou déplace une action sur la carte
+  (ou choisit son lieu dans le formulaire), le territoire de l'action devient celui des
+  territoires officiels qui contient le lieu (champ `zone`, rien à changer dans les règles).
+- **Vue d'un territoire** (`/utils/carte?mois=AAAA-MM&territoire=N`, lien « 📍 Voir sur la
+  carte » de l'onglet *Territoires* de la page conteur) : la carte se cadre sur le
+  territoire N et n'affiche que lui et ses actions de la partie : celles dont le territoire
+  est N, et celles sans territoire placées dans N. Une action sans lieu y est posée au
+  hasard (losange en pointillés, « lieu non précisé » ; toujours au même endroit, rien
+  n'est enregistré). Lien « Toute la ville » pour revenir à la carte complète.
 
 Sauvegarde : **une carte par personnage dans Firestore** (`cartes/{idPersonnage}`, JSON
 compressé), envoyée 2 secondes après la dernière modification (déplacer ou zoomer la

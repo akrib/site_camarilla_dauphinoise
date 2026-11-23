@@ -20,6 +20,16 @@ Lisibilité sur le noir : pour du texte, utiliser `--cd-os`, `--cd-os-pale`, `--
 `--cd-sang-clair` seulement pour des accents ou de gros titres ; jamais `--cd-sang` ni `--cd-sang-vif` pour du texte
 (ce sont des fonds et des bordures).
 
+## Espace membres
+
+Les pages de l'espace membres posent des **cadres clairs** (fiches, cartes, tableaux) sur le fond noir
+du site. Le thème ne colore pas le contenu de ces cadres (`membres.css` et `fiche.css` gardent
+leurs couleurs : encre sur clair) ; il ne s'occupe que de ce qui est directement sur le noir
+(titres de section, onglets, liens de retour, sous-titres). La liste des cadres clairs est en tête
+de la section « Espace membres » de `camarilla.css` : un nouveau type de cadre clair doit y être
+ajouté, sinon son texte risque d'être pris pour du texte « sur le noir ». Un tableau posé à même le
+noir reçoit automatiquement un cadre clair.
+
 ## Barres des outils plein écran
 
 Seule la barre suit le thème : l'intérieur de chaque outil (carte, liège, tableau, jeu, éditeur de la gazette)

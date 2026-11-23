@@ -231,3 +231,4 @@ table.cam-table td textarea { min-height: 3rem; font-size: .82rem; }
 .cam-ligne-pnj { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin: .2rem 0 .6rem; }
 .cam-ligne-pnj label { margin: 0; }
 .cam-app .cam-ligne-pnj select { width: auto; min-width: 12rem; }
+.cam-note-zone { display: block; margin-top: .25rem; font-size: .74rem; color: var(--ok); }

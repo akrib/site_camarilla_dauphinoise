@@ -36,7 +36,7 @@
 import * as maplibregl from 'https://unpkg.com/maplibre-gl@6.18.0/dist/maplibre-gl.mjs';
 import { h, db, fs, surSession, estConteur, messageErreur, dateFr, millis } from '../core.js';
 import { accesOutil, afficherGarde as garder, fenetreChoixPersonnage } from '../incarnation.js';
-import { GRENOBLE, FONDS, ATTRIBUTION, couleurInfluence, versPoint, versLieu, chargerTerritoires, completerImages } from '../carte-base.js';
+import { GRENOBLE, FONDS, ATTRIBUTION, couleurInfluence, versPoint, versLieu, chargerTerritoires, completerImages, dansPolygone, zoneDuPoint } from '../carte-base.js';
 import { donneesDoc, compresserJson, decompresserJson } from '../compression.js';
 import { chargerCalendrier, modifiable, moisParDefaut, partie, etat, libelleMois, libellePartie, resumeEtat, LIBELLES_ETAT } from '../calendrier.js';
 import { TYPES_ACTION, NOMS_ZONES, DOMAINES_VOISINS, libelleZone } from '../donnees.js';
@@ -126,6 +126,11 @@ let carteDe = null;            // { id, nom } : carte de personnage consultée p
 // Territoires officiels (mode jeu : affichés si la case est cochée)
 let officiels = [];
 let afficherOfficiels = false;
+// Vue d'un seul territoire : /utils/carte?mois=AAAA-MM&territoire=N (lien de la
+// page conteur des influences). Seuls ce territoire et ses actions de la partie
+// sont affichés ; une action sans lieu y est posée au hasard (affichage seulement).
+const TERRITOIRE = (() => { const z = new URLSearchParams(location.search).get('territoire'); return z && NOMS_ZONES[z] ? z : ''; })();
+let territoirePret = null;
 // Envoi vers Firestore
 let attenteEnvoi = null;
 let dernierEnvoi = null;       // dernier contenu enregistré dans la base (JSON)
@@ -136,8 +141,9 @@ function vide() {
 }
 const nouvelId = () => 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const $ = (id) => document.getElementById(id);
-const liste = (type) => (type === 'influence' ? influences : (type === 'territoire' && EN_JEU ? officiels : donnees[ONGLET_DE[type]]));
-const territoiresAffiches = () => (EN_JEU ? (afficherOfficiels ? officiels : []) : donnees.territoires);
+const officielsVus = () => (TERRITOIRE ? officiels.filter((t) => t.zone === TERRITOIRE) : officiels);
+const liste = (type) => (type === 'influence' ? influences : (type === 'territoire' && EN_JEU ? officielsVus() : donnees[ONGLET_DE[type]]));
+const territoiresAffiches = () => (EN_JEU ? (afficherOfficiels ? officielsVus() : []) : donnees.territoires);
 const editable = (type) => !lectureSeule && (type === 'territoire' ? !EN_JEU : EN_JEU);
 const trouver = (type, id) => liste(type).find((x) => x.id === id);
 
@@ -639,8 +645,9 @@ function selectionner(type, id, { centrer = false } = {}) {
 function localiser(type, id) {
   const x = trouver(type, id);
   if (!x) return;
-  if (type === 'influence' && !x.position) { aide('Cette action n\'est pas encore placée sur la carte.', 2500); return; }
-  if (x.position) map.easeTo({ center: x.position, zoom: Math.max(map.getZoom(), 15) });
+  const pos = type === 'influence' ? posAction(x) : x.position;
+  if (type === 'influence' && !pos) { aide('Cette action n\'est pas encore placée sur la carte.', 2500); return; }
+  if (pos) map.easeTo({ center: pos, zoom: Math.max(map.getZoom(), 15) });
   else map.fitBounds(emprise(x.coords), { padding: 80, maxZoom: 16, duration: 800 });
 }
 
@@ -995,6 +1002,7 @@ function fenetreReferences() {
 // ---------------------------------------------------------------------
 const echapper = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const preparer = (a) => ({ ...a, position: versPoint(a.lieu) });
+const posAction = (a) => a.position || a.positionHasard || null;
 const modifiableAction = (a) => !!perso && enJeu && a.proprietaire === session.user.uid && a.statut === 'attente'
   && !a.reponseConteur && modifiable(cal, a.mois);
 const lienGestion = (a) => '/influences/?perso=' + encodeURIComponent(a.personnageId) + '&action=' + encodeURIComponent(a.id) + '#resultats';
@@ -1063,6 +1071,7 @@ async function afficherMois(m) {
     }
     influences = parMois.get(m);
   }
+  if (TERRITOIRE && m) influences = await filtrerTerritoire(influences);
   if (m && influences.length && ongletActif !== 'influences' && new URLSearchParams(location.search).get('mois') === m) ouvrirOnglet('influences', false);
   toutRedessiner();
   afficherAideOutil();
@@ -1071,10 +1080,13 @@ async function afficherMois(m) {
 function dessinerMarqueursInfluences() {
   const presents = new Set();
   influences.forEach((a) => {
-    if (!a.position) return;
+    const pos = posAction(a);
+    if (!pos) return;
     presents.add(a.id);
-    const mobile = modifiableAction(a);
-    const el = h('div', { class: 'carte-marqueur influence' + (selection && selection.id === a.id ? ' sel' : '') + (mobile ? ' mobile' : ''), title: a.nomAction + (perso ? '' : ' — ' + a.personnageNom) },
+    const hasard = !a.position;
+    const mobile = modifiableAction(a) && !hasard;
+    const el = h('div', { class: 'carte-marqueur influence' + (selection && selection.id === a.id ? ' sel' : '') + (mobile ? ' mobile' : '') + (hasard ? ' hasard' : ''),
+      title: a.nomAction + (perso ? '' : ' — ' + a.personnageNom) + (hasard ? ' (lieu non précisé : posée au hasard dans le territoire)' : '') },
       h('div', { class: 'losange', style: 'background:' + couleurInfluence(a.categorie) }),
       h('div', { class: 'etiquette' }, perso ? a.nomAction : a.personnageNom));
     let m = marqueursInfl.get(a.id);
@@ -1082,11 +1094,11 @@ function dessinerMarqueursInfluences() {
       const actuel = m.getElement();
       classesMarqueur(actuel, el.className); actuel.title = el.title;
       actuel.replaceChildren(...el.childNodes);
-      m.setLngLat(a.position);
+      m.setLngLat(pos);
       m.setDraggable(mobile);
       return;
     }
-    m = new maplibregl.Marker({ element: el, draggable: mobile, anchor: 'center' }).setLngLat(a.position).addTo(map);
+    m = new maplibregl.Marker({ element: el, draggable: mobile, anchor: 'center' }).setLngLat(pos).addTo(map);
     el.addEventListener('click', (e) => { e.stopPropagation(); if (outil === 'naviguer' && !placement) selectionner('influence', a.id); });
     m.on('dragend', () => {
       const ll = m.getLngLat();
@@ -1097,24 +1109,88 @@ function dessinerMarqueursInfluences() {
   for (const [id, m] of marqueursInfl) if (!presents.has(id)) { m.remove(); marqueursInfl.delete(id); }
 }
 
-// Enregistre le lieu d'une action (ou le retire si p est null)
+// Enregistre le lieu d'une action (ou le retire si p est null). Le territoire
+// de l'action suit le lieu : celui des territoires officiels qui le contient.
 async function placerInfluence(id, p) {
   placement = null;
   afficherAideOutil();
   const a = trouver('influence', id);
   if (!a || !modifiableAction(a)) { toutRedessiner(); return; }
-  const avant = a.lieu;
+  const avant = { lieu: a.lieu, zone: a.zone };
   a.lieu = p ? versLieu(p) : undefined;
   a.position = p ? versPoint(a.lieu) : null;
+  delete a.positionHasard;
   toutRedessiner(); majEditeur();
+  const zone = p ? await zoneDuLieu(p) : '';
+  const maj = { lieu: p ? a.lieu : fs.deleteField(), majLe: fs.serverTimestamp() };
+  if (zone && zone !== a.zone) { maj.zone = zone; a.zone = zone; }
   try {
-    await fs.updateDoc(fs.doc(db, 'influences', id), { lieu: p ? a.lieu : fs.deleteField(), majLe: fs.serverTimestamp() });
-    aide(p ? 'Lieu de l\'action enregistré.' : 'Action retirée de la carte.', 2000);
+    await fs.updateDoc(fs.doc(db, 'influences', id), maj);
+    aide(p ? 'Lieu de l\'action enregistré' + (maj.zone ? ' — territoire ' + echapper(libelleZone(zone)) : '') + '.' : 'Action retirée de la carte.', 2500);
+    majEditeur();
   } catch (e) {
-    a.lieu = avant; a.position = versPoint(avant);
+    a.lieu = avant.lieu; a.zone = avant.zone; a.position = versPoint(avant.lieu);
     toutRedessiner(); majEditeur();
     aide('Enregistrement refusé : ' + echapper(messageErreur(e)), 5000);
   }
+}
+
+/** Territoire officiel qui contient le point ('' si aucun, ou territoires illisibles). */
+async function zoneDuLieu(p) {
+  try { if (!officiels.length) officiels = normaliserOfficiels(await chargerTerritoires()); }
+  catch (e) { console.warn('Territoires illisibles', e); return ''; }
+  return zoneDuPoint(officiels, p);
+}
+
+// ---------------------------------------------------------------------
+// Vue d'un seul territoire (?territoire=N)
+// ---------------------------------------------------------------------
+async function vueTerritoire() {
+  try { if (!officiels.length) officiels = normaliserOfficiels(await chargerTerritoires()); }
+  catch (e) { aide('Territoires indisponibles : ' + echapper(messageErreur(e)), 6000); return; }
+  afficherOfficiels = true;
+  if ($('voirTerritoires')) $('voirTerritoires').checked = true;
+  const polys = officielsVus();
+  if (!polys.length) {
+    aide('Le territoire <b>' + echapper(libelleZone(TERRITOIRE)) + '</b> n\'est pas encore tracé : page « Territoires » des conteurs.', 8000);
+    return;
+  }
+  const cadrer = () => map.fitBounds(emprise(polys.flatMap((t) => t.coords)), { padding: 70, maxZoom: 16, duration: 0 });
+  if (map.loaded()) cadrer(); else map.once('load', cadrer);
+  dessinerCouches(); dessinerListe();
+}
+
+/** Actions du territoire : son territoire déclaré, ou à défaut son lieu dans le territoire. */
+async function filtrerTerritoire(actions) {
+  if (territoirePret) await territoirePret;
+  const polys = officielsVus();
+  const dedans = (pt) => polys.some((t) => dansPolygone(pt, t.coords));
+  return actions.filter((a) => {
+    const ok = a.zone ? a.zone === TERRITOIRE : !!a.position && dedans(a.position);
+    if (ok && !a.position && polys.length) a.positionHasard = pointAuHasard(polys, a.id);
+    return ok;
+  });
+}
+
+/** Point tiré au hasard dans un des polygones, toujours le même pour une même graine. */
+function pointAuHasard(polys, graine) {
+  let e = 0;
+  for (const c of String(graine)) e = (Math.imul(e, 31) + c.charCodeAt(0)) >>> 0;
+  const alea = () => {   // mulberry32
+    e = (e + 0x6D2B79F5) >>> 0;
+    let t = e;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const pts = polys[Math.floor(alea() * polys.length)].coords;
+  const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  for (let i = 0; i < 300; i++) {
+    const q = [x0 + alea() * (x1 - x0), y0 + alea() * (y1 - y0)];
+    if (dansPolygone(q, pts)) return q;
+  }
+  return centre(pts);
 }
 
 function proposerNouvelleAction(lngLat) {
@@ -1139,6 +1215,14 @@ function dessinerListeInfluences() {
     tete.push(h('div', { class: 'carte-note carte-infl-tete' },
       h('b', {}, p ? libellePartie(p) : libelleMois(moisInfl)), h('br'), p ? resumeEtat(cal, p) : ''));
   }
+  if (TERRITOIRE) {
+    const hasard = influences.filter((a) => a.positionHasard && !a.position).length;
+    const u = new URL(location.href); u.searchParams.delete('territoire');
+    tete.push(h('div', { class: 'carte-note carte-infl-territoire' },
+      'Territoire ', h('b', {}, libelleZone(TERRITOIRE)), ' : ', String(influences.length), ' action(s)',
+      hasard ? ', dont ' + hasard + ' sans lieu précis (posée' + (hasard > 1 ? 's' : '') + ' au hasard dans le territoire)' : '', '. ',
+      h('a', { href: u.pathname + u.search }, 'Toute la ville')));
+  }
   if (!moisInfl) { zone.replaceChildren(h('div', { class: 'carte-vide' }, 'Choisissez un mois dans la liste « Influences » de la barre du haut pour afficher les actions.')); return; }
   if (!influences.length) {
     zone.replaceChildren(...tete, h('div', { class: 'carte-vide' }, perso
@@ -1150,10 +1234,10 @@ function dessinerListeInfluences() {
     const item = h('div', { class: 'carte-item' + (selection && selection.id === a.id ? ' sel' : ''), title: a.descriptif || a.nomAction },
       h('span', { class: 'pastille losange', style: 'background:' + couleurInfluence(a.categorie) }),
       h('span', { class: 'nom' }, perso ? a.nomAction : a.personnageNom + ' — ' + a.nomAction),
-      h('span', { class: 'info' }, a.position ? '' : 'non placée'),
-      a.position ? h('button', { type: 'button', title: 'Localiser', onclick: (e) => { e.stopPropagation(); localiser('influence', a.id); } }, '◎') : '',
+      h('span', { class: 'info' }, a.position ? '' : a.positionHasard ? 'lieu non précisé' : 'non placée'),
+      posAction(a) ? h('button', { type: 'button', title: 'Localiser', onclick: (e) => { e.stopPropagation(); localiser('influence', a.id); } }, '◎') : '',
       !a.position && modifiableAction(a) ? h('button', { type: 'button', title: 'Placer sur la carte', onclick: (e) => { e.stopPropagation(); commencerPlacement(a.id); } }, '📍') : '');
-    item.addEventListener('click', () => selectionner('influence', a.id, { centrer: !!a.position }));
+    item.addEventListener('click', () => selectionner('influence', a.id, { centrer: !!posAction(a) }));
     return item;
   }));
 }
@@ -1188,7 +1272,8 @@ function majEditeurInfluence(zone, a) {
       ligne('Type', TYPES_ACTION[a.type] || a.type), ligne('Catégorie', a.categorie),
       ligne('Action', a.nomAction + ' — ' + a.pointsAction + ' pt(s)'),
       ligne('Raison sociale', a.raisonSociale), ligne('Cible', a.cible),
-      ligne('Lieu', a.position ? a.lieu.lat.toFixed(5) + ', ' + a.lieu.lng.toFixed(5) : 'non placée'),
+      ligne('Territoire', a.zone ? libelleZone(a.zone) : ''),
+      ligne('Lieu', a.position ? a.lieu.lat.toFixed(5) + ', ' + a.lieu.lng.toFixed(5) : a.positionHasard ? 'non précisé (posée au hasard dans le territoire)' : 'non placée'),
       a.descriptif ? h('p', { class: 'carte-infl-texte' }, a.descriptif) : '',
       h('p', { class: 'carte-infl-reponse' + (a.reponseConteur ? '' : ' vide') }, a.reponseConteur ? 'Résultat : ' + a.reponseConteur : 'En attente du résultat du conteur.'),
       h('p', { class: 'carte-note' }, mobile
@@ -1378,6 +1463,7 @@ function demarrerCarte() {
   dessinerMarqueurs();
   dessinerListe();
   appliquerMode(false);   // boutons Plan / 3D ; les couches suivent à « style.load »
+  if (EN_JEU && TERRITOIRE) territoirePret = vueTerritoire();
   if (EN_JEU && $('moisInfl')) demarrerInfluences();
   if (lectureSeule && (donnees.havres.length || donnees.chasses.length || donnees.rondes.length)) {
     const pts = [...donnees.havres.map((x) => x.position), ...donnees.chasses.map((x) => x.position), ...donnees.rondes.flatMap((x) => x.coords)];

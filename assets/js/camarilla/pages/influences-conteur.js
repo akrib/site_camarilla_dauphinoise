@@ -12,6 +12,7 @@ import {
   finDuMois
 } from '../calendrier.js';
 import { lirePenseBete, marquerSujet, sujetDepuisAction } from '../gazette/stockage.js';
+import { chargerTerritoires, zoneDuPoint } from '../carte-base.js';
 
 const racine = document.getElementById('cam-influences-conteur');
 barreMembre(document.getElementById('cam-barre'));
@@ -33,11 +34,11 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
     calendrier: h('div', { dataset: { panneau: 'calendrier' } }),
     personnages: h('div', { dataset: { panneau: 'personnages' } }),
     actions: h('div', { dataset: { panneau: 'actions' } }),
-    districts: h('div', { dataset: { panneau: 'districts' } }),
+    territoires: h('div', { dataset: { panneau: 'territoires' } }),
     raisons: h('div', { dataset: { panneau: 'raisons' } }),
     exports: h('div', { dataset: { panneau: 'exports' } })
   };
-  const libelles = { calendrier: 'Calendrier', personnages: 'Personnages', actions: 'Actions du mois', districts: 'Districts', raisons: 'Raisons sociales', exports: 'Exports CSV' };
+  const libelles = { calendrier: 'Calendrier', personnages: 'Personnages', actions: 'Actions du mois', territoires: 'Territoires', raisons: 'Raisons sociales', exports: 'Exports CSV' };
   const app = h('div', {},
     h('div', { class: 'cam-onglets' }, Object.keys(panneaux).map((k) => h('button', { type: 'button', dataset: { onglet: k } }, libelles[k]))),
     Object.values(panneaux));
@@ -46,7 +47,7 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
       h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Mois (partie)'), mois)), infoPartie,
       h('div', { class: 'cam-actions' }, h('button', { type: 'button', onclick: () => charger() }, 'Actualiser'), lienCarte), msg),
     app);
-  const ongletDemande = location.hash.slice(1);
+  const ongletDemande = location.hash.slice(1) === 'districts' ? 'territoires' : location.hash.slice(1);   // ancien nom de l'onglet
   onglets(app)(panneaux[ongletDemande] ? ongletDemande : 'actions');
   majInfoPartie();
 
@@ -70,7 +71,7 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
       if (r) raisons = r.docs.map(donneesDoc).sort((x, y) => (x.personnageNom || '').localeCompare(y.personnageNom || '') || (x.nom || '').localeCompare(y.nom || ''));
       const enAttente = actions.filter((x) => x.statut === 'attente').length;
       message(msg, actions.length + ' action(s) en ' + mois.value + ', dont ' + enAttente + ' sans réponse.', 'ok');
-      dessinerPersonnages(); dessinerActions(); dessinerDistricts(); dessinerExports();
+      dessinerPersonnages(); dessinerActions(); dessinerTerritoires(); dessinerExports();
       if (r) dessinerRaisons();
     } catch (e) { message(msg, messageErreur(e), 'err'); }
   }
@@ -94,15 +95,33 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
       const { parties, erreurs } = calculerCalendrier(lignes);
       corps.replaceChildren(...(lignes.length ? lignes.map((l, i) => {
         // Partie : sa date ; mois sans partie : le mois.
-        const date = l.sansPartie ? h('input', { type: 'month', value: l.mois || '' }) : h('input', { type: 'date', value: l.date });
-        const limite = h('input', { type: 'date', value: l.limite });
-        const titre = h('input', { type: 'text', value: l.titre, maxlength: 120, placeholder: 'Facultatif' });
+        const largeur = 'width:170px;max-width:100%';   // laisse de la place au titre
+        const date = l.sansPartie ? h('input', { type: 'month', value: l.mois || '', style: largeur }) : h('input', { type: 'date', value: l.date, style: largeur });
+        const limite = h('input', { type: 'date', value: l.limite, style: largeur });
+        const titre = h('input', { type: 'text', value: l.titre, maxlength: 120, placeholder: 'Facultatif', style: 'min-width:110px' });
         date.addEventListener('change', () => { if (l.sansPartie) l.mois = date.value; else l.date = date.value; dessinerLignes(); });
         limite.addEventListener('change', () => { l.limite = limite.value; dessinerLignes(); });
         titre.addEventListener('input', () => { l.titre = titre.value; });
+        // Bascule partie <-> mois sans partie (les influences du mois restent ouvertes).
+        const sansPartie = h('input', { type: 'checkbox', checked: !!l.sansPartie });
+        sansPartie.addEventListener('change', () => {
+          if (sansPartie.checked) {
+            l.dateGardee = l.date;
+            l.mois = (l.date || '').slice(0, 7) || l.mois || '';
+            if (!l.limite && l.mois) l.limite = finDuMois(l.mois);
+            l.sansPartie = true;
+            delete l.date;
+          } else {
+            l.date = l.dateGardee && (!l.mois || l.dateGardee.startsWith(l.mois)) ? l.dateGardee : '';
+            l.sansPartie = false;
+            delete l.mois;
+            if (!l.date) message(msgC, 'Indiquez la date de la partie, puis enregistrez le calendrier.', 'info');
+          }
+          dessinerLignes();
+        });
         const c = parties.find((x) => (l.sansPartie ? x.sansPartie && x.cle === l.mois : !x.sansPartie && x.date === l.date));
         return h('tr', { class: l.sansPartie ? 'cam-sans-partie' : null },
-          h('td', {}, date, l.sansPartie ? h('span', { class: 'cam-tag attente', style: 'margin-top:.3rem' }, 'Sans partie') : ''),
+          h('td', {}, date, h('label', { class: 'cam-coche', title: 'Pas de partie ce mois-là : les influences du mois restent ouvertes jusqu\'à la date limite' }, sansPartie, 'Sans partie')),
           h('td', {}, limite), h('td', {}, titre),
           h('td', {}, c ? dateFr(c.ouverture) + ' → ' + dateFr(c.fermeture) : '—'),
           h('td', {}, c ? h('span', { class: 'cam-tag ' + CLASSE_ETAT[etat(c)] }, LIBELLES_ETAT[etat(c)]) : ''),
@@ -169,7 +188,7 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
     });
     panneaux.calendrier.replaceChildren(h('div', { class: 'cam-bloc' },
       h('h2', {}, 'Calendrier des parties'),
-      h('p', { class: 'sous-titre' }, 'Les influences d\'une partie s\'ouvrent le lendemain de la partie précédente (la toute première : un mois avant sa date) et ferment à sa date limite, à 23 h 59. Une seule partie par mois : le mois de la partie est celui de ses actions d\'influence. Un mois sans partie (vacances, relâche…) a quand même ses influences : elles ferment à sa date limite, et celles du mois suivant s\'ouvrent le lendemain.'),
+      h('p', { class: 'sous-titre' }, 'Les influences d\'une partie s\'ouvrent le lendemain de la partie précédente (la toute première : un mois avant sa date) et ferment à sa date limite, à 23 h 59. Une seule partie par mois : le mois de la partie est celui de ses actions d\'influence. Un mois sans partie (vacances, relâche…) a quand même ses influences : elles ferment à sa date limite, et celles du mois suivant s\'ouvrent le lendemain. Les dates se modifient directement dans le tableau ; la case « Sans partie » passe une partie en mois sans partie (ou l\'inverse). Pensez à enregistrer.'),
       h('div', { class: 'cam-table-defil' }, h('table', { class: 'cam-table' },
         h('thead', {}, h('tr', {}, ['Date de la partie (ou mois)', 'Date limite des influences', 'Titre', 'Fenêtre d\'influences', 'État', ''].map((x) => h('th', {}, x)))),
         corps)),
@@ -259,7 +278,7 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
         h('span', { class: 'cam-tag ' + classeCat(a.categorie) }, a.categorie),
         h('span', { class: 'cam-tag' }, TYPES_ACTION[a.type] || a.type),
         h('span', { class: 'cam-tag ' + a.statut }, a.statut === 'traitee' ? 'Traitée' : 'Sans réponse'), tagGazette,
-        (a.date ? dateFr(a.date) : '') + ' · ' + (a.ville || '') + ' · zone ' + (libelleZone(a.zone) || '?'),
+        (a.date ? dateFr(a.date) : '') + ' · ' + (a.ville || '') + ' · territoire ' + (libelleZone(zoneDe(a)) || '?'),
         a.lieu ? [' · ', h('a', { href: '/utils/carte?mois=' + encodeURIComponent(a.mois) + '&action=' + encodeURIComponent(a.id) }, '📍 carte')] : ''),
       h('strong', {}, a.personnageNom), ' — ', a.nomAction, ' — ', a.pointsAction + ' pt(s)',
       a.niveau ? ' — niveau ' + a.niveau : '', a.specialisation ? ' — ' + a.specialisation : '',
@@ -294,18 +313,33 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
       msgA);
   }
 
-  // --- Districts ---
-  function dessinerDistricts() {
+  // --- Territoires (zones 1 à 24, tracées par les conteurs : page Territoires) ---
+  // Territoire d'une action : celui choisi dans sa fiche, sinon celui où elle
+  // est placée sur la carte.
+  let territoires = [];
+  const territoiresPrets = chargerTerritoires().then((t) => { territoires = t; }).catch((e) => console.warn('Territoires illisibles', e));
+  const zoneDe = (a) => a.zone || (a.lieu ? zoneDuPoint(territoires, [a.lieu.lng, a.lieu.lat]) : '');
+  territoiresPrets.then(() => { if (actions.length) { dessinerTerritoires(); dessinerActions(); } });
+  function dessinerTerritoires() {
     const compte = Object.fromEntries(ZONES.map((z) => [z, 0]));
-    actions.forEach((a) => { if (a.zone in compte) compte[a.zone]++; });
+    let sans = 0;
+    actions.forEach((a) => { const z = zoneDe(a); if (z in compte) compte[z]++; else sans++; });
     const max = Math.max(1, ...Object.values(compte));
-    panneaux.districts.replaceChildren(h('div', { class: 'cam-bloc' },
-      h('h2', {}, 'Actions par district — ' + mois.value),
+    const traces = new Set(territoires.map((t) => String(t.zone || '')).filter(Boolean));
+    const p = partie(calendrier, mois.value);
+    const lienCarteTerritoire = (z) => '/utils/carte?mois=' + encodeURIComponent(mois.value) + '&territoire=' + encodeURIComponent(z);
+    panneaux.territoires.replaceChildren(h('div', { class: 'cam-bloc' },
+      h('h2', {}, 'Actions par territoire — ' + (p ? libellePartie(p) : mois.value)),
+      h('p', { class: 'sous-titre' }, 'Le territoire d\'une action est celui choisi dans sa fiche d\'influence ou, à défaut, celui où elle est placée sur la carte. « Voir sur la carte » n\'affiche que ce territoire et ses actions de la partie ; une action sans lieu y est posée au hasard.'),
       h('table', { class: 'cam-table' },
-        h('thead', {}, h('tr', {}, h('th', {}, 'Zone'), h('th', {}, 'Actions'))),
+        h('thead', {}, h('tr', {}, h('th', {}, 'Territoire'), h('th', {}, 'Actions'), h('th', {}, ''))),
         h('tbody', {}, ZONES.map((z) => h('tr', {}, h('td', {}, libelleZone(z)),
           h('td', {}, h('div', { class: 'cam-barre-progression' }, h('span', {}, String(compte[z])),
-            h('div', {}, h('div', { style: 'width:' + Math.round(compte[z] / max * 100) + '%' }))))))))));
+            h('div', {}, h('div', { style: 'width:' + Math.round(compte[z] / max * 100) + '%' })))),
+          h('td', {}, traces.has(z)
+            ? h('a', { class: 'cam-lien-carte', href: lienCarteTerritoire(z), title: 'Le territoire ' + libelleZone(z) + ' et ses actions de la partie, sur la carte' }, '📍 Voir sur la carte')
+            : h('small', { class: 'sous-titre', title: 'À tracer dans la page Territoires' }, z === 'Extérieur' ? '' : 'pas tracé')))),
+          sans ? h('tr', {}, h('td', {}, h('em', {}, 'Sans territoire')), h('td', {}, String(sans)), h('td', {})) : ''))));
   }
 
   // --- Raisons sociales ---
@@ -323,7 +357,7 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
     panneaux.raisons.replaceChildren(h('div', { class: 'cam-bloc' },
       h('h2', {}, 'Registre des raisons sociales'), recherche,
       h('div', { class: 'cam-table-defil' }, h('table', { class: 'cam-table' },
-        h('thead', {}, h('tr', {}, ['Nom', 'Personnage', 'Ville', 'Zone', 'Catégorie', 'Description'].map((x) => h('th', {}, x)))), corps))));
+        h('thead', {}, h('tr', {}, ['Nom', 'Personnage', 'Ville', 'Territoire', 'Catégorie', 'Description'].map((x) => h('th', {}, x)))), corps))));
     dessiner();
   }
 
@@ -339,14 +373,14 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
           { titre: 'Catégorie', cle: 'categorie' }, { titre: 'Action', cle: 'nomAction' }, { titre: 'Niveau', cle: 'niveau' },
           { titre: 'Spécialisation', cle: 'specialisation' }, { titre: 'Raison sociale', cle: 'raisonSociale' }, { titre: 'Cible', cle: 'cible' },
           { titre: 'Catégorie cible', cle: 'categorieCible' }, { titre: 'Points', cle: 'pointsAction' }, { titre: 'Ville', cle: 'ville' },
-          { titre: 'Zone', cle: 'zone' }, { titre: 'Descriptif', cle: 'descriptif' }, { titre: 'Réponse conteur', cle: 'reponseConteur' },
+          { titre: 'Territoire', cle: 'zone' }, { titre: 'Descriptif', cle: 'descriptif' }, { titre: 'Réponse conteur', cle: 'reponseConteur' },
           { titre: 'Statut', cle: 'statut' }, { titre: 'Envoyée le', cle: 'creeLe' },
           { titre: 'Partie', valeur: (a) => { const p = partie(calendrier, a.mois); return p ? libellePartie(p) : a.mois; } },
           { titre: 'Latitude', valeur: (a) => (a.lieu ? a.lieu.lat : '') }, { titre: 'Longitude', valeur: (a) => (a.lieu ? a.lieu.lng : '') }
         ]), 'actions-' + mois.value + '.csv', 'text/csv;charset=utf-8')),
         btn('Raisons sociales', () => telecharger(versCsv(raisons || [], [
           { titre: 'Nom', cle: 'nom' }, { titre: 'Personnage', cle: 'personnageNom' }, { titre: 'Ville', cle: 'ville' },
-          { titre: 'Zone', cle: 'zone' }, { titre: 'Catégorie', cle: 'categorie' }, { titre: 'Description', cle: 'description' }
+          { titre: 'Territoire', cle: 'zone' }, { titre: 'Catégorie', cle: 'categorie' }, { titre: 'Description', cle: 'description' }
         ]), 'raisons-sociales.csv', 'text/csv;charset=utf-8')),
         btn('Personnages en jeu', () => telecharger(versCsv(persos, [
           { titre: 'Personnage', cle: 'nom' }, { titre: 'Joueur', cle: 'proprietaireNom' }, { titre: 'Clan', cle: 'clan' },

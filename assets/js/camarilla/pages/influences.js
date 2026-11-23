@@ -154,14 +154,19 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
       zone: options(h('select', {}), OPTIONS_ZONES),
       lieu: champLieu(lieuInitial)
     };
-    // Le lieu choisi sur la carte remplit la zone (zones officielles tracées par les conteurs).
-    const zoneAuto = (l) => { const z = zoneDuPoint(territoires, [l.lng, l.lat]); if (z) c.zone.value = z; };
+    // Le lieu choisi sur la carte remplit le territoire (zones officielles tracées par les conteurs).
+    c.zoneNote = h('small', { class: 'cam-note-zone' });
+    const zoneAuto = (l) => {
+      const z = zoneDuPoint(territoires, [l.lng, l.lat]);
+      if (z) { c.zone.value = z; c.zoneNote.textContent = 'D\'après le lieu choisi sur la carte.'; }
+    };
+    c.zone.addEventListener('change', () => { c.zoneNote.textContent = ''; });
     c.lieu.surChoix = zoneAuto;
     if (lieuInitial) territoiresPrets.then(() => zoneAuto(lieuInitial));
     return c;
   }
   const ligneCommune = (c) => [h('div', { class: 'cam-ligne' },
-    h('div', {}, h('label', {}, 'Date'), c.date), h('div', {}, h('label', {}, 'Ville'), c.ville), h('div', {}, h('label', {}, 'Zone (district)'), c.zone)),
+    h('div', {}, h('label', {}, 'Date'), c.date), h('div', {}, h('label', {}, 'Ville'), c.ville), h('div', {}, h('label', {}, 'Territoire'), c.zone, c.zoneNote)),
     h('label', {}, 'Lieu sur la carte de Grenoble (facultatif)'), c.lieu.el];
 
   // Partie visée par les nouvelles actions (fenêtres d'influences ouvertes)
@@ -464,7 +469,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     if (zone.childNodes.length) { zone.replaceChildren(); return; }
     const c = champsCommuns(null);
     c.lieu = champLieu(a.lieu || null);
-    c.lieu.surChoix = (l) => { const z = zoneDuPoint(territoires, [l.lng, l.lat]); if (z) c.zone.value = z; };
+    c.lieu.surChoix = (l) => { const z = zoneDuPoint(territoires, [l.lng, l.lat]); if (z) { c.zone.value = z; c.zoneNote.textContent = 'D\'après le lieu choisi sur la carte.'; } };
     c.date.value = a.date || '';
     options(c.ville, VILLES, a.ville || '');
     options(c.zone, OPTIONS_ZONES, a.zone || '');
@@ -535,11 +540,11 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     panneaux.raisons.replaceChildren(h('div', { class: 'cam-bloc' },
       h('h2', {}, 'Raisons sociales'),
       h('p', { class: 'sous-titre' }, 'Registre des organismes, entreprises ou PNJ liés à votre personnage, réutilisables dans les formulaires d\'action.'),
-      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Nom *'), nom), h('div', {}, h('label', {}, 'Ville'), ville), h('div', {}, h('label', {}, 'Zone'), zone), h('div', {}, h('label', {}, 'Catégorie'), categorie)),
+      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Nom *'), nom), h('div', {}, h('label', {}, 'Ville'), ville), h('div', {}, h('label', {}, 'Territoire'), zone), h('div', {}, h('label', {}, 'Catégorie'), categorie)),
       h('label', {}, 'Description (facultatif)'), description, btn, msg,
       h('h3', {}, 'Raisons sociales de ' + perso.nom),
       ...(raisons.length ? raisons.map((r) => h('div', { class: 'cam-element' },
-        h('div', { class: 'meta' }, h('span', { class: 'cam-tag ' + classeCat(r.categorie) }, r.categorie), (r.ville || '') + ' — zone ' + libelleZone(r.zone)),
+        h('div', { class: 'meta' }, h('span', { class: 'cam-tag ' + classeCat(r.categorie) }, r.categorie), (r.ville || '') + ' — territoire ' + libelleZone(r.zone)),
         h('strong', {}, r.nom), r.description ? h('div', { class: 'texte' }, r.description) : '',
         h('button', {
           type: 'button', class: 'petit danger', onclick: async () => {

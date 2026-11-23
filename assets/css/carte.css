@@ -144,6 +144,9 @@ body.carte-page {
 .carte-marqueur.influence .etiquette { margin-top: 6px; font-weight: 500; max-width: 140px; }
 .carte-marqueur.influence.mobile { cursor: grab; }
 .carte-marqueur.influence.sel .losange { border-color: var(--c-laiton); box-shadow: 0 0 0 3px rgba(201,162,39,.5); }
+/* Action sans lieu précis, posée au hasard dans le territoire affiché (?territoire=N) */
+.carte-marqueur.influence.hasard .losange { border-style: dashed; opacity: .7; }
+.carte-marqueur.influence.hasard .etiquette { font-style: italic; opacity: .85; }
 .carte-item .pastille.losange { transform: rotate(45deg) scale(.85); border-radius: 2px; }
 .carte-infl-tete { padding: 10px 14px; border-bottom: 1px solid var(--c-ligne); margin: 0; }
 .carte-infl-tete b { color: var(--c-texte); }
@@ -216,3 +219,7 @@ body.carte-page {
 .carte-lecture-nom .pastille { width: 12px; height: 12px; border-radius: 3px; }
 body.lecture-seule .carte-marque small::after { content: " — lecture seule"; color: var(--c-laiton); }
 a.carte-btn { text-decoration: none; }
+
+/* Vue d'un seul territoire : rappel en tête de la liste des actions */
+.carte-infl-territoire { margin: 8px 14px 6px; border-left: 3px solid var(--c-sang-vif); padding-left: 8px; color: var(--c-pale); }
+.carte-infl-territoire a { color: var(--c-laiton); }

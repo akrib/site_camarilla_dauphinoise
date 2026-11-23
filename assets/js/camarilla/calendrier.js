@@ -60,6 +60,8 @@ export function calculerCalendrier(saisie) {
   lignes.forEach((p) => {
     if (p.sansPartie && (!RE_MOIS.test(p.cle || '') || !RE_DATE.test(p.date || ''))) {
       erreurs.push('Mois sans partie' + (RE_MOIS.test(p.cle || '') ? ' (' + libelleMois(p.cle).toLowerCase() + ')' : '') + ' : indiquez le mois et la date limite des influences.');
+    } else if (!p.sansPartie && !RE_DATE.test(p.date || '')) {
+      erreurs.push('Une partie n\'a pas de date : indiquez-la, ou retirez la ligne.');
     }
   });
   const triees = lignes.filter((p) => RE_DATE.test(p.date || '') && RE_MOIS.test(p.cle || '')).sort((a, b) => a.date.localeCompare(b.date));
