@@ -1,21 +1,35 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "Camarilla Dauphinoise",
+  "short_name": "Camarilla Dauphinoise",
+  "description": "Association de jeu de rôle grandeur nature dans l'univers de Vampire : la Mascarade, à Grenoble.",
+  "lang": "fr",
   "icons": [
     {
-      "src": "/web-app-manifest-192x192.png",
+      "src": "web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/web-app-manifest-512x512.png",
+      "src": "web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#111111",
+  "background_color": "#111111",
   "display": "standalone"
 }

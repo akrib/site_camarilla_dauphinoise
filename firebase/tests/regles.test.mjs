@@ -925,3 +925,24 @@ describe('Administrateur : droits de conteur, version des règles', () => {
     await assertFails(setDoc(doc(db('admin'), 'regles', VERSION), { x: 1 }));
   });
 });
+
+describe('PNJ des conteurs', () => {
+  const pnj = (extra = {}) => nouvelleFiche('alice', { proprietaire: '', proprietaireNom: '', statut: 'active', pnj: 'sabbat', ...extra });
+  test('un conteur crée un PNJ sans joueur ; catégorie connue seulement', async () => {
+    await assertSucceeds(setDoc(doc(db('conteur'), 'personnages', 'pnj1'), pnj()));
+    await assertSucceeds(setDoc(doc(db('admin'), 'personnages', 'pnj2'), pnj({ pnj: 'lupin' })));
+    await assertFails(setDoc(doc(db('conteur'), 'personnages', 'pnj3'), pnj({ pnj: 'dragon' })));
+  });
+  test('un joueur ne crée pas de PNJ et ne les lit pas', async () => {
+    await assertFails(setDoc(doc(db('alice'), 'personnages', 'pnj4'), nouvelleFiche('alice', { pnj: 'humain' })));
+    await setDoc(doc(db('conteur'), 'personnages', 'pnj5'), pnj());
+    await assertFails(getDoc(doc(db('alice'), 'personnages', 'pnj5')));
+    await assertFails(getDocs(query(collection(db('alice'), 'personnages'), where('proprietaire', '==', ''))));
+    await assertSucceeds(getDoc(doc(db('conteur2'), 'personnages', 'pnj5')));
+  });
+  test('un conteur modifie et archive un PNJ ; le propriétaire reste vide', async () => {
+    await setDoc(doc(db('conteur'), 'personnages', 'pnj6'), pnj());
+    await assertSucceeds(updateDoc(doc(db('conteur2'), 'personnages', 'pnj6'), { statut: 'archivee', pnj: 'vampire', majLe: serverTimestamp() }));
+    await assertFails(updateDoc(doc(db('conteur'), 'personnages', 'pnj6'), { proprietaire: 'alice', majLe: serverTimestamp() }));
+  });
+});

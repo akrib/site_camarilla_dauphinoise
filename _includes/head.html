@@ -29,6 +29,10 @@
 <link rel="shortcut icon" href="{{ '/assets/favicon/favicon.ico' | relative_url }}" />
 <link rel="apple-touch-icon" sizes="180x180" href="{{ '/assets/favicon/apple-touch-icon.png' | relative_url }}" />
 <link rel="manifest" href="{{ '/assets/favicon/site.webmanifest' | relative_url }}" />
+<!-- Nom du raccourci sur l'écran d'accueil (Android, iPhone) -->
+<meta name="application-name" content="Camarilla Dauphinoise">
+<meta name="apple-mobile-web-app-title" content="Camarilla Dauphinoise">
+<meta name="theme-color" content="#111111">
 {% if site.head_scripts %}
   {% for script in site.head_scripts %}
     <script src="{{ script | relative_url }}"></script>

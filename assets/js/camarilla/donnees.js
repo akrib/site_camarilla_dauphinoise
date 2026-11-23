@@ -88,3 +88,32 @@ export const STATUTS_FICHE = {
   archivee: 'Archivée'
 };
 export const STATUTS_FICHE_EDITABLES = ['brouillon', 'refusee', 'soumise'];
+
+// PNJ des conteurs : fiches MET sans joueur (proprietaire vide), champ pnj = catégorie.
+// Invisibles des joueurs (règles Firestore), hors du répertoire et des influences.
+export const CATEGORIES_PNJ = {
+  vampire: 'Vampire', goule: 'Goule', sabbat: 'Sabbatique', humain: 'Humain',
+  inquisition: 'Inquisition', lupin: 'Loup-garou', autre: 'Autre'
+};
+export const AIDE_PNJ = {
+  vampire: 'Vénérables, anciens, ancillas… de la Camarilla, anarchs, indépendants',
+  goule: 'Serviteurs nourris de vitae',
+  sabbat: 'Vampires du Sabbat',
+  humain: 'Mortels : contacts, policiers, chasseurs…',
+  inquisition: 'Société de Léopold et autres chasseurs organisés',
+  lupin: 'Garous et autres changeurs de forme',
+  autre: 'Fantômes, mages, fées, créatures…'
+};
+// Âges proposés à la création d'un PNJ vampire (liste « Âge » de la fiche MET)
+export const AGES_PNJ_VAMPIRE = ['Vénérable', 'Ancien', 'Ancilla', 'Nouveau-Né'];
+// Pré-remplissage de la fiche MET selon la catégorie
+export const FICHE_PNJ = {
+  vampire: { typeFiche: 'Antagoniste', race: 'Vampire' },
+  goule: { typeFiche: 'Antagoniste', race: 'Humain', age: 'Goule' },
+  sabbat: { typeFiche: 'Antagoniste', race: 'Vampire', secte: 'Sabbat' },
+  humain: { typeFiche: 'Antagoniste', race: 'Humain', age: 'Autre' },
+  inquisition: { typeFiche: 'Antagoniste', race: 'Humain', age: 'Autre' },
+  lupin: { typeFiche: 'Antagoniste', age: 'Autre' },
+  autre: { typeFiche: 'Antagoniste', age: 'Autre' }
+};
+export const STATUTS_PNJ = { active: 'Actif', archivee: 'Archivé' };

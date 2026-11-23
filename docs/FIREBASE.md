@@ -191,7 +191,7 @@ l'indique et le bouton « Commencer » reste grisé.
 |---|---|---|
 | Connexion / inscription | `/connexion/` | tout le monde |
 | Espace membres | `/membres/` | comptes connectés |
-| Fiches de personnage | `/membres/fiches/` | membres actifs |
+| Fiches de personnage | `/membres/fiches/` | membres actifs (onglet PNJ : conteurs) |
 | Tableau d'enquête (sauvegarde en ligne + partage) | `/utils/tableau` | personnages validés (et conteurs) |
 | Panneau d'affichage | `/membres/affichage/` | personnages validés (et conteurs) |
 | Notifications | `/membres/notifications/` | membres actifs |
@@ -205,6 +205,7 @@ l'indique et le bouton « Commencer » reste grisé.
 | Comptes | `/membres/comptes/` | conteurs (rôles, maintenance : admin) |
 | Influences — conteur (et calendrier) | `/influences/conteur/` | conteurs |
 | Territoires (outil des conteurs) | `/membres/territoires/` | conteurs |
+| Combat — initiatives | `/membres/combat/` | conteurs |
 
 ### Cycle de vie d'une fiche
 
@@ -244,10 +245,16 @@ mois de la partie est celui de ses actions d'influence (champ `mois`).
   Influences et de l'espace membres.
 - Tant qu'aucun calendrier n'est enregistré, les influences restent libres (ancien
   fonctionnement).
+- **Mois sans partie** (vacances, relâche…) : case « Mois sans partie (influences
+  seulement) » sous le tableau, puis le mois et la date limite (proposée au dernier jour
+  du mois). Les influences de ce mois s'ouvrent le lendemain de la partie précédente et
+  ferment à sa date limite ; celles du mois suivant s'ouvrent le lendemain. Partout, ce
+  mois s'affiche « août 2026 (sans partie) ».
 
 Ces fenêtres sont vérifiées par les **règles Firestore** (heure du serveur), pas seulement
 par la page. Document : `calendrier/parties`
-(`parties : { 'AAAA-MM': { date, limite, titre, ouverture, fermeture } }`, `anticipation`).
+(`parties : { 'AAAA-MM': { date, limite, titre, ouverture, fermeture, sansPartie } }`,
+`anticipation` ; pour un mois sans partie, `date` = date limite).
 
 ### Tickets
 
@@ -309,6 +316,56 @@ dérivées (sang, volonté, éthique, langues, scores de combat…).
   libres.
 - Les champs Gotha, Pègre, génération et PX de la fiche sont recopiés dans le document
   pour la page Influences.
+- **Sur ordinateur**, la page des fiches prend toute la largeur de l'écran (jusqu'à
+  1 800 px) : les grilles de la fiche affichent plus de colonnes.
+
+### PNJ (conteurs)
+
+Onglet **PNJ** de la page des fiches (tuile « PNJ » des outils conteur). « ＋ Nouveau
+PNJ » : nom et catégorie — vampire (vénérables, anciens, ancillas…, âge à choisir), goule,
+sabbatique, humain, inquisition, loup-garou, autre. La fiche MET s'ouvre pré-remplie
+(type « Antagoniste », race, âge, secte) : même éditeur, mêmes calculs que les joueurs.
+
+- Document `personnages/{id}` avec `pnj` (catégorie) et `proprietaire` vide : les
+  règles ne laissent les lire et les écrire qu'aux conteurs ; un joueur ne peut pas en
+  créer. Ils ne vont ni dans le répertoire (partage des tableaux), ni dans les
+  influences, ni dans « Toutes les fiches » / « À valider ».
+- Actifs ou archivés ; dupliquer (pour une série de figurants), exporter, supprimer.
+- Bouton « ⚔ Ajouter au combat » (aussi sur les fiches des joueurs, pour les conteurs).
+
+### Combat — initiatives (conteurs)
+
+Page `/membres/combat/` (tuile « Combat — initiatives »), faite pour un téléphone pendant
+les parties comme pour un ordinateur pendant les RP. Le combat est gardé **dans le
+navigateur** du conteur (rien dans Firestore) : il survit à un rechargement, pas à un
+changement d'appareil.
+
+- **Participants** : personnages de la cité (fiches en jeu, ou en réserve sur demande),
+  PNJ, ou **temporaires** (nom et initiative, ou initiative au hasard entre deux bornes
+  de 1 à 20 — impossible de valider si la borne basse dépasse la haute ; plusieurs d'un
+  coup, numérotés). Pour une fiche, l'initiative est calculée : le plus haut entre
+  Physique et Mental ; à égalité Mental, puis Physique, puis Social, puis au hasard. La
+  Célérité de la fiche (niveau, pouvoirs d'ancien, techniques basées sur la Célérité) est
+  reprise.
+- **Début du tour** : sur chaque carte, bonus ou malus d'initiative, Célérité activée
+  (+ niveaux de Célérité, pouvoirs d'ancien et techniques ; une action de plus avec
+  Célérité 3, avec Célérité 5 et avec « Vitesse »), « +5 : n'a pas agi », actions en
+  plus, et au premier tour l'action surprise. « ＋ Ajouter » fait entrer des
+  participants (pendant un tour : au début du suivant). La Célérité reste cochée d'un
+  tour à l'autre, le reste repart de zéro.
+- **Tour** : round classique, puis rounds de Célérité (les deuxièmes actions après toutes
+  les premières, les troisièmes après les deuxièmes), puis « Fin du tour — résolution »
+  (bilan des dégâts et de la volonté).
+- **Cartes** : compteurs de dégâts normaux, aggravés et volonté utilisée (sur le maximum
+  de la fiche), « Hors combat » (annulable ; « Participants » ou le début du tour pour
+  le remettre). La carte de celui qui agit a « Ouvrir la fiche », dans un nouvel onglet.
+- **Barre du bas** : « Précédent » à gauche (jusque dans le tour précédent), « Suivant » à
+  droite, au centre « ⏳ Retarder » (l'action passe à la fin du round ; s'il n'agit pas,
+  « +5 au tour suivant »), « ＋ Ajouter », « À zéro », « Terminer ». Sur ordinateur, les
+  flèches du clavier font Précédent / Suivant.
+- **Affichage** : frise horizontale sur ordinateur (plusieurs actions avant et après),
+  verticale sur téléphone (au moins l'action d'avant et celle d'après ; toucher une
+  carte la déplie).
 
 ### Personnage incarné
 
@@ -667,6 +724,8 @@ Puis ouvrez <http://localhost:4000/connexion/?emulateurs=1>. Le paramètre
 | `assets/js/camarilla/annuaire.js` | annuaire et répertoire gardés dans le navigateur |
 | `assets/js/camarilla/suivi.js` | nouvelles réponses, travail des conteurs, rappels du calendrier |
 | `assets/js/camarilla/mapillary-config.js` | jeton Mapillary du jeu « Trouve le Sabbat » (CSS : `assets/css/sabbat.css`) |
+| `assets/js/camarilla/combat/modele.js`, `pages/combat.js` | combat : ordre d'initiative, tours et rounds de Célérité, page (CSS : `combat.css`) |
+| `assets/js/camarilla/fiche/lecture.js` | lecture d'une fiche complète (document + détail) hors de la page des fiches |
 | `assets/js/camarilla/gazette/modele.js`, `rendu.js`, `stockage.js`, `edition-en-place.js` | gazette : structure d'un numéro, rendu (écran, impression), Firestore et navigateur, écriture directe dans la page de l'éditeur (CSS : `gazette.css`, `gazette-edition.css`, `gazette-lecture.css` ; polices : `assets/fonts/gazette/`) |
 | `assets/js/camarilla/outils/tableau.js`, `challenge.js` | scripts des pages tableau d'enquête et challenge (CSS : `assets/css/tableau.css`, `challenge.css`) |
 | `assets/js/camarilla/pages/*.js` | une page = un module |

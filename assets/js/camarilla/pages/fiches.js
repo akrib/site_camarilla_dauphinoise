@@ -1,5 +1,6 @@
 // Page /membres/fiches/ : fiches de personnage MET (plusieurs par joueur),
-// circuit de validation par les conteurs.
+// circuit de validation par les conteurs, et PNJ des conteurs (fiches sans
+// joueur, champ pnj = catégorie : onglet « PNJ »).
 import {
   h, db, fs, pageProtegee, barreMembre, estConteur, message, messageErreur, dateFr, millis,
   onglets, confirmer, options, telecharger
@@ -7,7 +8,8 @@ import {
 import {
   compresserFichier, enregistrerImage, baliseImage, externaliser, internaliser, collecterRefs
 } from '../images.js';
-import { STATUTS_FICHE, STATUTS_FICHE_EDITABLES } from '../donnees.js';
+import { STATUTS_FICHE, STATUTS_FICHE_EDITABLES, CATEGORIES_PNJ, AIDE_PNJ, AGES_PNJ_VAMPIRE, FICHE_PNJ, STATUTS_PNJ } from '../donnees.js';
+import { participantDeFiche, ajouterAuCombat } from '../combat/modele.js';
 import { majRepertoire, estIncarnable } from '../incarnation.js';
 import { compresser, donneesDoc, compresserJson, decompresserJson, estCompresse } from '../compression.js';
 import { creerEditeur } from '../fiche/editeur.js';
@@ -25,7 +27,9 @@ let session = null;
 let avisApresNavigation = null; // message à afficher après la création d'une fiche
 let conteur = false;
 let mesFiches = [];
-let toutes = [];
+let toutes = [];     // fiches des joueurs (conteurs)
+let pnjs = [];       // PNJ (conteurs)
+let pnjEnPreparation = null;   // nouveau PNJ choisi dans la fenêtre de création
 
 pageProtegee(racine, 'actif', async (s) => {
   session = s;
@@ -44,8 +48,10 @@ async function chargerMesFiches() {
 async function chargerToutes() {
   if (!conteur) return;
   const snap = await fs.getDocs(fs.collection(db, 'personnages'));
-  toutes = snap.docs.map(donneesDoc)
+  const docs = snap.docs.map(donneesDoc);
+  toutes = docs.filter((d) => !d.pnj)
     .sort((a, b) => (a.proprietaireNom || '').localeCompare(b.proprietaireNom || '') || (a.nom || '').localeCompare(b.nom || ''));
+  pnjs = docs.filter((d) => d.pnj).sort((a, b) => (a.nom || '').localeCompare(b.nom || '', 'fr'));
 }
 
 // Chaque navigation reçoit un numéro : si une navigation plus récente a eu
@@ -67,11 +73,15 @@ async function route() {
       afficherEditeur(d, null, avis);
     } else if (hash === 'nouvelle') {
       afficherEditeur(null);
+    } else if (hash === 'nouveau-pnj' && conteur) {
+      const d = pnjEnPreparation || documentPnj('vampire', '', '');
+      pnjEnPreparation = null;
+      afficherEditeur(null, d);
     } else {
       await chargerMesFiches();
       await chargerToutes();
       if (perimee()) return;
-      afficherListes(hash === 'a-valider' ? 'a-valider' : (hash === 'toutes' ? 'toutes' : 'mes'));
+      afficherListes(['a-valider', 'toutes', 'pnj'].includes(hash) ? hash : 'mes');
     }
   } catch (e) {
     if (perimee()) return;
@@ -84,14 +94,16 @@ async function route() {
 // Listes
 // ---------------------------------------------------------------------
 function carte(f, avecJoueur) {
-  return h('div', { class: 'cam-fiche-carte', onclick: () => { location.hash = 'fiche-' + f.id; } },
+  return h('div', { class: 'cam-fiche-carte' + (f.pnj ? ' pnj' : ''), onclick: () => { location.hash = 'fiche-' + f.id; } },
     h('div', { class: 'vignette' }, f.portrait ? baliseImage(f.portrait, { alt: '' }) : '☾'),
     h('div', {},
       h('strong', {}, f.nom || 'Sans nom'),
+      f.pnj ? h('small', {}, [CATEGORIES_PNJ[f.pnj] || f.pnj, f.age && f.age !== 'Autre' ? f.age : ''].filter(Boolean).join(' · ')) : '',
       h('small', {}, [f.clan, f.secte, f.generation ? f.generation + 'e gén.' : ''].filter(Boolean).join(' · ') || '—'),
-      f.xp ? h('small', {}, 'PX : ' + f.xp.acquise + ' acquis · ' + f.xp.restante + ' restants') : '',
-      avecJoueur ? h('small', {}, 'Joueur : ' + (f.proprietaireNom || '?')) : '',
-      h('span', { class: 'cam-tag ' + f.statut }, STATUTS_FICHE[f.statut] || f.statut),
+      f.xp && !f.pnj ? h('small', {}, 'PX : ' + f.xp.acquise + ' acquis · ' + f.xp.restante + ' restants') : '',
+      avecJoueur && !f.pnj ? h('small', {}, 'Joueur : ' + (f.proprietaireNom || '?')) : '',
+      f.pnj ? (f.statut === 'archivee' ? h('span', { class: 'cam-tag archivee' }, 'PNJ archivé') : h('span', { class: 'cam-tag conteur' }, 'PNJ'))
+        : h('span', { class: 'cam-tag ' + f.statut }, STATUTS_FICHE[f.statut] || f.statut),
       h('small', {}, 'Modifiée le ' + dateFr(f.majLe))));
 }
 
@@ -162,16 +174,104 @@ function afficherListes(ongletInitial) {
     h('div', { class: 'cam-onglets' },
       h('button', { type: 'button', dataset: { onglet: 'mes' } }, 'Mes fiches'),
       h('button', { type: 'button', dataset: { onglet: 'a-valider' } }, 'À valider' + (soumises.length ? ' (' + soumises.length + ')' : '')),
-      h('button', { type: 'button', dataset: { onglet: 'toutes' } }, 'Toutes les fiches')),
+      h('button', { type: 'button', dataset: { onglet: 'toutes' } }, 'Toutes les fiches'),
+      h('button', { type: 'button', dataset: { onglet: 'pnj' } }, 'PNJ' + (pnjs.length ? ' (' + pnjs.filter((x) => x.statut !== 'archivee').length + ')' : ''))),
     mes,
     h('div', { dataset: { panneau: 'a-valider' } },
       h('p', { class: 'sous-titre' }, 'Fiches soumises par les joueurs, de la plus ancienne à la plus récente.'),
       grille(soumises, true, 'Aucune fiche en attente de validation.')),
     h('div', { dataset: { panneau: 'toutes' } },
       h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Statut'), filtreStatut), h('div', {}, h('label', {}, 'Recherche'), recherche)),
-      zoneToutes));
+      zoneToutes),
+    panneauPnj());
   racine.replaceChildren(bloc);
   onglets(bloc, (nom) => { history.replaceState(null, '', nom === 'mes' ? location.pathname : '#' + nom); })(ongletInitial);
+}
+
+// ---------------------------------------------------------------------
+// PNJ (conteurs)
+// ---------------------------------------------------------------------
+/** Nouveau document PNJ : fiche MET pré-remplie selon la catégorie. */
+function documentPnj(categorie, nom, age) {
+  const d = documentVide();
+  d.pnj = CATEGORIES_PNJ[categorie] ? categorie : 'autre';
+  d.statut = 'active';
+  Object.assign(d.fiche, FICHE_PNJ[d.pnj] || {});
+  if (age) d.fiche.age = age;
+  d.fiche.nom = d.nom = String(nom || '').trim().slice(0, 80);
+  return d;
+}
+
+function panneauPnj() {
+  const filtreCat = options(h('select', {}), Object.entries(CATEGORIES_PNJ), '', 'Toutes les catégories');
+  const recherche = h('input', { type: 'search', placeholder: 'Nom, clan…' });
+  const avecArchives = h('input', { type: 'checkbox' });
+  const zone = h('div', { style: 'margin-top:1rem' });
+  const filtrer = () => {
+    const cat = filtreCat.value, q = recherche.value.trim().toLowerCase();
+    const liste = pnjs.filter((f) => (avecArchives.checked || f.statut !== 'archivee') && (!cat || f.pnj === cat)
+      && (!q || [f.nom, f.clan, f.secte, f.age].some((x) => (x || '').toLowerCase().includes(q))));
+    if (!liste.length) { zone.replaceChildren(h('p', { class: 'sous-titre' }, pnjs.length ? 'Aucun PNJ ne correspond.' : 'Aucun PNJ pour l\'instant.')); return; }
+    // Regroupés par catégorie, dans l'ordre de la liste des catégories
+    zone.replaceChildren(...Object.keys(CATEGORIES_PNJ).map((k) => {
+      const groupe = liste.filter((f) => f.pnj === k);
+      return groupe.length ? h('div', { class: 'cam-groupe-pnj' }, h('h3', {}, CATEGORIES_PNJ[k] + ' (' + groupe.length + ')'), grille(groupe, false, '')) : '';
+    }));
+  };
+  [filtreCat, recherche, avecArchives].forEach((el) => el.addEventListener(el === recherche ? 'input' : 'change', filtrer));
+  filtrer();
+  return h('div', { dataset: { panneau: 'pnj' } },
+    h('p', { class: 'sous-titre' }, 'Personnages non joueurs, sur la même fiche MET que les joueurs. Ils ne sont visibles que des conteurs (ni répertoire, ni influences) et s\'ajoutent au combat depuis leur fiche ou depuis l\'outil de combat.'),
+    h('div', { class: 'cam-actions' }, h('button', { type: 'button', onclick: fenetreNouveauPnj }, '＋ Nouveau PNJ')),
+    h('div', { class: 'cam-ligne' },
+      h('div', {}, h('label', {}, 'Catégorie'), filtreCat),
+      h('div', {}, h('label', {}, 'Recherche'), recherche)),
+    h('label', { class: 'cam-coche' }, avecArchives, 'Montrer les PNJ archivés'),
+    zone);
+}
+
+/** Fenêtre de création : nom, catégorie (et âge pour un vampire) -> éditeur pré-rempli. */
+function fenetreNouveauPnj() {
+  const nom = h('input', { type: 'text', maxlength: 80, placeholder: 'Nom du PNJ' });
+  const choixAge = options(h('select', {}), AGES_PNJ_VAMPIRE, 'Ancien', 'Âge à choisir dans la fiche');
+  const ligneAge = h('div', {}, h('label', {}, 'Âge'), choixAge);
+  let categorie = 'vampire';
+  const aide = h('p', { class: 'sous-titre', style: 'margin:.3rem 0 0' });
+  const boutons = h('div', { class: 'cam-choix-pnj', role: 'radiogroup', 'aria-label': 'Catégorie' });
+  const majCategorie = () => {
+    boutons.querySelectorAll('button').forEach((b) => { b.classList.toggle('actif', b.dataset.cat === categorie); b.setAttribute('aria-checked', String(b.dataset.cat === categorie)); });
+    aide.textContent = AIDE_PNJ[categorie] || '';
+    ligneAge.hidden = !(categorie === 'vampire' || categorie === 'sabbat');
+  };
+  Object.entries(CATEGORIES_PNJ).forEach(([k, l]) => boutons.append(h('button', {
+    type: 'button', role: 'radio', dataset: { cat: k }, onclick: () => { categorie = k; majCategorie(); }
+  }, l)));
+  majCategorie();
+  const msg = h('div', { class: 'cam-msg' });
+  const fond = h('div', { class: 'cam-modal-fond cam-app' });
+  const fermer = () => { fond.remove(); document.removeEventListener('keydown', echap, true); };
+  const echap = (e) => { if (e.key === 'Escape') { e.stopPropagation(); fermer(); } };
+  const creer = () => {
+    if (!nom.value.trim()) { message(msg, 'Donnez un nom au PNJ.', 'err'); nom.focus(); return; }
+    pnjEnPreparation = documentPnj(categorie, nom.value, ligneAge.hidden ? '' : choixAge.value);
+    fermer();
+    location.hash = 'nouveau-pnj';
+  };
+  nom.addEventListener('keydown', (e) => { if (e.key === 'Enter') creer(); });
+  fond.append(h('div', { class: 'cam-modal' },
+    h('h2', {}, 'Nouveau PNJ'),
+    h('label', {}, 'Nom'), nom,
+    h('label', {}, 'Catégorie'), boutons, aide,
+    ligneAge,
+    h('p', { class: 'sous-titre' }, 'La fiche s\'ouvre pré-remplie (type « Antagoniste », race, âge, secte) : complétez attributs, disciplines… puis enregistrez.'),
+    h('div', { class: 'cam-actions' },
+      h('button', { type: 'button', onclick: creer }, 'Créer la fiche'),
+      h('button', { type: 'button', class: 'secondaire', onclick: fermer }, 'Annuler')),
+    msg));
+  fond.addEventListener('click', (e) => { if (e.target === fond) fermer(); });
+  document.addEventListener('keydown', echap, true);
+  document.body.append(fond);
+  nom.focus();
 }
 
 // ---------------------------------------------------------------------
@@ -295,7 +395,9 @@ function afficherEditeur(existante, preRemplie, avis) {
   const uid = session.user.uid;
   const nouvelle = !existante;
   const d = existante || preRemplie || documentVide();
-  const proprio = nouvelle || d.proprietaire === uid;
+  const estPnj = !!d.pnj && conteur;   // PNJ : conteurs seulement, ni joueur ni circuit de validation
+  let categoriePnj = d.pnj || '';
+  const proprio = !estPnj && (nouvelle || d.proprietaire === uid);
   const modifiable = conteur || (proprio && (nouvelle || STATUTS_FICHE_EDITABLES.includes(d.statut)));
   const dis = !modifiable;
   let portraitRef = d.portrait || '';
@@ -384,6 +486,7 @@ function afficherEditeur(existante, preRemplie, avis) {
     if (contenuJson.length > LIMITE_JSON) throw new Error('Données complémentaires trop volumineuses (' + Math.round(contenuJson.length / 1024) + ' Ko, maximum ' + Math.round(LIMITE_JSON / 1024) + ' Ko).');
     if (portraitRef.startsWith('data:')) portraitRef = await enregistrerImage(portraitRef);
     const data = { ...champsDerives(f, R), portrait: portraitRef, statut, majLe: fs.serverTimestamp() };
+    if (estPnj) data.pnj = categoriePnj;
     const detail = { fiche: f, contenuJson };
     const taille = new Blob([JSON.stringify(detail)]).size;
     if (taille > LIMITE_DOC) throw new Error('Fiche trop volumineuse (' + Math.round(taille / 1024) + ' Ko) : raccourcissez les textes ou les données complémentaires.');
@@ -395,6 +498,22 @@ function afficherEditeur(existante, preRemplie, avis) {
     actions.querySelectorAll('button').forEach((b) => { b.disabled = true; });
     try {
       const { data, detail } = await construire(statut);
+      if (estPnj) {
+        // PNJ : pas de joueur, pas de notification, pas de répertoire.
+        if (nouvelle) {
+          const ref = fs.doc(fs.collection(db, 'personnages'));
+          await ecrireFiche(ref, { ...data, proprietaire: '', proprietaireNom: '', commentaireConteur: '', creeLe: fs.serverTimestamp() }, detail, { creation: true });
+          proteger(false);
+          avisApresNavigation = texteOk || 'PNJ enregistré.';
+          location.hash = 'fiche-' + ref.id;
+          return;
+        }
+        await ecrireFiche(fs.doc(db, 'personnages', d.id), { ...data, commentaireConteur: '' }, detail, { ancienFormat: d.ancienFormat });
+        proteger(false);
+        await route();
+        message(document.querySelector('#cam-fiches .cam-msg.global') || msg, texteOk || 'PNJ enregistré.', 'ok');
+        return;
+      }
       if (nouvelle) {
         const ref = fs.doc(fs.collection(db, 'personnages'));
         await ecrireFiche(ref, {
@@ -447,7 +566,14 @@ function afficherEditeur(existante, preRemplie, avis) {
   }
 
   const bouton = (texte, fn, cls) => h('button', { type: 'button', class: cls || '', onclick: fn }, texte);
-  if (modifiable) {
+  if (estPnj) {
+    const archive = d.statut === 'archivee';
+    actions.append(
+      bouton(nouvelle ? 'Créer le PNJ' : 'Enregistrer', () => enregistrer(archive ? 'archivee' : 'active', nouvelle ? 'PNJ créé.' : 'PNJ enregistré.')),
+      !nouvelle ? (archive
+        ? bouton('Réactiver', () => enregistrer('active', 'PNJ réactivé.'), 'ok')
+        : bouton('Archiver', () => confirmer('Archiver ce PNJ ? Il ne sera plus proposé (il reste consultable dans les archives).') && enregistrer('archivee', 'PNJ archivé.'), 'secondaire')) : '');
+  } else if (modifiable) {
     if (conteur && !nouvelle) {
       const avertirActive = () => {
         const autres = toutes.concat(mesFiches).filter((x) => x.proprietaire === d.proprietaire && x.statut === 'active' && x.id !== d.id);
@@ -474,7 +600,30 @@ function afficherEditeur(existante, preRemplie, avis) {
     }
   }
   if (!nouvelle) {
+    // Conteur : ajouter ce personnage au combat en cours (gardé dans ce navigateur).
+    if (conteur && d.statut !== 'archivee') {
+      actions.append(bouton('⚔ Ajouter au combat', () => {
+        const p = participantDeFiche({ id: d.id, nom: editeur.lireFiche().nom || d.nom, pnj: estPnj ? categoriePnj : '' }, editeur.lireFiche());
+        const r = ajouterAuCombat(uid, p);
+        const lien = h('a', { href: '/membres/combat/', target: '_blank', rel: 'noopener' }, 'Ouvrir le combat');
+        msg.className = 'cam-msg ' + (r.deja ? 'info' : 'ok');
+        msg.replaceChildren(r.deja ? 'Déjà dans le combat. ' : (r.nouveau ? 'Combat créé, ' + p.nom + ' y entre (initiative ' + p.init + '). '
+          : p.nom + ' rejoint le combat ' + (r.arrive > r.tour ? 'au début du prochain tour' : 'dès ce tour') + ' (initiative ' + p.init + '). '), lien);
+      }, 'secondaire'));
+    }
     actions.append(bouton('Exporter en JSON', () => exporter({ ...d, fiche: editeur.lireFiche() }).catch((e) => message(msg, messageErreur(e), 'err')), 'secondaire'));
+    if (estPnj) {
+      actions.append(bouton('Dupliquer', async () => {
+        try {
+          const ref = fs.doc(fs.collection(db, 'personnages'));
+          const { data, detail } = await construire('active');
+          data.nom = detail.fiche.nom = (data.nom + ' (copie)').slice(0, 80);
+          await ecrireFiche(ref, { ...data, proprietaire: '', proprietaireNom: '', commentaireConteur: '', creeLe: fs.serverTimestamp() }, detail, { creation: true });
+          proteger(false);
+          location.hash = 'fiche-' + ref.id;
+        } catch (e) { message(msg, messageErreur(e), 'err'); }
+      }, 'secondaire'));
+    }
     if (proprio) {
       actions.append(bouton('Dupliquer', async () => {
         try {
@@ -496,7 +645,7 @@ function afficherEditeur(existante, preRemplie, avis) {
           lot.delete(fs.doc(db, 'personnages', d.id));
           lot.delete(refDetail(d.id));
           await lot.commit();
-          if (estIncarnable(d)) await majRepertoire({ ...d, statut: 'archivee' }, undefined);
+          if (!estPnj && estIncarnable(d)) await majRepertoire({ ...d, statut: 'archivee' }, undefined);
           proteger(false); retourListe();
         } catch (e) { message(msg, messageErreur(e), 'err'); }
       }, 'danger'));
@@ -504,12 +653,20 @@ function afficherEditeur(existante, preRemplie, avis) {
   }
 
   // --- Mise en page ---
-  const statutTag = h('span', { class: 'cam-tag ' + (d.statut || 'brouillon') }, nouvelle ? 'Nouvelle fiche' : (STATUTS_FICHE[d.statut] || d.statut));
+  const statutTag = estPnj
+    ? h('span', { class: 'cam-tag ' + (d.statut === 'archivee' ? 'archivee' : 'conteur') }, nouvelle ? 'Nouveau PNJ' : 'PNJ · ' + (STATUTS_PNJ[d.statut] || d.statut))
+    : h('span', { class: 'cam-tag ' + (d.statut || 'brouillon') }, nouvelle ? 'Nouvelle fiche' : (STATUTS_FICHE[d.statut] || d.statut));
+  // PNJ : catégorie modifiable dans l'en-tête
+  const choixCategorie = estPnj ? options(h('select', {
+    'aria-label': 'Catégorie du PNJ',
+    onchange: (e) => { categoriePnj = e.target.value; if (!modifie) { modifie = true; proteger(true); } }
+  }), Object.entries(CATEGORIES_PNJ), categoriePnj) : null;
   racine.replaceChildren(
-    h('p', {}, h('a', { href: '#', onclick: (e) => { e.preventDefault(); if (!modifie || confirmer('Quitter sans enregistrer les modifications ?')) { proteger(false); retourListe(); } } }, '← Retour aux fiches')),
+    h('p', {}, h('a', { href: '#', onclick: (e) => { e.preventDefault(); if (!modifie || confirmer('Quitter sans enregistrer les modifications ?')) { proteger(false); if (estPnj) location.hash = 'pnj'; else retourListe(); } } }, estPnj ? '← Retour aux PNJ' : '← Retour aux fiches')),
     h('div', { class: 'cam-msg global' }),
     avis ? h('div', { class: 'cam-encart' }, avis) : '',
     !modifiable ? h('div', { class: 'cam-encart' }, 'Cette fiche est « ' + (STATUTS_FICHE[d.statut] || d.statut) + ' » : seuls les conteurs peuvent la modifier. Utilisez « Demander une modification » si besoin.') : '',
+    estPnj && nouvelle ? h('div', { class: 'cam-encart' }, 'Nouveau PNJ (' + (CATEGORIES_PNJ[categoriePnj] || categoriePnj) + ') : la fiche est pré-remplie, complétez-la puis « Créer le PNJ ». Les attributs Physique et Mental donnent son initiative au combat, sa Célérité ses actions supplémentaires.') : '',
     d.statut === 'refusee' && d.commentaireConteur && !conteur ? h('div', { class: 'cam-encart alerte' }, 'À corriger : ', d.commentaireConteur) : '',
     h('div', { class: 'cam-bloc fiche-entete' },
       h('div', { class: 'cam-entete-fiche' },
@@ -522,7 +679,8 @@ function afficherEditeur(existante, preRemplie, avis) {
         h('div', { class: 'champs' },
           h('h2', {}, titre, ' ', statutTag),
           resumeEntete,
-          conteur && !proprio ? h('p', { class: 'sous-titre' }, 'Joueur : ' + (d.proprietaireNom || '?')) : '',
+          estPnj ? h('div', { class: 'cam-ligne-pnj' }, h('label', {}, 'Catégorie du PNJ'), choixCategorie) : '',
+          conteur && !proprio && !estPnj ? h('p', { class: 'sous-titre' }, 'Joueur : ' + (d.proprietaireNom || '?')) : '',
           d.validePar && d.valideLe ? h('p', { class: 'sous-titre' }, 'Validée le ' + dateFr(d.valideLe)) : '',
           h('p', { class: 'sous-titre' }, 'Cliquez sur « ⓘ » pour lire la description d\'un élément dans les règles MET.')))),
     editeur.el,
@@ -532,7 +690,7 @@ function afficherEditeur(existante, preRemplie, avis) {
       zoneJson, galerie,
       modifiable ? h('div', { class: 'cam-actions' }, h('button', { type: 'button', class: 'petit secondaire', onclick: () => fichierJson.click() }, 'Charger un fichier JSON'), fichierJson) : '',
       msgJson),
-    h('div', { class: 'cam-bloc' },
+    estPnj ? '' : h('div', { class: 'cam-bloc' },
       h('h3', {}, conteur ? 'Message au joueur' : 'Commentaire du conteur'),
       conteur ? h('p', { class: 'sous-titre' }, 'Envoyé dans les notifications du joueur avec le résultat (validation, mise en jeu, renvoi, archivage). Il est effacé de la fiche une fois celle-ci validée.') : '',
       commentaire),

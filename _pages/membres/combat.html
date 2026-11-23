@@ -1,0 +1,44 @@
+---
+layout: null
+title: "Combat — initiatives"
+permalink: /membres/combat/
+sitemap: false
+---
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>Combat — Camarilla Dauphinoise</title>
+  <link rel="manifest" href="{{ '/assets/favicon/site.webmanifest' | relative_url }}">
+  <meta name="application-name" content="Camarilla Dauphinoise">
+  <meta name="apple-mobile-web-app-title" content="Camarilla Dauphinoise">
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" type="image/png" href="{{ '/assets/favicon/favicon-96x96.png' | relative_url }}" sizes="96x96">
+  <link rel="stylesheet" href="{{ '/assets/css/combat.css' | relative_url }}">
+</head>
+<body class="cb-page">
+
+<header class="cb-barre">
+  <a class="cb-marque" href="{{ '/membres/' | relative_url }}" title="Espace membres"><span class="cb-sceau" aria-hidden="true">⚔</span><span>Combat</span></a>
+  <div class="cb-titre" id="cbTitre" aria-live="polite"></div>
+  <span class="cb-espace"></span>
+  <button type="button" class="cb-btn" id="btnParticipants" title="Liste des participants : initiative, hors combat, retirer">👥 <span class="cb-lib">Participants</span></button>
+  <button type="button" class="cb-btn" id="btnNouveau" title="Commencer un nouveau combat">✚ <span class="cb-lib">Nouveau combat</span></button>
+</header>
+
+<main class="cb-scene" id="scene" aria-label="Déroulé du combat"></main>
+
+<footer class="cb-pied">
+  <button type="button" class="cb-nav" id="btnPrec"><span class="cb-fleche" aria-hidden="true">◀</span><span>Précédent<small id="precInfo"></small></span></button>
+  <div class="cb-utiles" id="utiles"></div>
+  <button type="button" class="cb-nav principal" id="btnSuiv"><span>Suivant<small id="suivInfo"></small></span><span class="cb-fleche" aria-hidden="true">▶</span></button>
+</footer>
+
+<div class="cb-toast" id="toast" role="status" hidden></div>
+<div class="cb-garde" id="cbGarde"><div class="cb-garde-boite"><p>Chargement…</p><noscript><p>Cette page nécessite JavaScript.</p></noscript></div></div>
+
+<script type="module" src="{{ '/assets/js/camarilla/pages/combat.js' | relative_url }}"></script>
+</body>
+</html>

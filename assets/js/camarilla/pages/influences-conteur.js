@@ -8,7 +8,8 @@ import {
 import { ZONES, TYPES_ACTION, CATEGORIES_AIP, classeCat, libelleZone } from '../donnees.js';
 import { compresser, donneesDoc } from '../compression.js';
 import {
-  chargerCalendrier, calculerCalendrier, moisParDefaut, partie, libellePartie, resumeEtat, etat, LIBELLES_ETAT, MAX_PARTIES
+  chargerCalendrier, calculerCalendrier, moisParDefaut, partie, libellePartie, resumeEtat, etat, LIBELLES_ETAT, MAX_PARTIES,
+  finDuMois
 } from '../calendrier.js';
 import { lirePenseBete, marquerSujet, sujetDepuisAction } from '../gazette/stockage.js';
 
@@ -65,7 +66,7 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
       ]);
       sujetsGazette = sg;
       actions = a.docs.map(donneesDoc).sort((x, y) => millis(y.creeLe) - millis(x.creeLe));
-      if (p) persos = p.docs.map((d) => ({ id: d.id, ...d.data() })).sort((x, y) => (x.nom || '').localeCompare(y.nom || ''));
+      if (p) persos = p.docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => !x.pnj).sort((x, y) => (x.nom || '').localeCompare(y.nom || ''));   // pas les PNJ
       if (r) raisons = r.docs.map(donneesDoc).sort((x, y) => (x.personnageNom || '').localeCompare(y.personnageNom || '') || (x.nom || '').localeCompare(y.nom || ''));
       const enAttente = actions.filter((x) => x.statut === 'attente').length;
       message(msg, actions.length + ' action(s) en ' + mois.value + ', dont ' + enAttente + ' sans réponse.', 'ok');
@@ -77,7 +78,11 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
 
   // --- Calendrier des parties ---
   function dessinerCalendrier() {
-    const lignes = calendrier.parties.map((p) => ({ date: p.date, limite: p.limite, titre: p.titre || '' }));
+    // Une ligne : une partie { date, limite, titre }, ou un mois sans partie { sansPartie, mois, limite, titre }.
+    const lignes = calendrier.parties.map((p) => (p.sansPartie
+      ? { sansPartie: true, mois: p.cle, limite: p.limite, titre: p.titre || '' }
+      : { date: p.date, limite: p.limite, titre: p.titre || '' }));
+    const ordre = (l) => (l.sansPartie ? l.limite || (l.mois ? finDuMois(l.mois) : '') : l.date) || '9999';
     const anticipation = h('input', { type: 'checkbox', checked: calendrier.anticipation });
     const corps = h('tbody');
     const alertes = h('div', {});
@@ -85,41 +90,64 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
     const CLASSE_ETAT = { ouverte: 'traitee', a_venir: 'attente', fermee: 'archivee' };
     const dessinerLignes = () => {
       if (msgC.classList.contains('err')) { msgC.className = 'cam-msg'; msgC.textContent = ''; }
-      lignes.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
+      lignes.sort((a, b) => ordre(a).localeCompare(ordre(b)));
       const { parties, erreurs } = calculerCalendrier(lignes);
       corps.replaceChildren(...(lignes.length ? lignes.map((l, i) => {
-        const date = h('input', { type: 'date', value: l.date });
+        // Partie : sa date ; mois sans partie : le mois.
+        const date = l.sansPartie ? h('input', { type: 'month', value: l.mois || '' }) : h('input', { type: 'date', value: l.date });
         const limite = h('input', { type: 'date', value: l.limite });
         const titre = h('input', { type: 'text', value: l.titre, maxlength: 120, placeholder: 'Facultatif' });
-        date.addEventListener('change', () => { l.date = date.value; dessinerLignes(); });
+        date.addEventListener('change', () => { if (l.sansPartie) l.mois = date.value; else l.date = date.value; dessinerLignes(); });
         limite.addEventListener('change', () => { l.limite = limite.value; dessinerLignes(); });
         titre.addEventListener('input', () => { l.titre = titre.value; });
-        const c = parties.find((x) => x.date === l.date);
-        return h('tr', {},
-          h('td', {}, date), h('td', {}, limite), h('td', {}, titre),
+        const c = parties.find((x) => (l.sansPartie ? x.sansPartie && x.cle === l.mois : !x.sansPartie && x.date === l.date));
+        return h('tr', { class: l.sansPartie ? 'cam-sans-partie' : null },
+          h('td', {}, date, l.sansPartie ? h('span', { class: 'cam-tag attente', style: 'margin-top:.3rem' }, 'Sans partie') : ''),
+          h('td', {}, limite), h('td', {}, titre),
           h('td', {}, c ? dateFr(c.ouverture) + ' → ' + dateFr(c.fermeture) : '—'),
           h('td', {}, c ? h('span', { class: 'cam-tag ' + CLASSE_ETAT[etat(c)] }, LIBELLES_ETAT[etat(c)]) : ''),
           h('td', {}, h('button', { type: 'button', class: 'petit danger', title: 'Retirer cette partie', onclick: () => { lignes.splice(i, 1); dessinerLignes(); } }, '×')));
       }) : [h('tr', {}, h('td', { colspan: 6 }, 'Aucune partie. Ajoutez la prochaine ci-dessous.'))]));
       alertes.replaceChildren(...erreurs.map((e) => h('div', { class: 'cam-msg err' }, e)));
     };
-    // Ajout d'une partie : la date limite est proposée une semaine avant.
+    // Ajout d'une partie (date limite proposée une semaine avant), ou d'un mois
+    // sans partie (date limite proposée au dernier jour du mois).
+    const nSansPartie = h('input', { type: 'checkbox' });
     const nDate = h('input', { type: 'date' });
+    const nMois = h('input', { type: 'month' });
     const nLimite = h('input', { type: 'date' });
     const nTitre = h('input', { type: 'text', maxlength: 120, placeholder: 'Ex : Élysée de décembre' });
+    const libDate = h('label', {}, 'Date de la partie');
+    const champDate = h('div', {}, libDate, nDate, nMois);
     nDate.addEventListener('change', () => {
       if (!nDate.value || nLimite.value) return;
       const d = new Date(nDate.value + 'T12:00:00');
       d.setDate(d.getDate() - 7);
       nLimite.value = d.toISOString().slice(0, 10);
     });
+    nMois.addEventListener('change', () => { if (nMois.value && !nLimite.value) nLimite.value = finDuMois(nMois.value); });
     const ajouter = h('button', { type: 'button', class: 'petit' }, 'Ajouter la partie');
+    const majTypeAjout = () => {
+      const sp = nSansPartie.checked;
+      nDate.hidden = sp; nMois.hidden = !sp;
+      libDate.textContent = sp ? 'Mois (sans partie)' : 'Date de la partie';
+      ajouter.textContent = sp ? 'Ajouter le mois sans partie' : 'Ajouter la partie';
+      nTitre.placeholder = sp ? 'Ex : Relâche estivale' : 'Ex : Élysée de décembre';
+    };
+    nSansPartie.addEventListener('change', majTypeAjout);
+    majTypeAjout();
     ajouter.addEventListener('click', () => {
-      if (!nDate.value) { message(msgC, 'Indiquez la date de la partie.', 'err'); return; }
       if (lignes.length >= MAX_PARTIES) { message(msgC, 'Au plus ' + MAX_PARTIES + ' parties : retirez les plus anciennes.', 'err'); return; }
-      lignes.push({ date: nDate.value, limite: nLimite.value || nDate.value, titre: nTitre.value.trim() });
-      nDate.value = ''; nLimite.value = ''; nTitre.value = '';
-      message(msgC, 'Partie ajoutée : pensez à enregistrer le calendrier.', 'info');
+      if (nSansPartie.checked) {
+        if (!nMois.value || !nLimite.value) { message(msgC, 'Indiquez le mois et la date limite des influences.', 'err'); return; }
+        lignes.push({ sansPartie: true, mois: nMois.value, limite: nLimite.value, titre: nTitre.value.trim() });
+        message(msgC, 'Mois sans partie ajouté : pensez à enregistrer le calendrier.', 'info');
+      } else {
+        if (!nDate.value) { message(msgC, 'Indiquez la date de la partie.', 'err'); return; }
+        lignes.push({ date: nDate.value, limite: nLimite.value || nDate.value, titre: nTitre.value.trim() });
+        message(msgC, 'Partie ajoutée : pensez à enregistrer le calendrier.', 'info');
+      }
+      nDate.value = ''; nMois.value = ''; nLimite.value = ''; nTitre.value = '';
       dessinerLignes();
     });
     const enregistrer = h('button', { type: 'button', class: 'ok' }, 'Enregistrer le calendrier');
@@ -133,21 +161,23 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
           anticipation: anticipation.checked, majLe: fs.serverTimestamp(), majPar: user.uid
         });
         calendrier = { existe: true, parties, anticipation: anticipation.checked };
-        message(msgC, 'Calendrier enregistré : ' + parties.length + ' partie(s).', 'ok');
+        const sans = parties.filter((x) => x.sansPartie).length;
+        message(msgC, 'Calendrier enregistré : ' + (parties.length - sans) + ' partie(s)' + (sans ? ' et ' + sans + ' mois sans partie' : '') + '.', 'ok');
         majInfoPartie(); dessinerLignes();
       } catch (e) { message(msgC, messageErreur(e), 'err'); }
       finally { enregistrer.disabled = false; }
     });
     panneaux.calendrier.replaceChildren(h('div', { class: 'cam-bloc' },
       h('h2', {}, 'Calendrier des parties'),
-      h('p', { class: 'sous-titre' }, 'Les influences d\'une partie s\'ouvrent le lendemain de la partie précédente (la toute première : un mois avant sa date) et ferment à sa date limite, à 23 h 59. Une seule partie par mois : le mois de la partie est celui de ses actions d\'influence.'),
+      h('p', { class: 'sous-titre' }, 'Les influences d\'une partie s\'ouvrent le lendemain de la partie précédente (la toute première : un mois avant sa date) et ferment à sa date limite, à 23 h 59. Une seule partie par mois : le mois de la partie est celui de ses actions d\'influence. Un mois sans partie (vacances, relâche…) a quand même ses influences : elles ferment à sa date limite, et celles du mois suivant s\'ouvrent le lendemain.'),
       h('div', { class: 'cam-table-defil' }, h('table', { class: 'cam-table' },
-        h('thead', {}, h('tr', {}, ['Date de la partie', 'Date limite des influences', 'Titre', 'Fenêtre d\'influences', 'État', ''].map((x) => h('th', {}, x)))),
+        h('thead', {}, h('tr', {}, ['Date de la partie (ou mois)', 'Date limite des influences', 'Titre', 'Fenêtre d\'influences', 'État', ''].map((x) => h('th', {}, x)))),
         corps)),
       alertes,
       h('h3', {}, 'Ajouter une partie'),
+      h('label', { class: 'cam-coche' }, nSansPartie, 'Mois sans partie (influences seulement)'),
       h('div', { class: 'cam-ligne' },
-        h('div', {}, h('label', {}, 'Date de la partie'), nDate),
+        champDate,
         h('div', {}, h('label', {}, 'Date limite des influences'), nLimite),
         h('div', {}, h('label', {}, 'Titre'), nTitre)),
       ajouter,

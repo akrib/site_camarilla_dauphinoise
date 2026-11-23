@@ -1,3 +1,11 @@
+/* Page des fiches : toute la largeur de l'écran sur ordinateur (le thème réserve
+   sinon une colonne vide à droite et limite la page à 1280 px). */
+@media (min-width: 64em) {
+  .fiche-large #main { max-width: 1800px; }
+  .fiche-large .page { float: none; width: 100%; padding-inline-end: 0; }
+  .fiche-large .page__inner-wrap { float: none; }
+}
+
 /* ===================================================================
    Éditeur de fiche de personnage MET — complète membres.css
    Ordinateur : onglets proches du fichier Excel.

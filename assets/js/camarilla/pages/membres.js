@@ -181,6 +181,8 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
       tuile('/membres/fiches/#a-valider', 'Fiches à valider', 'Relire, valider ou renvoyer les fiches soumises.', travail.fiches || ''),
       tuile('/membres/comptes/', 'Comptes', 'Activer les inscriptions, gérer les rôles.', enAttente || ''),
       tuile('/influences/conteur/', 'Influences — conteur', 'Répondre aux actions, districts, export CSV.', travail.actions || ''),
+      tuile('/membres/combat/', 'Combat — initiatives', 'Ordre d\'initiative, rounds de Célérité, dégâts et volonté pendant les combats (téléphone ou ordinateur).'),
+      tuile('/membres/fiches/#pnj', 'PNJ', 'Fiches des personnages non joueurs : vampires, goules, sabbatiques, humains, inquisition, loups-garous…'),
       tuile('/membres/gazette/edition/', 'Gazette — édition', 'Mettre en page et publier Le Gratin Dauphinois (un numéro par mois).'),
       tuile('/membres/tickets/#joueurs', 'Tickets des joueurs', 'Répondre aux demandes des joueurs.', travail.tickets || ''),
       tuile('/influences/conteur/#calendrier', 'Calendrier des parties', 'Dates des parties et dates limites de rendu des influences.'),

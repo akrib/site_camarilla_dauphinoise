@@ -72,7 +72,7 @@ service cloud.firestore {
     // (VERSION_REGLES) à chaque modification de ce fichier.
     // ------------------------------------------------------------------
     match /regles/{version} {
-      allow get: if actif() && version == '2026-11-22';
+      allow get: if actif() && version == '2026-11-23';
     }
 
     // ------------------------------------------------------------------
@@ -174,7 +174,9 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------
-    // Fiches de personnage (fiche MET 8.0.2)
+    // Fiches de personnage (fiche MET 8.0.2), et PNJ des conteurs : fiches
+    // sans joueur (proprietaire == ''), champ pnj = catégorie ; créées et lues
+    // par les conteurs seulement (un joueur ne lit que ses propres fiches).
     // brouillon -> soumise -> validee -> active -> archivee
     //                     \-> refusee -> (corrigée) -> soumise
     // Le joueur ne modifie que ses fiches brouillon / soumise / refusee.
@@ -204,12 +206,14 @@ service cloud.firestore {
           && refImage(d.portrait)
           && (!('contenuJson' in d) || texte(d.contenuJson, 600000))
           && texteLong(d.commentaireConteur, 4000)
-          && d.statut in ['brouillon', 'soumise', 'refusee', 'validee', 'active', 'archivee'];
+          && d.statut in ['brouillon', 'soumise', 'refusee', 'validee', 'active', 'archivee']
+          // PNJ des conteurs : catégorie connue (sans joueur : proprietaire vide, voir création)
+          && (!('pnj' in d) || d.pnj in ['vampire', 'goule', 'sabbat', 'humain', 'inquisition', 'lupin', 'autre']);
       }
       function champsFiche() {
         return ['schema', 'proprietaire', 'proprietaireNom', 'nom', 'clan', 'secte', 'race', 'age', 'typeFiche',
                 'generation', 'niveauGotha', 'specsGotha', 'niveauPegre', 'specsPegre', 'xp', 'fiche', 'portrait',
-                'contenuJson', 'statut', 'commentaireConteur', 'creeLe', 'majLe', 'validePar', 'valideLe'];
+                'contenuJson', 'statut', 'commentaireConteur', 'creeLe', 'majLe', 'validePar', 'valideLe', 'pnj'];
       }
       function champsJoueur() {
         return ['schema', 'proprietaireNom', 'nom', 'clan', 'secte', 'race', 'age', 'typeFiche', 'generation',
@@ -226,7 +230,7 @@ service cloud.firestore {
         && (
           (nouveau().proprietaire == uid() && nouveau().statut == 'brouillon'
             && nouveau().commentaireConteur == '' && nouveau().proprietaireNom == moi().nom
-            && !nouveau().keys().hasAny(['validePar', 'valideLe']))
+            && !nouveau().keys().hasAny(['validePar', 'valideLe', 'pnj']))
           || conteur()
         );
 

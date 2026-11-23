@@ -2,8 +2,10 @@
 // Calendrier des parties et fenêtres d'influences
 //
 // Document unique calendrier/parties, tenu par les conteurs :
-//   parties : { 'AAAA-MM': { date, limite, titre, ouverture, fermeture } }
+//   parties : { 'AAAA-MM': { date, limite, titre, ouverture, fermeture, sansPartie } }
 //     date      : jour de la partie (AAAA-MM-JJ) — une partie par mois ;
+//     sansPartie: true pour un mois sans partie mais avec des influences
+//                 (date = date limite, qui sert à enchaîner les fenêtres) ;
 //     limite    : date limite de rendu des influences pour cette partie ;
 //     ouverture : lendemain de la partie précédente, 0 h (ms) ;
 //     fermeture : date limite, 23 h 59 (ms).
@@ -17,6 +19,7 @@
 import { h, db, fs, moisCourant } from './core.js';
 
 const RE_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const RE_MOIS = /^\d{4}-(0[1-9]|1[0-2])$/;
 export const MAX_PARTIES = 60;
 
 const dateLocale = (iso) => { const [a, m, j] = iso.split('-').map(Number); return new Date(a, m - 1, j); };
@@ -34,24 +37,46 @@ export function libelleMois(cle) {
   const t = new Date(a, m - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
-export const libellePartie = (p) => (p.titre ? p.titre + ' — ' : '') + 'partie du ' + jourLong(p.date);
+export const libellePartie = (p) => (p.titre ? p.titre + ' — ' : '')
+  + (p.sansPartie ? libelleMois(p.cle).toLowerCase() + ' (sans partie)' : 'partie du ' + jourLong(p.date));
+/** Dernier jour d'un mois « AAAA-MM » (AAAA-MM-JJ). */
+export function finDuMois(mois) {
+  const [a, m] = String(mois).split('-').map(Number);
+  const d = new Date(a, m, 0);
+  return a && m ? d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') : '';
+}
 
-// Liste saisie par le conteur [{ date, limite, titre }] -> parties triées avec
-// leurs fenêtres, et les incohérences à corriger avant d'enregistrer.
+// Liste saisie par le conteur -> parties triées avec leurs fenêtres, et les
+// incohérences à corriger avant d'enregistrer. Une ligne est :
+//   - une partie : { date, limite, titre } ;
+//   - un mois sans partie : { sansPartie: true, mois, limite, titre } (les
+//     influences de ce mois ferment à sa date limite, la fenêtre suivante
+//     s'ouvre le lendemain).
 export function calculerCalendrier(saisie) {
-  const triees = saisie.filter((p) => RE_DATE.test(p.date || '')).sort((a, b) => a.date.localeCompare(b.date));
   const erreurs = [];
+  const lignes = saisie.map((p) => (p.sansPartie
+    ? { ...p, cle: p.mois, date: p.limite }
+    : { ...p, cle: String(p.date || '').slice(0, 7) }));
+  lignes.forEach((p) => {
+    if (p.sansPartie && (!RE_MOIS.test(p.cle || '') || !RE_DATE.test(p.date || ''))) {
+      erreurs.push('Mois sans partie' + (RE_MOIS.test(p.cle || '') ? ' (' + libelleMois(p.cle).toLowerCase() + ')' : '') + ' : indiquez le mois et la date limite des influences.');
+    }
+  });
+  const triees = lignes.filter((p) => RE_DATE.test(p.date || '') && RE_MOIS.test(p.cle || '')).sort((a, b) => a.date.localeCompare(b.date));
   const vus = new Set();
+  const nom = (p) => (p.sansPartie ? libelleMois(p.cle) + ' (sans partie)' : 'Partie du ' + jourLong(p.date));
   const parties = triees.map((p, i) => {
-    const cle = p.date.slice(0, 7);
-    if (vus.has(cle)) erreurs.push('Deux parties en ' + libelleMois(cle).toLowerCase() + ' : une seule partie par mois.');
+    const cle = p.cle;
+    if (vus.has(cle)) erreurs.push('Deux entrées en ' + libelleMois(cle).toLowerCase() + ' : une seule partie, ou un seul mois sans partie, par mois.');
     vus.add(cle);
     const limite = RE_DATE.test(p.limite || '') ? p.limite : p.date;
     const ouverture = i === 0 ? moisAvant(p.date) : lendemain(triees[i - 1].date);
     const fermeture = finJour(limite);
-    if (limite > p.date) erreurs.push('Partie du ' + jourLong(p.date) + ' : la date limite des influences est après la partie.');
-    else if (fermeture < ouverture) erreurs.push('Partie du ' + jourLong(p.date) + ' : la date limite tombe avant le lendemain de la partie précédente.');
-    return { cle, date: p.date, limite, titre: String(p.titre || '').trim().slice(0, 120), ouverture, fermeture };
+    if (!p.sansPartie && limite > p.date) erreurs.push(nom(p) + ' : la date limite des influences est après la partie.');
+    else if (fermeture < ouverture) erreurs.push(nom(p) + ' : la date limite tombe avant le lendemain de la partie ou de la date limite précédente.');
+    const r = { cle, date: p.date, limite, titre: String(p.titre || '').trim().slice(0, 120), ouverture, fermeture };
+    if (p.sansPartie) r.sansPartie = true;
+    return r;
   });
   if (parties.length > MAX_PARTIES) erreurs.push('Au plus ' + MAX_PARTIES + ' parties : supprimez les plus anciennes.');
   return { parties, erreurs };
