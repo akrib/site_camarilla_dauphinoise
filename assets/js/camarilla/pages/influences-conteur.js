@@ -359,20 +359,21 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
 
   // --- Raisons sociales : les spécialisations d'influence des fiches en jeu ---
   // (l'ancien registre saisi à part reste consultable, et peut être vidé)
+  // Une ligne par spécialisation d'influence, avec sa raison sociale (onglet Historiques de la fiche)
   const raisonsDesFiches = () => persos.flatMap((p) => [
-    ...(p.specsGotha || []).map((r) => ({ personnageNom: p.nom, proprietaireNom: p.proprietaireNom || '', categorie: CAT_GOTHA, nom: r, niveau: p.niveauGotha })),
-    ...(p.specsPegre || []).map((r) => ({ personnageNom: p.nom, proprietaireNom: p.proprietaireNom || '', categorie: CAT_PEGRE, nom: r, niveau: p.niveauPegre }))]);
+    ...(p.specsGotha || []).map((sp, i) => ({ personnageNom: p.nom, proprietaireNom: p.proprietaireNom || p.interpreteNom || '', categorie: CAT_GOTHA, specialisation: sp, nom: (p.raisonsGotha || [])[i] || '', niveau: p.niveauGotha })),
+    ...(p.specsPegre || []).map((sp, i) => ({ personnageNom: p.nom, proprietaireNom: p.proprietaireNom || p.interpreteNom || '', categorie: CAT_PEGRE, specialisation: sp, nom: (p.raisonsPegre || [])[i] || '', niveau: p.niveauPegre }))]);
   function dessinerRaisons() {
     const recherche = h('input', { type: 'search', placeholder: 'Raison sociale, personnage, joueur…' });
     const corps = h('tbody');
     const toutes = raisonsDesFiches();
     const dessiner = () => {
       const q = recherche.value.trim().toLowerCase();
-      const liste = toutes.filter((r) => !q || [r.nom, r.personnageNom, r.proprietaireNom].some((v) => (v || '').toLowerCase().includes(q)));
+      const liste = toutes.filter((r) => !q || [r.nom, r.specialisation, r.personnageNom, r.proprietaireNom].some((v) => (v || '').toLowerCase().includes(q)));
       corps.replaceChildren(...(liste.length ? liste.map((r) => h('tr', {},
-        h('td', {}, r.nom), h('td', {}, r.personnageNom), h('td', {}, r.proprietaireNom),
+        h('td', {}, r.nom || h('em', { class: 'sous-titre' }, 'pas de raison sociale')), h('td', {}, r.specialisation), h('td', {}, r.personnageNom), h('td', {}, r.proprietaireNom),
         h('td', {}, h('span', { class: 'cam-tag ' + classeCat(r.categorie) }, r.categorie + ' ' + r.niveau))))
-        : [h('tr', {}, h('td', { colspan: 4 }, toutes.length ? 'Aucune raison sociale ne correspond.' : 'Aucune spécialisation d\'influence sur les fiches en jeu.'))]));
+        : [h('tr', {}, h('td', { colspan: 5 }, toutes.length ? 'Aucune raison sociale ne correspond.' : 'Aucune spécialisation d\'influence sur les fiches en jeu.'))]));
     };
     recherche.addEventListener('input', dessiner);
     const ancien = (raisons || []).length ? h('details', { class: 'cam-bloc' },
@@ -394,10 +395,10 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
       }, 'Vider l\'ancien registre')) : '';
     panneaux.raisons.replaceChildren(h('div', { class: 'cam-bloc' },
       h('h2', {}, 'Raisons sociales des personnages en jeu'),
-      h('p', { class: 'sous-titre' }, 'Ce sont les spécialisations d\'influence (Gotha, Pègre) des fiches : chaque action d\'influence en précise une.'),
+      h('p', { class: 'sous-titre' }, 'Chaque spécialisation d\'influence (Gotha, Pègre) d\'une fiche a sa raison sociale (onglet Historiques de la fiche) : chaque action d\'influence en précise une. Une fiche enregistrée avant cette colonne la montre au prochain enregistrement.'),
       recherche,
       h('div', { class: 'cam-table-defil' }, h('table', { class: 'cam-table' },
-        h('thead', {}, h('tr', {}, ['Raison sociale', 'Personnage', 'Joueur', 'Catégorie'].map((x) => h('th', {}, x)))), corps))), ancien);
+        h('thead', {}, h('tr', {}, ['Raison sociale', 'Spécialisation', 'Personnage', 'Joueur', 'Catégorie'].map((x) => h('th', {}, x)))), corps))), ancien);
     dessiner();
   }
 
@@ -419,15 +420,15 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
           { titre: 'Latitude', valeur: (a) => (a.lieu ? a.lieu.lat : '') }, { titre: 'Longitude', valeur: (a) => (a.lieu ? a.lieu.lng : '') }
         ]), 'actions-' + mois.value + '.csv', 'text/csv;charset=utf-8')),
         btn('Raisons sociales', () => telecharger(versCsv(raisonsDesFiches(), [
-          { titre: 'Raison sociale', cle: 'nom' }, { titre: 'Personnage', cle: 'personnageNom' }, { titre: 'Joueur', cle: 'proprietaireNom' },
+          { titre: 'Raison sociale', cle: 'nom' }, { titre: 'Spécialisation', cle: 'specialisation' }, { titre: 'Personnage', cle: 'personnageNom' }, { titre: 'Joueur', cle: 'proprietaireNom' },
           { titre: 'Catégorie', cle: 'categorie' }, { titre: 'Niveau', cle: 'niveau' }
         ]), 'raisons-sociales.csv', 'text/csv;charset=utf-8')),
         btn('Personnages en jeu', () => telecharger(versCsv(persos, [
           { titre: 'Personnage', cle: 'nom' }, { titre: 'Joueur', cle: 'proprietaireNom' }, { titre: 'Clan', cle: 'clan' },
           { titre: 'Secte', cle: 'secte' }, { titre: 'Âge', cle: 'age' }, { titre: 'Génération', cle: 'generation' },
           { titre: 'PX acquis', valeur: (p) => (p.xp ? p.xp.acquise : '') }, { titre: 'PX restants', valeur: (p) => (p.xp ? p.xp.restante : '') },
-          { titre: 'Gotha', cle: 'niveauGotha' }, { titre: 'Spé. Gotha', valeur: (p) => (p.specsGotha || []).join(', ') },
-          { titre: 'Pègre', cle: 'niveauPegre' }, { titre: 'Spé. Pègre', valeur: (p) => (p.specsPegre || []).join(', ') },
+          { titre: 'Gotha', cle: 'niveauGotha' }, { titre: 'Spé. Gotha', valeur: (p) => (p.specsGotha || []).map((sp, i) => sp + ((p.raisonsGotha || [])[i] ? ' (' + p.raisonsGotha[i] + ')' : '')).join(', ') },
+          { titre: 'Pègre', cle: 'niveauPegre' }, { titre: 'Spé. Pègre', valeur: (p) => (p.specsPegre || []).map((sp, i) => sp + ((p.raisonsPegre || [])[i] ? ' (' + p.raisonsPegre[i] + ')' : '')).join(', ') },
           { titre: 'AIP par partie', valeur: (p) => (p.aip ? totalAip(p.aip) : '') }, { titre: 'Troupeau', valeur: (p) => (p.aip ? p.aip.troupeau : '') }
         ]), 'personnages-en-jeu.csv', 'text/csv;charset=utf-8')))));
   }

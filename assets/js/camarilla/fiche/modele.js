@@ -65,8 +65,9 @@ export function ficheVide() {
     rituels: vide(TAILLES.rituels),                                             // G/J/M/P/S 107-116
     // --- Onglet Historiques
     historiques: {
-      gotha: { niveau: '', specialisations: vide(TAILLES.specialitesInfluence) },
-      pegre: { niveau: '', specialisations: vide(TAILLES.specialitesInfluence) },
+      // Influences : une raison sociale par spécialisation (même rang), utilisée dans les actions d'influence
+      gotha: { niveau: '', specialisations: vide(TAILLES.specialitesInfluence), raisons: vide(TAILLES.specialitesInfluence) },
+      pegre: { niveau: '', specialisations: vide(TAILLES.specialitesInfluence), raisons: vide(TAILLES.specialitesInfluence) },
       ressources: '', renommee: '',
       faussesIdentites: vide(TAILLES.faussesIdentites, () => ({ niveau: '', description: '' })),
       havres: vide(TAILLES.havres, () => ({ nom: '', niveau: '', avantages: vide(TAILLES.avantagesHavre) })),

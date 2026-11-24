@@ -165,8 +165,11 @@ export function ouvrirApercu(fiche, { portrait = null, joueur = '', statut = '',
   const historiques = bloc('Historiques',
     h('div', { class: 'ap-colonnes trois' },
       sous('Influences', kv([['Gotha', val(H.gotha.niveau)], ['Pègre', val(H.pegre.niveau)]]),
-        H.gotha.specialisations.some(rempli) ? h('p', {}, h('em', {}, 'Gotha : '), H.gotha.specialisations.filter(rempli).join(' ; ')) : '',
-        H.pegre.specialisations.some(rempli) ? h('p', {}, h('em', {}, 'Pègre : '), H.pegre.specialisations.filter(rempli).join(' ; ')) : ''),
+        ...[['Gotha', H.gotha], ['Pègre', H.pegre]].map(([lib, x]) => {
+          const l = x.specialisations.map((sp, i) => [sp, x.raisons[i]]).filter(([sp, r]) => rempli(sp) || rempli(r))
+            .map(([sp, r]) => (rempli(sp) ? sp : '?') + (rempli(r) ? ' — ' + r : ''));
+          return l.length ? h('p', {}, h('em', {}, lib + ' : '), l.join(' ; ')) : '';
+        })),
       sous('Divers', kv([
         ['Génération', R.niveauGeneration ?? ''], ['Ressources', rempli(H.ressources) ? H.ressources + (R.argent !== '' ? ' (' + R.argent.toLocaleString('fr-FR') + ' € par mois)' : '') : ''],
         ['Renommée', H.renommee], ['Troupeau', [H.troupeau.niveau, H.troupeau.description].filter(rempli).join(' — ')],

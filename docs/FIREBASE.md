@@ -305,12 +305,22 @@ par la page. Document : `calendrier/parties`
 
 ### Influences : raisons sociales et actions inter-partie (AIP)
 
-- **Raison sociale** : c'est une des **spécialisations d'influence de la fiche** (Gotha ou
-  Pègre, par ex. « Banques (Finance) »), choisie dans une liste pour chaque action globale,
-  ciblée ou de soutien, selon la catégorie de l'action. Le type de spécialisation (liste des
-  15) est déduit de la parenthèse quand il y en a une. L'ancien registre des raisons
+- **Raison sociale** : dans la fiche (section Historiques, cartes Gotha et Pègre), chaque
+  ligne a deux cases : la **spécialisation** (par ex. « Banques (Finance) ») et, à côté, la
+  **raison sociale** qui l'exerce (par ex. « Crédit Dauphinois »), facultative. Pour chaque
+  action globale, ciblée ou de soutien, le joueur choisit dans une liste une des lignes de
+  la catégorie de l'action (Gotha ou Pègre), affichée « raison sociale — spécialisation »
+  (ou « spécialisation (sans raison sociale) ») ; l'action enregistre la raison sociale
+  (à défaut la spécialisation) et la spécialisation. Le type de spécialisation (liste des
+  15) est déduit de la parenthèse quand il y en a une. Le document léger de la fiche
+  recopie `raisonsGotha` / `raisonsPegre`, au même rang que `specsGotha` / `specsPegre`
+  (10 au plus ; une raison sans spécialisation n'est pas reprise) ; tant que les règles
+  publiées sont anciennes, ces deux champs ne sont pas écrits et le formulaire lit les
+  raisons dans le détail de la fiche. Les fiches existantes n'ont pas encore de raison
+  sociale : il suffit de les remplir et d'enregistrer. L'ancien registre des raisons
   sociales saisi à part n'est plus utilisé : l'onglet a disparu côté joueur ; côté
-  conteur, l'onglet « Raisons sociales » liste les spécialisations des fiches en jeu, avec
+  conteur, l'onglet « Raisons sociales » liste les lignes des fiches en jeu (raison
+  sociale, spécialisation, personnage, joueur, catégorie ; aussi dans l'export CSV), avec
   l'ancien registre consultable (et un bouton pour le vider). Les règles Firestore
   n'acceptent plus de nouvelle entrée dans `raisons_sociales`.
 - **AIP**, d'après le chapitre « Actions Inter-Partie » des règles : 3 AIP entre deux
@@ -390,9 +400,11 @@ dérivées (sang, volonté, éthique, langues, scores de combat…).
   (listées dans la fiche, rubrique « Différences avec le fichier Excel ») : coût du
   changement de focus, 4e ligne de Représentation, 4e pouvoir d'ancien, compétences
   libres.
-- Les champs Gotha, Pègre, génération et PX de la fiche sont recopiés dans le document
-  pour la page Influences, ainsi que les actions inter-partie qu'elle donne (champ `aip` :
-  base 3, +1 Informatique, Sciences, Troupeau, coût pour se nourrir).
+- Les champs Gotha, Pègre (spécialisations et **raisons sociales**, une case à côté de
+  chaque spécialisation dans les Historiques), génération et PX de la fiche sont recopiés
+  dans le document pour la page Influences, ainsi que les actions inter-partie qu'elle
+  donne (champ `aip` : base 3, +1 Informatique, Sciences, Troupeau, coût pour se nourrir).
+  L'aperçu avant impression affiche « spécialisation — raison sociale ».
 - **Onglet Mystères** : la compétence Mystères et ses spécialités (les trois premières,
   offertes, suivent la secte, le clan et la race), puis les **connaissances** de chaque
   niveau connu (communes et secrètes). Un conteur voit tous les textes ; le joueur ceux

@@ -76,7 +76,7 @@ service cloud.firestore {
     // (VERSION_REGLES) à chaque modification de ce fichier.
     // ------------------------------------------------------------------
     match /regles/{version} {
-      allow get: if actif() && version == '2026-11-24d';
+      allow get: if actif() && version == '2026-11-24e';
     }
 
     // ------------------------------------------------------------------
@@ -218,6 +218,9 @@ service cloud.firestore {
           && d.niveauPegre is int && d.niveauPegre >= 0 && d.niveauPegre <= 10
           && d.specsGotha is list && d.specsGotha.size() <= 10
           && d.specsPegre is list && d.specsPegre.size() <= 10
+          // Raison sociale de chaque spécialisation (même rang)
+          && (!('raisonsGotha' in d) || (d.raisonsGotha is list && d.raisonsGotha.size() <= 10))
+          && (!('raisonsPegre' in d) || (d.raisonsPegre is list && d.raisonsPegre.size() <= 10))
           && xpValide(d.xp)
           && (!('aip' in d) || aipValide(d.aip))
           && (!('fiche' in d) || (d.fiche is map && d.fiche.keys().size() <= 120
@@ -234,13 +237,14 @@ service cloud.firestore {
       }
       function champsFiche() {
         return ['schema', 'proprietaire', 'proprietaireNom', 'nom', 'clan', 'secte', 'race', 'age', 'typeFiche',
-                'generation', 'niveauGotha', 'specsGotha', 'niveauPegre', 'specsPegre', 'xp', 'aip', 'fiche', 'portrait',
+                'generation', 'niveauGotha', 'specsGotha', 'niveauPegre', 'specsPegre', 'raisonsGotha', 'raisonsPegre',
+                'xp', 'aip', 'fiche', 'portrait',
                 'contenuJson', 'statut', 'commentaireConteur', 'creeLe', 'majLe', 'validePar', 'valideLe', 'pnj',
                 'interprete', 'interpreteNom'];
       }
       function champsJoueur() {
         return ['schema', 'proprietaireNom', 'nom', 'clan', 'secte', 'race', 'age', 'typeFiche', 'generation',
-                'niveauGotha', 'specsGotha', 'niveauPegre', 'specsPegre', 'xp', 'aip', 'fiche', 'portrait',
+                'niveauGotha', 'specsGotha', 'niveauPegre', 'specsPegre', 'raisonsGotha', 'raisonsPegre', 'xp', 'aip', 'fiche', 'portrait',
                 'contenuJson', 'statut', 'majLe'];
       }
 

@@ -28,7 +28,7 @@ const LIBELLES = {
   beneficeRepresentation: 'Bénédiction de l\'Artiste (représentation)', specialitesCompetences: 'Spécialités de compétences',
   mysteres: 'Mystères', specialites: 'spécialités', linguistique: 'Linguistique', langues: 'Langues', donInfernal: 'Don infernal',
   disciplinesCaitiff: 'Disciplines Caïtiff', disciplines: 'Disciplines', techniques: 'Techniques', rituels: 'Rituels',
-  historiques: 'Historiques', gotha: 'Gotha', pegre: 'Pègre', specialisations: 'spécialisations', ressources: 'Ressources',
+  historiques: 'Historiques', gotha: 'Gotha', pegre: 'Pègre', specialisations: 'spécialisations', raisons: 'raisons sociales', ressources: 'Ressources',
   renommee: 'Renommée', faussesIdentites: 'Fausses identités', havres: 'Havres', avantages: 'avantages', troupeau: 'Troupeau',
   contacts: 'Contacts', allies: 'Alliés', liste: 'liste', rituelsSabbat: 'Rituels sabbatiques', partages: 'Historiques partagés',
   emplacements: 'Emplacements d\'intérêts', serviteurs: 'Serviteurs', mentorats: 'Mentorats', equipement: 'Équipement',

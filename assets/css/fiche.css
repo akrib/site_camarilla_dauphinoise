@@ -107,6 +107,8 @@
 .fiche-table-tete, .fiche-table-ligne { display: grid; gap: .4rem; align-items: center; }
 .fiche-table-tete { font-size: .68rem; text-transform: uppercase; letter-spacing: .04em; color: var(--encre-pale); margin: .5rem 0 .2rem; }
 .fiche-table-tete.quatre, .fiche-table-ligne.quatre { grid-template-columns: 1fr 1fr 5.6rem 8rem; }
+.fiche-table-tete.deux, .fiche-table-ligne.deux { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
+.fiche-table-ligne.deux + .fiche-table-ligne.deux { margin-top: .3rem; }
 .fiche-table-tete.six, .fiche-table-ligne.six { grid-template-columns: 1.5fr 5.6rem 1fr 7rem 1fr 1fr; }
 .fiche-table-ligne select.court { width: 100%; }
 
@@ -180,7 +182,7 @@
   .fiche-champ.large { grid-column: 1 / -1; }
   .fiche-pouvoirs { grid-template-columns: 1fr; }
   .fiche-anciens { grid-template-columns: 1fr; }
-  .fiche-table-tete { display: none; }
+  .fiche-table-tete:not(.deux) { display: none; }
   .fiche-table-ligne.quatre, .fiche-table-ligne.six { grid-template-columns: 1fr 1fr; padding: .4rem 0; border-bottom: 1px dashed var(--ligne); }
   .fiche-editeur select, .fiche-editeur input, .fiche-editeur textarea { font-size: 16px; } /* évite le zoom iOS */
   .fiche-desc { top: auto; height: 78vh; width: 100%; border-radius: 12px 12px 0 0; box-shadow: 0 -8px 30px rgba(0,0,0,.3); }

@@ -393,8 +393,8 @@ function ficheDuDocument(d) {
     .filter(([, v]) => v).map(([k, v]) => k + ' :\n' + v).join('\n\n');
   if (d.niveauGotha) f.historiques.gotha.niveau = d.niveauGotha;
   if (d.niveauPegre) f.historiques.pegre.niveau = d.niveauPegre;
-  (d.specsGotha || []).slice(0, 10).forEach((x, i) => { f.historiques.gotha.specialisations[i] = x; });
-  (d.specsPegre || []).slice(0, 10).forEach((x, i) => { f.historiques.pegre.specialisations[i] = x; });
+  (d.specsGotha || []).slice(0, 10).forEach((x, i) => { f.historiques.gotha.specialisations[i] = x; f.historiques.gotha.raisons[i] = (d.raisonsGotha || [])[i] || ''; });
+  (d.specsPegre || []).slice(0, 10).forEach((x, i) => { f.historiques.pegre.specialisations[i] = x; f.historiques.pegre.raisons[i] = (d.raisonsPegre || [])[i] || ''; });
   return f;
 }
 
@@ -402,14 +402,17 @@ function ficheDuDocument(d) {
 function champsDerives(f, R) {
   const entier = (v) => { const n = parseInt(v, 10); return Number.isFinite(n) ? n : 0; };
   const borne = (v) => Math.max(0, Math.min(10, entier(v)));
-  const specs = (l) => l.map((x) => String(x || '').trim().slice(0, 80)).filter(Boolean).slice(0, 10);
+  // Spécialisations d'influence (non vides) et, au même rang, leur raison sociale
+  const lignesInfl = (x) => x.specialisations.map((sp, i) => [String(sp || '').trim().slice(0, 80), String((x.raisons || [])[i] || '').trim().slice(0, 100)])
+    .filter(([sp]) => sp).slice(0, 10);
+  const lg = lignesInfl(f.historiques.gotha), lp = lignesInfl(f.historiques.pegre);
   const g = parseInt(f.generation, 10);
   return {
     schema: 2, nom: f.nom, clan: f.clan, secte: f.secte,
     race: String(f.race || '').slice(0, 30), age: String(f.age || '').slice(0, 30), typeFiche: String(f.typeFiche || '').slice(0, 40),
     generation: Number.isInteger(g) && g >= 3 && g <= 16 ? g : null,
-    niveauGotha: borne(f.historiques.gotha.niveau), specsGotha: specs(f.historiques.gotha.specialisations),
-    niveauPegre: borne(f.historiques.pegre.niveau), specsPegre: specs(f.historiques.pegre.specialisations),
+    niveauGotha: borne(f.historiques.gotha.niveau), specsGotha: lg.map(([sp]) => sp), raisonsGotha: lg.map(([, r]) => r),
+    niveauPegre: borne(f.historiques.pegre.niveau), specsPegre: lp.map(([sp]) => sp), raisonsPegre: lp.map(([, r]) => r),
     xp: { acquise: R.xp.acquise, depensee: R.xp.depensee, restante: R.xp.restante },
     aip: budgetAip(f),
   };
@@ -609,7 +612,7 @@ function afficherEditeur(existante, preRemplie, avis) {
     if (portraitRef.startsWith('data:')) portraitRef = await enregistrerImage(portraitRef);
     const data = { ...champsDerives(f, R), portrait: portraitRef, statut, majLe: fs.serverTimestamp() };
     // Champ récent : écrit seulement si les règles Firestore publiées le connaissent.
-    if (!(await reglesRecentes())) delete data.aip;
+    if (!(await reglesRecentes())) { delete data.aip; delete data.raisonsGotha; delete data.raisonsPegre; }
     if (estPnj) {
       data.pnj = categoriePnj;
       // Champ récent : écrit seulement si les règles Firestore publiées le connaissent.

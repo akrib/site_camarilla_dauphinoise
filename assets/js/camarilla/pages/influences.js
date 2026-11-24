@@ -118,13 +118,16 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
       h('h2', {}, p.nom),
       h('div', { class: 'cam-recap' },
         h('div', {}, ligne('Joueur', p.proprietaireNom), ligne('Clan', p.clan), ligne('Secte', p.secte), ligne('Âge', p.age), ligne('Génération', p.generation ? p.generation + 'e' : '')),
-        h('div', {}, h('h3', { class: 'gotha' }, 'Gotha — niveau ' + p.niveauGotha), listeSpecs(p.specsGotha)),
-        h('div', {}, h('h3', { class: 'pegre' }, 'Pègre — niveau ' + p.niveauPegre), listeSpecs(p.specsPegre)),
+        h('div', {}, h('h3', { class: 'gotha' }, 'Gotha — niveau ' + p.niveauGotha), zoneSpecs[CAT_GOTHA]),
+        h('div', {}, h('h3', { class: 'pegre' }, 'Pègre — niveau ' + p.niveauPegre), zoneSpecs[CAT_PEGRE]),
         zoneAipFiche),
-      h('p', { class: 'sous-titre' }, 'Les spécialisations d\'influence de la fiche sont vos raisons sociales : choisissez-en une pour chaque action Gotha ou Pègre. ',
+      h('p', { class: 'sous-titre' }, 'Chaque spécialisation d\'influence de la fiche a sa raison sociale (onglet Historiques de la fiche) : choisissez-en une pour chaque action Gotha ou Pègre. ',
         'Ces valeurs viennent de votre fiche validée. Pour les faire évoluer : ',
         h('a', { href: '/membres/fiches/#fiche-' + p.id }, 'ouvrir la fiche'), ' puis « Demander une modification ».')));
+    const majSpecs = () => [CAT_GOTHA, CAT_PEGRE].forEach((c) => zoneSpecs[c].replaceChildren(listeSpecs(lignesDe(c))));
+    majSpecs();
     fichePrete.then((f) => {
+      majSpecs();
       const a = f ? budgetAip(f) : p.aip;
       if (!a) return;
       const domaines = f ? f.sciences.filter((x) => x.nom && parseInt(x.niveau, 10) > 0).map((x) => x.nom) : [];
@@ -137,27 +140,46 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     });
   }
   const zoneAipFiche = h('div', {});
-  const listeSpecs = (l) => ((l || []).length ? h('ul', { class: 'cam-raisons' }, l.map((x) => h('li', {}, x))) : h('p', {}, 'Aucune spécialisation'));
+  const zoneSpecs = { [CAT_GOTHA]: h('div', {}), [CAT_PEGRE]: h('div', {}) };
+  const listeSpecs = (l) => (l.length ? h('ul', { class: 'cam-raisons' }, l.map((x) => h('li', {}, x.raison ? [h('strong', {}, x.raison), ' — ' + x.spec] : [x.spec, h('small', { class: 'sous-titre' }, ' (sans raison sociale)')])))
+    : h('p', {}, 'Aucune spécialisation'));
 
   // ===================================================================
   // Actions
   // ===================================================================
-  // Raison sociale : une spécialisation d'influence de la fiche, de la catégorie
-  // de l'action (Gotha ou Pègre). categorie : nom de catégorie ou <select>.
-  const specsDe = (cat) => ((cat === CAT_PEGRE ? perso.specsPegre : perso.specsGotha) || []).filter(Boolean);
+  // Raison sociale : celle d'une spécialisation d'influence de la fiche (onglet
+  // Historiques), de la catégorie de l'action (Gotha ou Pègre). Lue dans la
+  // fiche complète dès qu'elle est chargée, sinon dans le document de la fiche.
+  // Une spécialisation sans raison sociale se choisit sous son propre nom.
+  let ficheInfl = null;
+  const aRemplir = [];   // listes à remettre à jour quand la fiche complète arrive
+  fichePrete.then((f) => { if (f) { ficheInfl = f; aRemplir.forEach((fn) => fn()); } });
+  function lignesDe(cat) {
+    const pegre = cat === CAT_PEGRE;
+    if (ficheInfl) {
+      const x = ficheInfl.historiques[pegre ? 'pegre' : 'gotha'];
+      return x.specialisations.map((sp, i) => ({ spec: String(sp || '').trim(), raison: String((x.raisons || [])[i] || '').trim() })).filter((l) => l.spec);
+    }
+    const sp = (pegre ? perso.specsPegre : perso.specsGotha) || [], rs = (pegre ? perso.raisonsPegre : perso.raisonsGotha) || [];
+    return sp.map((x, i) => ({ spec: String(x || ''), raison: String(rs[i] || '') })).filter((l) => l.spec);
+  }
+  /** Liste des raisons sociales ; categorie : nom de catégorie ou <select>. s.specs : raison -> spécialisation. */
   function selectRaison(categorie, initiale = '') {
     const s = h('select', { class: 'cam-raison' });
+    s.specs = new Map();
     let touche = false;
     s.addEventListener('change', () => { touche = true; });
     const remplir = () => {
-      const l = specsDe(typeof categorie === 'string' ? categorie : categorie.value);
-      const vals = l.map((x) => [x, x]);
-      if (initiale && !l.includes(initiale)) vals.push([initiale, initiale + ' (n\'est plus sur la fiche)']);
-      const choix = touche && vals.some(([v]) => v === s.value) ? s.value : (initiale || l[0] || '');
-      options(s, vals, choix, l.length ? 'Sans spécialisation particulière' : '— Aucune spécialisation de cette catégorie sur la fiche —');
+      const l = lignesDe(typeof categorie === 'string' ? categorie : categorie.value);
+      s.specs = new Map(l.map((x) => [x.raison || x.spec, x.spec]));
+      const vals = l.map((x) => [x.raison || x.spec, x.raison ? x.raison + ' — ' + x.spec : x.spec + ' (sans raison sociale)']);
+      if (initiale && !s.specs.has(initiale)) vals.push([initiale, initiale + ' (n\'est plus sur la fiche)']);
+      const choix = touche && vals.some(([v]) => v === s.value) ? s.value : (initiale || (vals[0] ? vals[0][0] : ''));
+      options(s, vals, choix, l.length ? 'Sans raison sociale particulière' : '— Aucune spécialisation de cette catégorie sur la fiche —');
       s.dispatchEvent(new Event('input'));
     };
     if (typeof categorie !== 'string') categorie.addEventListener('change', () => { touche = false; remplir(); });
+    aRemplir.push(remplir);
     remplir();
     return s;
   }
@@ -248,8 +270,10 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     const categorie = options(h('select', {}), [CAT_GOTHA, CAT_PEGRE]);
     const spec = options(h('select', {}), SPECIALISATIONS, '', 'Aucune');
     const raison = selectRaison(categorie);
-    raison.addEventListener('input', () => { const t = typeDeRaison(raison.value); if (t) spec.value = t; });
-    raison.addEventListener('change', () => { const t = typeDeRaison(raison.value); if (t) spec.value = t; });
+    // Type de spécialisation (liste des 15) d'après la spécialisation de la raison choisie
+    const majType = () => { const t = typeDeRaison(raison.specs.get(raison.value) || raison.value); if (t) spec.value = t; };
+    raison.addEventListener('input', majType);
+    raison.addEventListener('change', majType);
     raison.dispatchEvent(new Event('input'));
     const action = h('select', {});
     const desc = h('div', { class: 'sous-titre' });

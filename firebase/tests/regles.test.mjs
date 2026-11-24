@@ -818,6 +818,16 @@ describe('Fiches : actions inter-partie recopiées (champ aip)', () => {
   });
 });
 
+describe('Fiches : raisons sociales des spécialisations (raisonsGotha / raisonsPegre)', () => {
+  test('listes de 10 au plus acceptées, plus longues ou d’un autre type refusées', async () => {
+    const ref = doc(db('alice'), 'personnages', 'pA2');
+    await assertSucceeds(updateDoc(ref, { specsGotha: ['Finance', 'Média'], raisonsGotha: ['Crédit Dauphinois', ''],
+      specsPegre: ['Crime'], raisonsPegre: ['Les Loups du Drac'], majLe: serverTimestamp() }));
+    await assertFails(updateDoc(ref, { raisonsGotha: Array(11).fill('x'), majLe: serverTimestamp() }));
+    await assertFails(updateDoc(ref, { raisonsPegre: 'Les Loups du Drac', majLe: serverTimestamp() }));
+  });
+});
+
 describe('Fiches : document léger + détail', () => {
   const leger = (uid, extra = {}) => {
     const f = nouvelleFiche(uid, extra);

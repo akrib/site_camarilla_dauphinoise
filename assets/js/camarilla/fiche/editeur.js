@@ -491,8 +491,10 @@ export function creerEditeur({ fiche, modifiable = true, surModification, myster
     const influence = (k, titre) => h('div', { class: 'fiche-carte ' + k },
       h('h4', {}, titre, ih(titre)),
       champ('Niveau', niveau(`${H}.${k}.niveau`)),
-      h('label', {}, 'Spécialisations'),
-      lignes(10, (i) => rempli(F.historiques[k].specialisations[i]), (i) => texte(`${H}.${k}.specialisations.${i}`, { 'aria-label': 'Spécialisation', maxlength: 80 })));
+      h('div', { class: 'fiche-table-tete deux' }, h('span', {}, 'Spécialisation'), h('span', { title: 'Utilisée dans les actions d\'influence' }, 'Raison sociale')),
+      lignes(10, (i) => rempli(F.historiques[k].specialisations[i]) || rempli(F.historiques[k].raisons[i]), (i) => h('div', { class: 'fiche-table-ligne deux' },
+        texte(`${H}.${k}.specialisations.${i}`, { 'aria-label': 'Spécialisation ' + (i + 1), placeholder: 'Ex. : Finance', maxlength: 80 }),
+        texte(`${H}.${k}.raisons.${i}`, { 'aria-label': 'Raison sociale ' + (i + 1), placeholder: 'Ex. : Banque Alpine', maxlength: 100 }))));
     return [
       h('div', { class: 'fiche-colonnes trois' },
         influence('gotha', 'Gotha'), influence('pegre', 'Pègre'),
