@@ -602,7 +602,11 @@ Grenoble et de ses environs :
 
 - **Influences** : liste des mois (parties du calendrier, avec leur état) dans la barre
   du haut ; les actions d'influence du personnage pour ce mois s'affichent en losanges
-  (or : Gotha, rouge : Pègre, bleu : AIP). Tant que la fenêtre de la partie est ouverte et
+  (or : Gotha, rouge : Pègre, bleu : AIP), avec le nom du personnage et l'action en dessous
+  (« Se nourrir », « Enquête »…). **Au survol** d'un losange (souris), une infobulle donne
+  le détail : action, partie, territoire, raison sociale ou sujet, description et, si les
+  conteurs l'ont rédigée, la **résolution** (sinon « pas encore résolue ») ; un clic ouvre
+  la fiche complète de l'action. Tant que la fenêtre de la partie est ouverte et
   que le conteur n'a pas répondu, on place une action (📍), on la déplace en la glissant
   ou on la retire de la carte ; les mois clos sont en lecture seule. L'outil
   **Influence** ouvre la gestion des influences avec le lieu cliqué déjà rempli. Un

@@ -141,7 +141,10 @@ body.carte-page {
 /* ---------- Actions d'influence ---------- */
 .carte-marqueur.influence { cursor: pointer; }
 .carte-marqueur.influence .losange { width: 18px; height: 18px; transform: rotate(45deg); border: 2px solid rgba(255,255,255,.9); border-radius: 3px; }
-.carte-marqueur.influence .etiquette { margin-top: 6px; font-weight: 500; max-width: 140px; }
+.carte-marqueur.influence .etiquette { margin-top: 6px; max-width: 150px; display: flex; flex-direction: column; align-items: center; line-height: 1.25; padding: 2px 6px; }
+.carte-marqueur.influence .etiquette > span { display: block; max-width: 138px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.carte-marqueur.influence .etiquette .qui { font-weight: 700; }
+.carte-marqueur.influence .etiquette .quoi { font-weight: 400; font-size: 10px; opacity: .85; }
 .carte-marqueur.influence.mobile { cursor: grab; }
 .carte-marqueur.influence.sel .losange { border-color: var(--c-laiton); box-shadow: 0 0 0 3px rgba(201,162,39,.5); }
 /* Action sans lieu précis, posée au hasard dans le territoire affiché (?territoire=N) */
@@ -223,3 +226,21 @@ a.carte-btn { text-decoration: none; }
 /* Vue d'un seul territoire : rappel en tête de la liste des actions */
 .carte-infl-territoire { margin: 8px 14px 6px; border-left: 3px solid var(--c-sang-vif); padding-left: 8px; color: var(--c-pale); }
 .carte-infl-territoire a { color: var(--c-laiton); }
+
+/* ---------- Infobulle d'une action d'influence (survol à la souris) ---------- */
+.carte-infobulle {
+  position: fixed; z-index: 1000; pointer-events: none; width: max-content; max-width: min(340px, calc(100vw - 16px));
+  background: rgba(14,15,18,.97); color: #e8e4dc; border: 1px solid rgba(201,162,39,.55); border-radius: 6px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.55); padding: .55rem .7rem; font: 400 12.5px/1.45 var(--c-ui, system-ui, sans-serif);
+}
+.carte-infobulle[hidden] { display: none; }
+.carte-infobulle .tete { display: flex; align-items: center; gap: .45rem; font-size: 13.5px; }
+.carte-infobulle .tete .losange { width: 10px; height: 10px; transform: rotate(45deg); border: 1px solid rgba(255,255,255,.85); border-radius: 2px; flex: none; }
+.carte-infobulle .tete strong { color: #fff; }
+.carte-infobulle .action { font-weight: 600; margin-top: .1rem; }
+.carte-infobulle .meta { color: #a9a294; font-size: 11.5px; margin-bottom: .25rem; }
+.carte-infobulle .ligne b, .carte-infobulle .resolution b { color: #d8c48a; font-weight: 600; }
+.carte-infobulle p { margin: .3rem 0 0; white-space: pre-line; }
+.carte-infobulle .resolution { margin-top: .45rem; padding-top: .35rem; border-top: 1px solid rgba(255,255,255,.15); }
+.carte-infobulle .attente { margin-top: .45rem; padding-top: .35rem; border-top: 1px solid rgba(255,255,255,.15); color: #a9a294; font-style: italic; }
+.carte-infobulle .note { margin-top: .3rem; color: #a9a294; font-size: 11px; font-style: italic; }

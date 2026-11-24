@@ -900,6 +900,7 @@ function brancherCarte() {
     retirerSommet(+f.properties.i);
   });
 
+  map.on('movestart', cacherInfobulle);
   map.on('moveend', () => {
     const c = map.getCenter();
     donnees.vue.centre = [+c.lng.toFixed(6), +c.lat.toFixed(6)];
@@ -1085,21 +1086,25 @@ function dessinerMarqueursInfluences() {
     presents.add(a.id);
     const hasard = !a.position;
     const mobile = modifiableAction(a) && !hasard;
+    // Étiquette : le personnage, et l'action en dessous ; le détail s'affiche au survol (infobulle).
     const el = h('div', { class: 'carte-marqueur influence' + (selection && selection.id === a.id ? ' sel' : '') + (mobile ? ' mobile' : '') + (hasard ? ' hasard' : ''),
-      title: a.nomAction + (perso ? '' : ' — ' + a.personnageNom) + (hasard ? ' (lieu non précisé : posée au hasard dans le territoire)' : '') },
+      'aria-label': a.personnageNom + ' — ' + a.nomAction },
       h('div', { class: 'losange', style: 'background:' + couleurInfluence(a.categorie) }),
-      h('div', { class: 'etiquette' }, perso ? a.nomAction : a.personnageNom));
+      h('div', { class: 'etiquette' }, h('span', { class: 'qui' }, a.personnageNom || '?'), h('span', { class: 'quoi' }, a.nomAction || '')));
     let m = marqueursInfl.get(a.id);
     if (m) {
       const actuel = m.getElement();
-      classesMarqueur(actuel, el.className); actuel.title = el.title;
+      classesMarqueur(actuel, el.className); actuel.setAttribute('aria-label', el.getAttribute('aria-label'));
       actuel.replaceChildren(...el.childNodes);
       m.setLngLat(pos);
       m.setDraggable(mobile);
       return;
     }
     m = new maplibregl.Marker({ element: el, draggable: mobile, anchor: 'center' }).setLngLat(pos).addTo(map);
-    el.addEventListener('click', (e) => { e.stopPropagation(); if (outil === 'naviguer' && !placement) selectionner('influence', a.id); });
+    el.addEventListener('click', (e) => { e.stopPropagation(); cacherInfobulle(); if (outil === 'naviguer' && !placement) selectionner('influence', a.id); });
+    el.addEventListener('mouseenter', () => montrerInfobulle(a.id, el));
+    el.addEventListener('mouseleave', cacherInfobulle);
+    m.on('dragstart', cacherInfobulle);
     m.on('dragend', () => {
       const ll = m.getLngLat();
       placerInfluence(a.id, [ll.lng, ll.lat]);
@@ -1108,6 +1113,46 @@ function dessinerMarqueursInfluences() {
   });
   for (const [id, m] of marqueursInfl) if (!presents.has(id)) { m.remove(); marqueursInfl.delete(id); }
 }
+
+// Infobulle au survol d'une action (souris) : personnage, action, descriptif
+// et, si les conteurs l'ont rédigée, la résolution. Un clic ouvre la fiche
+// complète de l'action dans le panneau.
+let infobulle = null;
+const SURVOL = window.matchMedia('(hover: hover)');
+const tronquer = (t, n) => { const x = String(t || '').trim(); return x.length > n ? x.slice(0, n - 1).trimEnd() + '…' : x; };
+function montrerInfobulle(id, el) {
+  if (!SURVOL.matches || placement) return;
+  const a = trouver('influence', id);
+  if (!a) return;
+  if (!infobulle) { infobulle = h('div', { class: 'carte-infobulle', role: 'tooltip' }); document.body.append(infobulle); }
+  const p = partie(cal, a.mois);
+  const aip = a.type === 'aip';
+  const unite = aip ? (a.categorie === 'AIP (Troupeau)' ? ' pt(s) de Troupeau' : ' AIP') : ' pt(s)';
+  const coupe = String(a.descriptif || '').length > 420 || String(a.reponseConteur || '').length > 420;
+  infobulle.replaceChildren(
+    h('div', { class: 'tete' }, h('span', { class: 'losange', style: 'background:' + couleurInfluence(a.categorie) }), h('strong', {}, a.personnageNom || '?')),
+    h('div', { class: 'action' }, (a.nomAction || '') + ' — ' + (a.pointsAction || 0) + unite + (aip && a.specialisation ? ' — ' + a.specialisation : '')),
+    h('div', { class: 'meta' }, [TYPES_ACTION[a.type] || a.type, a.categorie, p ? libellePartie(p) : libelleMois(a.mois), a.zone ? 'territoire ' + libelleZone(a.zone) : '']
+      .filter(Boolean).join(' · ')),
+    a.raisonSociale ? h('div', { class: 'ligne' }, h('b', {}, 'Raison sociale : '), a.raisonSociale) : '',
+    a.cible ? h('div', { class: 'ligne' }, h('b', {}, aip ? 'Sujet : ' : 'Cible : '), a.cible) : '',
+    a.descriptif ? h('p', { class: 'texte' }, tronquer(a.descriptif, 420)) : '',
+    a.reponseConteur
+      ? h('div', { class: 'resolution' }, h('b', {}, 'Résolution des conteurs'), h('p', {}, tronquer(a.reponseConteur, 420)))
+      : h('div', { class: 'attente' }, 'Pas encore résolue par les conteurs.'),
+    !a.position ? h('div', { class: 'note' }, 'Lieu non précisé : action posée au hasard dans le territoire.') : '',
+    coupe ? h('div', { class: 'note' }, 'Cliquez sur l\'action pour lire le texte entier.') : '');
+  infobulle.hidden = false;
+  // À droite du point et de son étiquette, ou à gauche s'il n'y a pas la place ; jamais hors de l'écran.
+  const r = el.getBoundingClientRect(), b = infobulle.getBoundingClientRect();
+  const marge = 8;
+  let x = r.right + 10;
+  if (x + b.width > window.innerWidth - marge) x = r.left - 10 - b.width;
+  const y = Math.min(Math.max(marge, r.top - 6), window.innerHeight - b.height - marge);
+  infobulle.style.left = Math.max(marge, x) + 'px';
+  infobulle.style.top = y + 'px';
+}
+function cacherInfobulle() { if (infobulle) infobulle.hidden = true; }
 
 // Enregistre le lieu d'une action (ou le retire si p est null). Le territoire
 // de l'action suit le lieu : celui des territoires officiels qui le contient.
