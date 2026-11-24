@@ -13,11 +13,16 @@
 //   personnages validés, pour pouvoir partager un tableau avec eux.
 // - Les règles Firestore vérifient de leur côté, à chaque écriture, que le
 //   personnage appartient bien au membre et qu'il est validé.
+// - Un PNJ ou un antagoniste (fiche du rôle conteur) se joue par son
+//   interprète : pour les outils, c'est son « joueur » (voir joueurDe), qui
+//   l'incarne comme ses propres personnages.
 // =====================================================================
 import { h, db, fs, estActif, estConteur, messageErreur, sessionCourante } from './core.js';
 
 export const STATUTS_INCARNABLES = ['validee', 'active'];
 export const estIncarnable = (p) => !!p && STATUTS_INCARNABLES.includes(p.statut);
+/** Compte qui joue un personnage : son propriétaire, ou l'interprète d'un PNJ / antagoniste. */
+export const joueurDe = (p) => (p && (p.proprietaire || p.interprete)) || '';
 const cle = (uid) => 'cam-incarnation-' + uid;
 
 export function incarnationMemorisee(uid) {
@@ -36,8 +41,15 @@ export function quitterPersonnage(uid) { memoriser(uid, null); }
 
 /** Personnages du membre qui peuvent être incarnés (fiche validée, en réserve ou en jeu). */
 export async function mesPersonnagesIncarnables(uid) {
-  const snap = await fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('proprietaire', '==', uid)));
-  const tous = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const [snap, interp] = await Promise.all([
+    fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('proprietaire', '==', uid))),
+    // PNJ et antagonistes dont le membre est l'interprète
+    fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('interprete', '==', uid)))
+      .catch((e) => { console.warn('Personnages interprétés illisibles (règles Firestore à republier ?)', e); return { docs: [] }; })
+  ]);
+  const vus = new Set();
+  const tous = [...snap.docs, ...interp.docs].map((d) => ({ id: d.id, ...d.data() }))
+    .filter((p) => joueurDe(p) === uid && !vus.has(p.id) && vus.add(p.id));
   synchroniserMonRepertoire(uid, tous);
   return tous.filter(estIncarnable).sort((a, b) => (a.nom || '').localeCompare(b.nom || '', 'fr'));
 }
@@ -50,7 +62,7 @@ export async function personnageIncarne(uid) {
     const snap = await fs.getDoc(fs.doc(db, 'personnages', m.id));
     if (snap.exists()) {
       const p = { id: snap.id, ...snap.data() };
-      if (p.proprietaire === uid && estIncarnable(p)) {
+      if (joueurDe(p) === uid && estIncarnable(p)) {
         if (p.nom !== m.nom) memoriser(uid, p);
         return p;
       }
@@ -70,9 +82,9 @@ export async function personnageIncarne(uid) {
 export async function majRepertoire(p, actuel) {
   const ref = fs.doc(db, 'repertoire', p.id);
   try {
-    if (estIncarnable(p)) {
-      if (!actuel || actuel.nom !== p.nom || actuel.proprietaire !== p.proprietaire) {
-        await fs.setDoc(ref, { nom: p.nom, proprietaire: p.proprietaire });
+    if (estIncarnable(p) && joueurDe(p)) {
+      if (!actuel || actuel.nom !== p.nom || actuel.proprietaire !== joueurDe(p)) {
+        await fs.setDoc(ref, { nom: p.nom, proprietaire: joueurDe(p) });
       }
     } else if (actuel !== null) {
       await fs.deleteDoc(ref);
@@ -86,7 +98,7 @@ async function synchroniserMonRepertoire(uid, mesFiches) {
     const presents = new Map(snap.docs.map((d) => [d.id, d.data()]));
     for (const p of mesFiches) {
       const actuel = presents.has(p.id) ? presents.get(p.id) : null;
-      if (estIncarnable(p) ? (!actuel || actuel.nom !== p.nom) : actuel !== null) await majRepertoire(p, actuel);
+      if (estIncarnable(p) ? (!actuel || actuel.nom !== p.nom || actuel.proprietaire !== joueurDe(p)) : actuel !== null) await majRepertoire(p, actuel);
       presents.delete(p.id);
     }
     for (const id of presents.keys()) await fs.deleteDoc(fs.doc(db, 'repertoire', id));   // fiche supprimée
@@ -97,7 +109,7 @@ async function synchroniserMonRepertoire(uid, mesFiches) {
 // Interface : choix du personnage
 // ---------------------------------------------------------------------
 function resume(p) {
-  return [p.clan, p.secte, p.statut === 'active' ? 'en jeu' : 'en réserve'].filter(Boolean).join(' · ');
+  return [p.clan, p.secte, p.pnj ? 'vous l\'interprétez' : p.statut === 'active' ? 'en jeu' : 'en réserve'].filter(Boolean).join(' · ');
 }
 
 /**

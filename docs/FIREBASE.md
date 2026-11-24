@@ -408,17 +408,48 @@ dérivées (sang, volonté, éthique, langues, scores de combat…).
   mystères en option. « Imprimer » n'imprime que la page (ou l'enregistre en PDF).
 - **Sur ordinateur**, la page des fiches prend toute la largeur de l'écran (jusqu'à
   1 800 px) : les grilles de la fiche affichent plus de colonnes.
+- **Alignement** : dans une rangée de champs, quand les libellés font une, deux ou trois
+  lignes, c'est la case du libellé qui grandit (texte calé en bas) et tous les champs ont
+  la même hauteur : ils restent alignés (idem dans les formulaires de l'espace membres).
 
-### PNJ (conteurs)
+### PNJ et antagonistes : propriété du rôle conteur
 
-Onglet **PNJ** de la page des fiches (tuile « PNJ » des outils conteur). « ＋ Nouveau
+**Principe** : une fiche « Joueur » appartient à son joueur. Les PNJ, et toute fiche d'un
+autre type (Antagoniste, Antagoniste C1, Ancien joueur / antagoniste), appartiennent au
+**rôle conteur** : `proprietaire` vide, catégorie `pnj`. Tous ceux qui ont le rôle conteur
+(ou admin) les gèrent, tant qu'ils l'ont : quand l'équipe de conteurs change, les nouveaux
+en récupèrent la gestion, sans transfert à faire.
+
+- **Passage aux conteurs** : quand un conteur enregistre la fiche d'un joueur avec un type
+  autre que « Joueur », le site demande confirmation, prévient le joueur (notification
+  « passée aux conteurs ») et range la fiche dans l'onglet « PNJ et antagonistes » ; le
+  joueur en devient l'**interprète**. Une fiche créée par un conteur avec un type
+  « Antagoniste » naît directement au rôle conteur. Les règles Firestore permettent à un
+  conteur de vider le propriétaire d'une fiche, jamais de la donner à un autre compte.
+- **Interprète** (champs `interprete`, `interpreteNom`) : le compte qui joue le personnage,
+  choisi par un conteur dans la liste des comptes (en-tête de la fiche), et modifiable. Il
+  trouve le personnage dans « Personnages que vous interprétez » (page des fiches), voit la
+  fiche en lecture seule et reçoit les textes de ses mystères ; il ne la modifie pas. Il
+  l'**incarne** comme ses propres personnages et utilise tous les outils de personnage :
+  panneau d'affichage, tableau d'enquête (partage compris), carte de Grenoble, challenges,
+  influences et tickets. Les règles Firestore traitent l'interprète comme le joueur du
+  personnage (fonction `joueurDe`) ; le répertoire des personnages l'associe à son compte.
+  Quand l'interprète change, le nouveau reprend le tableau d'enquête et la carte du
+  personnage (l'ancien perd l'accès) ; les actions d'influence restent à celui qui les a
+  envoyées.
+- **Comptes > Maintenance > Passer les antagonistes au rôle conteur** (admin) : fait le
+  tour des fiches existantes d'un autre type que « Joueur » encore rattachées à un compte
+  (par exemple des antagonistes créés sous le compte d'un conteur qui quitte l'équipe) ;
+  l'ancien propriétaire devient l'interprète.
+
+Onglet **PNJ et antagonistes** de la page des fiches (tuile « PNJ » des outils conteur). « ＋ Nouveau
 PNJ » : nom et catégorie — vampire (vénérables, anciens, ancillas…, âge à choisir), goule,
 sabbatique, humain, inquisition, loup-garou, autre. La fiche MET s'ouvre pré-remplie
 (type « Antagoniste », race, âge, secte) : même éditeur, mêmes calculs que les joueurs.
 
 - Document `personnages/{id}` avec `pnj` (catégorie) et `proprietaire` vide : les
-  règles ne laissent les lire et les écrire qu'aux conteurs ; un joueur ne peut pas en
-  créer. Ils ne vont ni dans le répertoire (partage des tableaux), ni dans les
+  règles ne laissent les écrire qu'aux conteurs, et les lire qu'aux conteurs et à leur
+  interprète ; un joueur ne peut pas en créer. Ils ne vont ni dans le répertoire (partage des tableaux), ni dans les
   influences, ni dans « Toutes les fiches » / « À valider ».
 - Actifs ou archivés ; dupliquer (pour une série de figurants), exporter, supprimer.
 - Bouton « ⚔ Ajouter au combat » (aussi sur les fiches des joueurs, pour les conteurs).
@@ -468,7 +499,8 @@ de ces pages, sur un écran qui lui demande de choisir son personnage.
   - **Mes outils joueur(se)** : notifications, fiches, tickets, Trouve le Sabbat,
     gazette ;
   - **Personnage incarné** : la liste des personnages validés du joueur (fiche
-    « Validée (en réserve) » ou « En jeu »), celui qu'il incarne coché ; un clic
+    « Validée (en réserve) » ou « En jeu »), y compris les **PNJ et antagonistes dont
+    il est l'interprète** (« vous l'interprétez »), celui qu'il incarne coché ; un clic
     change de personnage, « Ne plus incarner personne » referme les outils ;
   - **Mes outils personnage**, sous cette liste, seulement quand le joueur incarne
     un personnage : panneau d'affichage, tableau d'enquête, carte de Grenoble,
@@ -707,7 +739,10 @@ Dauphinois » de l'espace membres ; « Gazette — édition » côté conteurs).
   déplacent par glisser-déposer ou avec les flèches. Un article retiré de la page reste
   dans la **réserve**. Pages à ajouter, monter, descendre, supprimer.
 - **Articles** : surtitre, titre, chapeau, texte, signature ; style (article, gros titre
-  de une, encadré, brève, petite annonce) ; texte sur 1 à 3 colonnes ; lettrine. Mise en
+  de une, encadré, brève, petite annonce) ; texte sur 1 à 3 colonnes ; lettrine ;
+  **alignement du texte** (justifié par défaut, à gauche ou à droite : « Alignement du
+  texte » dans le panneau, ou les boutons ⫷ ☰ ⫸ de la barre au-dessus du texte, qui
+  l'appliquent sans quitter l'écriture ; respecté à la lecture et à l'impression). Mise en
   forme du texte : ligne vide = paragraphe, `**gras**`, `*italique*`, `## Intertitre`,
   `> citation`, `- liste`, `---` (ornement). Aucun HTML n'est accepté.
 - **Images** : seulement par **lien** `https://` (jamais stockées sur le site ni dans

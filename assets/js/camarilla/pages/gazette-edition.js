@@ -22,7 +22,7 @@
 // =====================================================================
 import { h, db, fs, surSession, estConteur, estAdmin, messageErreur, moisCourant, telecharger, millis } from '../core.js';
 import {
-  MOTIFS, STYLES, POSITIONS_IMAGE, TAILLES_IMAGE, STATUTS, MAX_PAGES, MAX_RANGEES, MAX_ARTICLES,
+  MOTIFS, STYLES, ALIGNEMENTS, POSITIONS_IMAGE, TAILLES_IMAGE, STATUTS, MAX_PAGES, MAX_RANGEES, MAX_ARTICLES,
   normaliserGazette, gazetteNeuve, nouvelArticle, nouvelleRangee, changerMotif, nouvelId,
   enReserve, position, retirerDesColonnes, urlImageValide, nomMois, moisValide, moisVoisin
 } from '../gazette/modele.js';
@@ -308,7 +308,21 @@ function choixMotif(actuel, surChoix) {
 // Plan (rendu de la gazette + outils d'édition)
 // ---------------------------------------------------------------------
 let glisse = null;   // id de l'article en cours de glisser-déposer
-const format = barreFormat();   // barre G / I / intertitre… au-dessus de la zone en cours d'écriture
+// Barre G / I / intertitre… au-dessus de la zone en cours d'écriture ; pour le texte
+// d'un article, elle règle aussi son alignement (sans redessiner : le curseur reste).
+const format = barreFormat({
+  aligner: (z, valeur) => {
+    const el = z.closest('[data-article]');
+    const a = el && d().articles[el.dataset.article];
+    if (!a) return;
+    a.alignement = ALIGNEMENTS[valeur] ? valeur : 'justifie';
+    z.classList.remove('gz-al-gauche', 'gz-al-droite');
+    if (a.alignement !== 'justifie') z.classList.add('gz-al-' + a.alignement);
+    const choix = $('panneau').querySelector('[data-champ="alignement"]');
+    if (choix) choix.value = a.alignement;
+    changer({ plan: false });
+  }
+});
 function dessinerPlan() {
   const defilement = $('plan').scrollTop;
   format.cacher();
@@ -582,6 +596,17 @@ function panneauArticle() {
         h('li', {}, h('code', {}, '> citation'), ', ', h('code', {}, '- liste'), ', ', h('code', {}, '---'), ' (ornement)'))),
     h('div', { class: 'gze-ligne' },
       champ('Colonnes du texte', select({ 1: '1', 2: '2', 3: '3' }, a.colonnes, (v) => { a.colonnes = +v; rafraichirArticle(a.id); changer({ plan: false }); })),
+      champ('Alignement du texte', (() => {
+        const s = select(ALIGNEMENTS, a.alignement, (v) => {
+          a.alignement = v;
+          // Appliqué tout de suite dans la page, même si l'on écrit encore dans l'article.
+          const z = document.querySelector('#plan [data-article="' + CSS.escape(a.id) + '"] [data-champ="texte"]');
+          if (z) { z.classList.remove('gz-al-gauche', 'gz-al-droite'); if (v !== 'justifie') z.classList.add('gz-al-' + v); }
+          rafraichirArticle(a.id); changer({ plan: false });
+        });
+        s.dataset.champ = 'alignement';
+        return s;
+      })()),
       h('label', { class: 'gze-case gze-champ' }, h('input', { type: 'checkbox', checked: a.lettrine, onchange: (e) => { a.lettrine = e.target.checked; rafraichirArticle(a.id); changer({ plan: false }); } }), 'Lettrine')),
     champ('Signature', texte('signature', 200), 'Par exemple : « Notre envoyé spécial à la Bastille ».'),
     h('fieldset', { class: 'gze-image-champs' }, h('legend', {}, 'Image (lien externe, jamais stockée sur le site)'),

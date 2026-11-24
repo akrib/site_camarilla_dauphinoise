@@ -82,6 +82,9 @@ function figure(img, { edition }) {
   return fig;
 }
 
+/** Classe d'alignement du texte d'un article (rien pour « justifié », l'alignement par défaut). */
+export const classeAlignement = (a) => (a && a.alignement && a.alignement !== 'justifie' ? ' gz-al-' + a.alignement : '');
+
 export function rendreArticle(a, { edition = false } = {}) {
   if (!a) return null;
   if (!edition && (estVide(a) || estModele(a))) return null;
@@ -89,7 +92,7 @@ export function rendreArticle(a, { edition = false } = {}) {
   if (a.lettrine && blocs[0] && blocs[0].tagName === 'P') blocs[0].classList.add('gz-lettrine');
   const fig = figure(a.image, { edition });
   const cote = fig && (a.image.position === 'gauche' || a.image.position === 'droite');
-  const texte = h('div', zone(edition, 'gz-texte' + (a.colonnes > 1 ? ' gz-cols-' + a.colonnes : ''), 'texte', 'Cliquez ici pour écrire l\'article…', blocs.length ? 'x' : ''),
+  const texte = h('div', zone(edition, 'gz-texte' + (a.colonnes > 1 ? ' gz-cols-' + a.colonnes : '') + classeAlignement(a), 'texte', 'Cliquez ici pour écrire l\'article…', blocs.length ? 'x' : ''),
     cote ? fig : '', blocs,
     edition && !blocs.length ? h('p', { class: a.lettrine ? 'gz-lettrine' : null }, h('br')) : '');
   // En lecture, une zone vide n'est pas rendue ; dans l'éditeur, elle l'est (vide, avec son texte indicatif).

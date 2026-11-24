@@ -91,6 +91,10 @@
 .gz-citation { margin: .6em 0; padding: 0 0 0 .8em; border-left: 2px solid var(--gz-filet); font-style: italic; text-align: left; }
 .gz-liste { margin: .3em 0 .6em; padding-left: 1.2em; text-align: left; }
 .gz-orne { margin: .4em 0; text-align: center !important; text-indent: 0 !important; color: var(--gz-encre-douce); letter-spacing: .4em; }
+/* Alignement choisi pour le texte d'un article (justifié par défaut) */
+.gz-article .gz-texte.gz-al-gauche { text-align: left; }
+.gz-article .gz-texte.gz-al-droite { text-align: right; }
+.gz-article .gz-texte.gz-al-droite p { text-indent: 0; }
 .gz-lettrine::first-letter {
   float: left; margin: .06em .08em 0 0; font: 700 3.4em/.78 var(--gz-titre); color: var(--gz-encre);
 }
@@ -166,6 +170,8 @@
 .gz-impression .gz-une .gz-titre { font-size: 21pt; }
 .gz-impression .gz-titre { font-size: 13pt; }
 .gz-impression .gz-texte { text-align: justify !important; }
+.gz-impression .gz-texte.gz-al-gauche { text-align: left !important; }
+.gz-impression .gz-texte.gz-al-droite { text-align: right !important; }
 .gz-impression .gz-texte.gz-cols-2 { columns: 2 !important; }
 .gz-impression .gz-texte.gz-cols-3 { columns: 3 !important; }
 .gz-impression .gz-rangee.gz-filet, .gz-impression .gz-article + .gz-article { border-color: #555; }

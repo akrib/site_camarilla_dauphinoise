@@ -26,7 +26,7 @@ import {
   VILLES, OPTIONS_ZONES, POINTS, SPECIALISATIONS, CAT_GOTHA, CAT_PEGRE, ACTIONS_GOTHA_GLOB, ACTIONS_PEGRE_GLOB,
   CATEGORIES_AIP, RESERVES_AIP, ACTIONS_AIP, POINTS_AIP, reserveAip, TYPES_ACTION, classeCat
 } from '../donnees.js';
-import { personnageIncarne, incarner, blocChoixPersonnage, fenetreChoixPersonnage } from '../incarnation.js';
+import { personnageIncarne, incarner, blocChoixPersonnage, fenetreChoixPersonnage, joueurDe } from '../incarnation.js';
 import { marquerVu } from '../suivi.js';
 
 const racine = document.getElementById('cam-influences');
@@ -46,7 +46,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     try {
       const s = await fs.getDoc(fs.doc(db, 'personnages', demande));
       const p = s.exists() ? { id: s.id, ...s.data() } : null;
-      if (p && p.proprietaire === uid && p.statut === 'active') { incarner(uid, p); perso = p; }
+      if (p && joueurDe(p) === uid && p.statut === 'active') { incarner(uid, p); perso = p; }
     } catch (e) { console.warn(e); }
   }
   const encart = encartCalendrier(cal);

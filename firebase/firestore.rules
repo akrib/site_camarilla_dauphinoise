@@ -47,15 +47,19 @@ service cloud.firestore {
     }
 
     function perso(id) { return get(chemin('personnages', id)).data; }
+    // Compte qui joue un personnage : son propriétaire (fiche de joueur) ou,
+    // pour un PNJ / antagoniste du rôle conteur (proprietaire vide), son interprète.
+    function joueurDe(p) { return p.proprietaire != '' ? p.proprietaire : p.get('interprete', ''); }
     function persoEnJeuDuJoueur(id) {
       return id is string && id.size() > 0
-        && perso(id).proprietaire == uid() && perso(id).statut == 'active';
+        && joueurDe(perso(id)) == uid() && perso(id).statut == 'active';
     }
     // Personnage que le membre peut incarner dans les outils de jeu
-    // (panneau d'affichage, tableau d'enquête) : le sien, et validé.
+    // (panneau d'affichage, tableau d'enquête, carte, challenges) : le sien
+    // ou celui qu'il interprète, et validé.
     function persoIncarnable(id) {
       return id is string && id.size() > 0 && exists(chemin('personnages', id))
-        && perso(id).proprietaire == uid() && perso(id).statut in ['validee', 'active'];
+        && joueurDe(perso(id)) == uid() && perso(id).statut in ['validee', 'active'];
     }
     // Signature d'une action dans un outil de jeu : au nom d'un personnage
     // incarnable du membre, ou d'un conteur sous son propre nom (p == '').
@@ -72,7 +76,7 @@ service cloud.firestore {
     // (VERSION_REGLES) à chaque modification de ce fichier.
     // ------------------------------------------------------------------
     match /regles/{version} {
-      allow get: if actif() && version == '2026-11-24b';
+      allow get: if actif() && version == '2026-11-24d';
     }
 
     // ------------------------------------------------------------------
@@ -132,8 +136,8 @@ service cloud.firestore {
       allow read: if actif();
       allow create, update: if cles(['nom', 'proprietaire'], ['nom', 'proprietaire'])
         && fiche().statut in ['validee', 'active']
-        && nouveau().nom == fiche().nom && nouveau().proprietaire == fiche().proprietaire
-        && ((actif() && fiche().proprietaire == uid()) || conteur());
+        && nouveau().nom == fiche().nom && nouveau().proprietaire == joueurDe(fiche()) && nouveau().proprietaire != ''
+        && ((actif() && joueurDe(fiche()) == uid()) || conteur());
       allow delete: if (actif() && ancien().proprietaire == uid()) || conteur();
     }
 
@@ -180,6 +184,13 @@ service cloud.firestore {
     // brouillon -> soumise -> validee -> active -> archivee
     //                     \-> refusee -> (corrigée) -> soumise
     // Le joueur ne modifie que ses fiches brouillon / soumise / refusee.
+    // Propriété : une fiche « Joueur » appartient à son joueur ; une fiche d'un
+    // autre type (antagoniste…) et les PNJ appartiennent au rôle conteur
+    // (proprietaire vide) : tous les conteurs, quelle que soit l'équipe, les
+    // gèrent. Un conteur peut donc vider le champ proprietaire (passage aux
+    // conteurs), jamais l'attribuer à quelqu'un d'autre. Un compte peut être
+    // l'interprète (interprete) d'une fiche du rôle conteur : il la lit
+    // (document et détail), sans la modifier.
     // Le document ne contient que les champs des listes (nom, clan, secte,
     // influences, PX…) ; la fiche complète et les données complémentaires
     // sont dans personnages/{id}/detail/fiche (compressées), écrites dans le
@@ -216,12 +227,16 @@ service cloud.firestore {
           && texteLong(d.commentaireConteur, 4000)
           && d.statut in ['brouillon', 'soumise', 'refusee', 'validee', 'active', 'archivee']
           // PNJ des conteurs : catégorie connue (sans joueur : proprietaire vide, voir création)
-          && (!('pnj' in d) || d.pnj in ['vampire', 'goule', 'sabbat', 'humain', 'inquisition', 'lupin', 'autre']);
+          && (!('pnj' in d) || d.pnj in ['vampire', 'goule', 'sabbat', 'humain', 'inquisition', 'lupin', 'autre'])
+          // Interprète : seulement sur une fiche du rôle conteur
+          && (!('interprete' in d) || (texte(d.interprete, 128) && texte(d.get('interpreteNom', ''), 80)
+              && (d.interprete == '' || d.proprietaire == '')));
       }
       function champsFiche() {
         return ['schema', 'proprietaire', 'proprietaireNom', 'nom', 'clan', 'secte', 'race', 'age', 'typeFiche',
                 'generation', 'niveauGotha', 'specsGotha', 'niveauPegre', 'specsPegre', 'xp', 'aip', 'fiche', 'portrait',
-                'contenuJson', 'statut', 'commentaireConteur', 'creeLe', 'majLe', 'validePar', 'valideLe', 'pnj'];
+                'contenuJson', 'statut', 'commentaireConteur', 'creeLe', 'majLe', 'validePar', 'valideLe', 'pnj',
+                'interprete', 'interpreteNom'];
       }
       function champsJoueur() {
         return ['schema', 'proprietaireNom', 'nom', 'clan', 'secte', 'race', 'age', 'typeFiche', 'generation',
@@ -229,7 +244,8 @@ service cloud.firestore {
                 'contenuJson', 'statut', 'majLe'];
       }
 
-      allow read: if (actif() && ancien().proprietaire == uid()) || conteur();
+      allow read: if (actif() && ancien().proprietaire == uid()) || conteur()
+        || (actif() && ancien().interprete == uid());
 
       allow create: if actif()
         && cles(champsFiche(), ['schema', 'proprietaire', 'nom', 'statut', 'creeLe'])
@@ -238,7 +254,7 @@ service cloud.firestore {
         && (
           (nouveau().proprietaire == uid() && nouveau().statut == 'brouillon'
             && nouveau().commentaireConteur == '' && nouveau().proprietaireNom == moi().nom
-            && !nouveau().keys().hasAny(['validePar', 'valideLe', 'pnj']))
+            && !nouveau().keys().hasAny(['validePar', 'valideLe', 'pnj', 'interprete', 'interpreteNom']))
           || conteur()
         );
 
@@ -247,7 +263,7 @@ service cloud.firestore {
           && ancien().statut in ['brouillon', 'soumise', 'refusee']
           && nouveau().statut in ['brouillon', 'soumise']
           && seulement(champsJoueur()))
-        || (conteur() && inchanges(['proprietaire', 'creeLe']))
+        || (conteur() && inchanges(['creeLe']) && (inchanges(['proprietaire']) || nouveau().proprietaire == ''))
       );
 
       allow delete: if (actif() && ancien().proprietaire == uid() && ancien().statut in ['brouillon', 'refusee'])
@@ -265,7 +281,8 @@ service cloud.firestore {
       match /detail/{partie} {
         function fichePers() { return get(chemin('personnages', id)).data; }
         function fichePersApres() { return getAfter(chemin('personnages', id)).data; }
-        allow read: if conteur() || (actif() && fichePers().proprietaire == uid());
+        allow read: if conteur() || (actif() && fichePers().proprietaire == uid())
+          || (actif() && fichePers().get('interprete', '') == uid());
         allow create, update: if actif() && partie == 'fiche'
           && cles(['fiche', 'contenuJson', 'majLe'], ['fiche', 'contenuJson', 'majLe'])
           && (nouveau().fiche is map || texteLong(nouveau().fiche, 900000))
@@ -387,7 +404,8 @@ service cloud.firestore {
           && d.majPar == uid() && auteurValide(d.majParNom, d.majPerso);
       }
 
-      allow read: if (actif() && uid() in ancien().acces) || conteur();
+      allow read: if (actif() && uid() in ancien().acces) || conteur()
+        || (actif() && ancien().get('personnage', '') != '' && persoIncarnable(ancien().personnage));
 
       allow create: if actif()
         && cles(['proprietaire', 'personnage', 'proprietaireNom', 'titre', 'acces', 'droits', 'invites',
@@ -406,10 +424,11 @@ service cloud.firestore {
         && nouveau().version == ancien().version + 1
         && (
           // Le personnage propriétaire : contenu, titre et partage. Son nom
-          // affiché suit sa fiche s'il en a changé.
-          (ancien().proprietaire == uid() && ancien().get('personnage', '') != ''
+          // affiché suit sa fiche s'il en a changé. C'est le compte qui joue le
+          // personnage aujourd'hui (un nouvel interprète reprend le tableau).
+          (ancien().get('personnage', '') != '' && persoIncarnable(ancien().personnage)
             && nouveau().majPerso == ancien().personnage
-            && inchanges(['proprietaire', 'personnage', 'creeLe'])
+            && inchanges(['personnage', 'creeLe']) && nouveau().proprietaire == uid()
             && (nouveau().proprietaireNom == ancien().proprietaireNom
                 || nouveau().proprietaireNom == perso(ancien().personnage).nom)
             && nouveau().acces.hasAll([uid()]))
@@ -419,7 +438,8 @@ service cloud.firestore {
             && seulement(['contenuJson', 'titre', 'majLe', 'majPar', 'majPerso', 'majParNom', 'version']))
         );
 
-      allow delete: if (actif() && ancien().proprietaire == uid()) || conteur();
+      allow delete: if (actif() && ancien().proprietaire == uid()) || conteur()
+        || (actif() && ancien().get('personnage', '') != '' && persoIncarnable(ancien().personnage));
     }
 
     // ------------------------------------------------------------------
@@ -561,7 +581,7 @@ service cloud.firestore {
             && nouveau().auteurNom == moi().nom
             && perso(nouveau().personnage).proprietaire == nouveau().destinataire
             && nouveau().personnageNom == perso(nouveau().personnage).nom
-            && nouveau().statut in ['validee', 'active', 'refusee', 'archivee']
+            && nouveau().statut in ['validee', 'active', 'refusee', 'archivee', 'antagoniste']
             && texteLong(nouveau().message, 2000))
           // Partage d'un tableau d'enquête : par son propriétaire, vers un personnage réellement invité
           || (nouveau().type == 'tableau'
@@ -592,7 +612,7 @@ service cloud.firestore {
                 ['conteur', 'conteurNom', 'destinataire', 'personnage', 'personnageNom', 'titre', 'message',
                  'challenges', 'statut', 'resultats', 'creeLe'])
         && nouveau().conteur == uid() && nouveau().conteurNom == moi().nom
-        && perso(nouveau().personnage).proprietaire == nouveau().destinataire
+        && joueurDe(perso(nouveau().personnage)) == nouveau().destinataire && nouveau().destinataire != ''
         && perso(nouveau().personnage).statut in ['validee', 'active']
         && nouveau().personnageNom == perso(nouveau().personnage).nom
         && texteNonVide(nouveau().titre, 120) && texteLong(nouveau().message, 2000)
@@ -615,14 +635,14 @@ service cloud.firestore {
     // le membre pour son personnage validé ; lue aussi par les conteurs.
     // ------------------------------------------------------------------
     match /cartes/{id} {
-      allow read: if conteur() || (actif() && ancien().proprietaire == uid());
+      allow read: if conteur() || (actif() && ancien().proprietaire == uid()) || (actif() && persoIncarnable(id));
       allow create, update: if actif()
         && cles(['proprietaire', 'personnage', 'nom', 'donnees', 'majLe'], ['proprietaire', 'personnage', 'nom', 'donnees', 'majLe'])
         && nouveau().personnage == id && persoIncarnable(id)
         && nouveau().proprietaire == uid() && nouveau().nom == perso(id).nom
         && texteLong(nouveau().donnees, 900000)
         && nouveau().majLe == request.time;
-      allow delete: if admin() || (actif() && ancien().proprietaire == uid());
+      allow delete: if admin() || (actif() && ancien().proprietaire == uid()) || (actif() && persoIncarnable(id));
     }
 
     // Territoires officiels (zones 1 à 24, domaines…) : territoires/officiels,
@@ -743,7 +763,7 @@ service cloud.firestore {
         && nouveau().proprietaire == uid() && nouveau().proprietaireNom == moi().nom
         && (
           (nouveau().personnageId == '' && nouveau().personnageNom == '')
-          || (perso(nouveau().personnageId).proprietaire == uid()
+          || (joueurDe(perso(nouveau().personnageId)) == uid()
               && nouveau().personnageNom == perso(nouveau().personnageId).nom)
         )
         && texteNonVide(nouveau().categorie, 80) && texteNonVide(nouveau().sujet, 150)

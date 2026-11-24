@@ -9,7 +9,8 @@
 //              découpée en colonnes (largeurs sur 12) ; chaque colonne
 //              empile des articles.
 //   articles : { id: { surtitre, titre, chapeau, texte, signature, style,
-//                      colonnes, lettrine, image: { url, legende, credit,
+//                      colonnes, lettrine, alignement du texte (justifie | gauche | droite),
+//                      image: { url, legende, credit,
 //                      position, taille }, source } }
 //              un article qui n'est dans aucune colonne est « en réserve ».
 //   pensebete: { notes, faits: [ids d'influences traitées] }
@@ -26,6 +27,8 @@ export const MOTIFS = {
 export const STYLES = {
   normal: 'Article', une: 'Gros titre (à la une)', encadre: 'Encadré', breve: 'Brève', annonce: 'Petite annonce'
 };
+// Alignement du corps du texte d'un article
+export const ALIGNEMENTS = { justifie: 'Justifié', gauche: 'À gauche', droite: 'À droite' };
 export const POSITIONS_IMAGE = { haut: 'Au-dessus du texte', gauche: 'À gauche du texte', droite: 'À droite du texte', bas: 'Sous le texte' };
 export const TAILLES_IMAGE = { petite: 'Petite (un tiers)', moyenne: 'Moyenne (la moitié)' };
 export const STATUTS = { brouillon: 'Brouillon', publiee: 'Publiée' };
@@ -72,6 +75,7 @@ export function normaliserArticle(a) {
     style: STYLES[x.style] ? x.style : 'normal',
     colonnes: [1, 2, 3].includes(+x.colonnes) ? +x.colonnes : 1,
     lettrine: !!x.lettrine,
+    alignement: ALIGNEMENTS[x.alignement] ? x.alignement : 'justifie',
     image: {
       url: urlImageValide(img.url) ? String(img.url).trim() : '',
       legende: chaine(img.legende, MAX.court),

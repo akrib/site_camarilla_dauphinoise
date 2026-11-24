@@ -25,7 +25,8 @@ const RESULTAT_FICHE = {
   validee: ['validée (en réserve)', 'active'],
   active: ['mise en jeu', 'active'],
   refusee: ['renvoyée pour correction', 'refusee'],
-  archivee: ['archivée', 'archivee']
+  archivee: ['archivée', 'archivee'],
+  antagoniste: ['passée aux conteurs (antagoniste)', 'conteur']
 };
 
 pageProtegee(racine, 'actif', async ({ user, profil }) => {

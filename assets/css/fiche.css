@@ -52,6 +52,17 @@
 .fiche-carte.gotha { border-top: 3px solid var(--gotha); }
 .fiche-carte.pegre { border-top: 3px solid var(--pegre); }
 .fiche-editeur .fiche-champ label { display: flex; align-items: center; gap: .25rem; }
+/* Libellé au-dessus du champ : quand les libellés d'une même rangée font une, deux ou
+   trois lignes, c'est la case du libellé qui grandit, texte calé en bas, pour que tous
+   les champs de la rangée restent à la même hauteur. */
+.fiche-grille > .fiche-champ { display: flex; flex-direction: column; min-width: 0; }
+.fiche-editeur .fiche-grille > .fiche-champ > label:first-child { flex: 1 0 auto; align-items: flex-end; }
+.fiche-editeur .fiche-grille > .fiche-champ > label:first-child .fiche-info { margin-bottom: .05rem; }
+/* Champs d'une même rangée : même hauteur et même marge, quel que soit leur type (texte, date, liste, valeur calculée). */
+.fiche-editeur .fiche-grille > .fiche-champ > input:not([type=checkbox]),
+.fiche-editeur .fiche-grille > .fiche-champ > select,
+.fiche-editeur .fiche-grille > .fiche-champ > output.fiche-calc { height: 2.1rem; min-height: 0; margin: 0 0 .43rem; box-sizing: border-box; }
+.fiche-editeur .fiche-grille > .fiche-champ > output.fiche-calc { display: flex; align-items: center; line-height: 1.2; }
 
 /* Lignes */
 .fiche-lignes > * + * { margin-top: .3rem; }

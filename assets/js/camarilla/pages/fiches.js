@@ -5,6 +5,11 @@
 // fiche (detail/valide : récapitulatif des modifications suivantes) et les
 // textes des mystères qu'elle connaît (detail/mysteres). Les consultations de
 // fiches par les conteurs et administrateurs sont notées dans journal_fiches.
+// Propriété : une fiche « Joueur » appartient à son joueur ; dès qu'elle est
+// d'un autre type (antagoniste…), elle appartient au rôle conteur
+// (proprietaire vide, champ pnj : onglet « PNJ et antagonistes »), gérée par
+// tous ceux qui ont ce rôle, quelle que soit l'équipe. Un joueur peut en être
+// l'interprète (champs interprete / interpreteNom) : il la voit, sans la modifier.
 import {
   h, db, fs, pageProtegee, barreMembre, estConteur, message, messageErreur, dateFr, millis,
   onglets, confirmer, options, telecharger, reglesAJour
@@ -14,7 +19,8 @@ import {
 } from '../images.js';
 import { STATUTS_FICHE, STATUTS_FICHE_EDITABLES, CATEGORIES_PNJ, AIDE_PNJ, AGES_PNJ_VAMPIRE, FICHE_PNJ, STATUTS_PNJ } from '../donnees.js';
 import { participantDeFiche, ajouterAuCombat } from '../combat/modele.js';
-import { majRepertoire, estIncarnable } from '../incarnation.js';
+import { majRepertoire, estIncarnable, joueurDe } from '../incarnation.js';
+import { annuaire } from '../annuaire.js';
 import { compresser, donneesDoc, compresserJson, decompresserJson, estCompresse } from '../compression.js';
 import { creerEditeur } from '../fiche/editeur.js';
 import { ficheVide as ficheMetVide, normaliser } from '../fiche/modele.js';
@@ -39,6 +45,18 @@ let mesFiches = [];
 let toutes = [];     // fiches des joueurs (conteurs)
 let pnjs = [];       // PNJ (conteurs)
 let pnjEnPreparation = null;   // nouveau PNJ choisi dans la fenêtre de création
+let mesInterpretations = [];   // PNJ et antagonistes dont je suis l'interprète
+
+// Type de fiche : « Joueur » (ou vide) = fiche d'un joueur ; tout autre type
+// (Antagoniste…) = fiche du rôle conteur.
+const estTypeJoueur = (t) => !String(t || '').trim() || t === 'Joueur';
+/** Catégorie de PNJ d'une fiche qui passe aux conteurs (d'après la race, l'âge, la secte). */
+function categorieDeFiche(f) {
+  const race = String(f.race || ''), age = String(f.age || ''), secte = String(f.secte || '');
+  if (/^vampire$/i.test(race)) return /sabbat/i.test(secte) ? 'sabbat' : 'vampire';
+  if (/^humain$/i.test(race)) return age === 'Goule' ? 'goule' : 'humain';
+  return 'autre';
+}
 
 pageProtegee(racine, 'actif', async (s) => {
   session = s;
@@ -51,8 +69,14 @@ pageProtegee(racine, 'actif', async (s) => {
 // Chargement
 // ---------------------------------------------------------------------
 async function chargerMesFiches() {
-  const snap = await fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('proprietaire', '==', session.user.uid)));
+  const [snap, interp] = await Promise.all([
+    fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('proprietaire', '==', session.user.uid))),
+    fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('interprete', '==', session.user.uid)))
+      .catch((e) => { console.warn('Personnages interprétés illisibles (règles Firestore à republier ?)', e); return { docs: [] }; })
+  ]);
   mesFiches = snap.docs.map(donneesDoc).sort((a, b) => millis(b.majLe) - millis(a.majLe));
+  mesInterpretations = interp.docs.map(donneesDoc).filter((d) => d.statut !== 'archivee')
+    .sort((a, b) => (a.nom || '').localeCompare(b.nom || '', 'fr'));
 }
 async function chargerToutes() {
   if (!conteur) return;
@@ -113,7 +137,8 @@ function carte(f, avecJoueur) {
       h('small', {}, [f.clan, f.secte, f.generation ? f.generation + 'e gén.' : ''].filter(Boolean).join(' · ') || '—'),
       f.xp && !f.pnj ? h('small', {}, 'PX : ' + f.xp.acquise + ' acquis · ' + f.xp.restante + ' restants') : '',
       avecJoueur && !f.pnj ? h('small', {}, 'Joueur : ' + (f.proprietaireNom || '?')) : '',
-      f.pnj ? (f.statut === 'archivee' ? h('span', { class: 'cam-tag archivee' }, 'PNJ archivé') : h('span', { class: 'cam-tag conteur' }, 'PNJ'))
+      f.pnj && f.interprete ? h('small', {}, f.interprete === session.user.uid ? 'Vous l\'interprétez' : 'Interprète : ' + (f.interpreteNom || '?')) : '',
+      f.pnj ? (f.statut === 'archivee' ? h('span', { class: 'cam-tag archivee' }, 'Archivé') : h('span', { class: 'cam-tag conteur' }, estTypeJoueur(f.typeFiche) ? 'PNJ' : f.typeFiche))
         : h('span', { class: 'cam-tag ' + f.statut }, STATUTS_FICHE[f.statut] || f.statut),
       h('small', {}, 'Modifiée le ' + dateFr(f.majLe))));
 }
@@ -164,7 +189,11 @@ function afficherListes(ongletInitial) {
       h('button', { type: 'button', class: 'secondaire', onclick: () => fichierImport.click() }, 'Importer un fichier JSON'),
       fichierImport, fichierExcel),
     msgImport,
-    h('div', { style: 'margin-top:1rem' }, grille(mesFiches, false, 'Aucune fiche pour l\'instant.')));
+    h('div', { style: 'margin-top:1rem' }, grille(mesFiches, false, 'Aucune fiche pour l\'instant.')),
+    mesInterpretations.length ? h('div', { class: 'cam-interpretations' },
+      h('h3', {}, 'Personnages que vous interprétez'),
+      h('p', { class: 'sous-titre' }, 'PNJ et antagonistes : ils appartiennent aux conteurs, qui les gèrent ; vous les jouez. Leur fiche est en lecture seule.'),
+      grille(mesInterpretations, false, '')) : '');
 
   if (!conteur) {
     // Joueur : consultations de ses fiches par les conteurs et administrateurs
@@ -191,7 +220,7 @@ function afficherListes(ongletInitial) {
       h('button', { type: 'button', dataset: { onglet: 'mes' } }, 'Mes fiches'),
       h('button', { type: 'button', dataset: { onglet: 'a-valider' } }, 'À valider' + (soumises.length ? ' (' + soumises.length + ')' : '')),
       h('button', { type: 'button', dataset: { onglet: 'toutes' } }, 'Toutes les fiches'),
-      h('button', { type: 'button', dataset: { onglet: 'pnj' } }, 'PNJ' + (pnjs.length ? ' (' + pnjs.filter((x) => x.statut !== 'archivee').length + ')' : ''))),
+      h('button', { type: 'button', dataset: { onglet: 'pnj' } }, 'PNJ et antagonistes' + (pnjs.length ? ' (' + pnjs.filter((x) => x.statut !== 'archivee').length + ')' : ''))),
     mes,
     h('div', { dataset: { panneau: 'a-valider' } },
       h('p', { class: 'sous-titre' }, 'Fiches soumises par les joueurs, de la plus ancienne à la plus récente.'),
@@ -220,13 +249,13 @@ function documentPnj(categorie, nom, age) {
 
 function panneauPnj() {
   const filtreCat = options(h('select', {}), Object.entries(CATEGORIES_PNJ), '', 'Toutes les catégories');
-  const recherche = h('input', { type: 'search', placeholder: 'Nom, clan…' });
+  const recherche = h('input', { type: 'search', placeholder: 'Nom, clan, interprète…' });
   const avecArchives = h('input', { type: 'checkbox' });
   const zone = h('div', { style: 'margin-top:1rem' });
   const filtrer = () => {
     const cat = filtreCat.value, q = recherche.value.trim().toLowerCase();
     const liste = pnjs.filter((f) => (avecArchives.checked || f.statut !== 'archivee') && (!cat || f.pnj === cat)
-      && (!q || [f.nom, f.clan, f.secte, f.age].some((x) => (x || '').toLowerCase().includes(q))));
+      && (!q || [f.nom, f.clan, f.secte, f.age, f.interpreteNom, f.typeFiche].some((x) => (x || '').toLowerCase().includes(q))));
     if (!liste.length) { zone.replaceChildren(h('p', { class: 'sous-titre' }, pnjs.length ? 'Aucun PNJ ne correspond.' : 'Aucun PNJ pour l\'instant.')); return; }
     // Regroupés par catégorie, dans l'ordre de la liste des catégories
     zone.replaceChildren(...Object.keys(CATEGORIES_PNJ).map((k) => {
@@ -237,7 +266,7 @@ function panneauPnj() {
   [filtreCat, recherche, avecArchives].forEach((el) => el.addEventListener(el === recherche ? 'input' : 'change', filtrer));
   filtrer();
   return h('div', { dataset: { panneau: 'pnj' } },
-    h('p', { class: 'sous-titre' }, 'Personnages non joueurs, sur la même fiche MET que les joueurs. Ils ne sont visibles que des conteurs (ni répertoire, ni influences) et s\'ajoutent au combat depuis leur fiche ou depuis l\'outil de combat.'),
+    h('p', { class: 'sous-titre' }, 'PNJ et antagonistes, sur la même fiche MET que les joueurs. Ils appartiennent au rôle conteur : tous les conteurs les gèrent, quelle que soit l\'équipe. Une fiche de joueur qui passe en type « Antagoniste » arrive ici. Un joueur peut en être l\'interprète (choisi dans la fiche) : il la voit, sans pouvoir la modifier. Ni répertoire, ni influences ; ils s\'ajoutent au combat depuis leur fiche ou depuis l\'outil de combat.'),
     h('div', { class: 'cam-actions' }, h('button', { type: 'button', onclick: fenetreNouveauPnj }, '＋ Nouveau PNJ')),
     h('div', { class: 'cam-ligne' },
       h('div', {}, h('label', {}, 'Catégorie'), filtreCat),
@@ -435,8 +464,10 @@ function afficherEditeur(existante, preRemplie, avis) {
   const uid = session.user.uid;
   const nouvelle = !existante;
   const d = existante || preRemplie || documentVide();
-  const estPnj = !!d.pnj && conteur;   // PNJ : conteurs seulement, ni joueur ni circuit de validation
+  const estPnj = !!d.pnj && conteur;   // PNJ / antagoniste : conteurs seulement, ni joueur ni circuit de validation
+  const jInterprete = !conteur && !!d.interprete && d.interprete === uid;   // lecture seule pour l'interprète
   let categoriePnj = d.pnj || '';
+  let interprete = { uid: d.interprete || '', nom: d.interpreteNom || '' };
   const proprio = !estPnj && (nouvelle || d.proprietaire === uid);
   const modifiable = conteur || (proprio && (nouvelle || STATUTS_FICHE_EDITABLES.includes(d.statut)));
   const dis = !modifiable;
@@ -579,7 +610,12 @@ function afficherEditeur(existante, preRemplie, avis) {
     const data = { ...champsDerives(f, R), portrait: portraitRef, statut, majLe: fs.serverTimestamp() };
     // Champ récent : écrit seulement si les règles Firestore publiées le connaissent.
     if (!(await reglesRecentes())) delete data.aip;
-    if (estPnj) data.pnj = categoriePnj;
+    if (estPnj) {
+      data.pnj = categoriePnj;
+      // Champ récent : écrit seulement si les règles Firestore publiées le connaissent.
+      if (await reglesRecentes()) { data.interprete = interprete.uid; data.interpreteNom = interprete.uid ? interprete.nom.slice(0, 80) : ''; }
+      else if (interprete.uid !== (d.interprete || '')) throw new Error('Pour enregistrer l\'interprète, republiez d\'abord les règles Firestore (firebase/firestore.rules).');
+    }
     const detail = { fiche: f, contenuJson };
     const taille = new Blob([JSON.stringify(detail)]).size;
     if (taille > LIMITE_DOC) throw new Error('Fiche trop volumineuse (' + Math.round(taille / 1024) + ' Ko) : raccourcissez les textes ou les données complémentaires.');
@@ -611,26 +647,58 @@ function afficherEditeur(existante, preRemplie, avis) {
     }
   }
 
+  // Interprète d'un PNJ / antagoniste : il reçoit les textes des mystères du personnage.
+  async function transmettreMysteres(id, fiche) {
+    try {
+      const m = await donneesMysteres(fiche);
+      if (m) await fs.setDoc(refMysteres(id), m);
+      return '';
+    } catch (e) {
+      console.warn('Mystères non transmis à l\'interprète', e);
+      return ' (Attention : textes des mystères non transmis à l\'interprète — ' + messageErreur(e) + '.)';
+    }
+  }
+
   async function enregistrer(statut, texteOk) {
     message(msg, 'Enregistrement…', 'info');
     actions.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+    const reactiver = () => actions.querySelectorAll('button').forEach((b) => { b.disabled = false; });
     let avert = '';
     try {
       const { data, detail } = await construire(statut);
       if (estPnj) {
-        // PNJ : pas de joueur, pas de notification, pas de répertoire.
+        // PNJ / antagoniste : propriété du rôle conteur ; pas de notification, pas de répertoire.
         if (nouvelle) {
           const ref = fs.doc(fs.collection(db, 'personnages'));
           await ecrireFiche(ref, { ...data, proprietaire: '', proprietaireNom: '', commentaireConteur: '', creeLe: fs.serverTimestamp() }, detail, { creation: true });
+          if (data.interprete) {
+            avert = await transmettreMysteres(ref.id, detail.fiche);
+            // Répertoire : l'interprète le joue dans les outils (tableaux partagés, challenges…).
+            await majRepertoire({ id: ref.id, nom: data.nom, proprietaire: '', interprete: data.interprete, statut: data.statut }, null);
+          }
           proteger(false);
-          avisApresNavigation = texteOk || 'PNJ enregistré.';
+          avisApresNavigation = (texteOk || 'PNJ enregistré.') + avert;
           location.hash = 'fiche-' + ref.id;
           return;
         }
         await ecrireFiche(fs.doc(db, 'personnages', d.id), { ...data, commentaireConteur: '' }, detail, { ancienFormat: d.ancienFormat });
+        if (data.interprete) avert = await transmettreMysteres(d.id, detail.fiche);
+        // Répertoire : suit l'interprète (retiré s'il n'y en a plus, ou si le PNJ est archivé).
+        if (data.interprete !== undefined && (data.interprete || d.interprete)) {
+          await majRepertoire({ id: d.id, nom: data.nom, proprietaire: '', interprete: data.interprete, statut: data.statut }, undefined);
+        }
         proteger(false);
         await route();
-        message(document.querySelector('#cam-fiches .cam-msg.global') || msg, texteOk || 'PNJ enregistré.', 'ok');
+        message(document.querySelector('#cam-fiches .cam-msg') || msg, (texteOk || 'PNJ enregistré.') + avert, avert ? 'err' : 'ok');
+        return;
+      }
+      // Fiche créée par un conteur avec un type autre que « Joueur » : elle naît au rôle conteur.
+      if (nouvelle && conteur && !estTypeJoueur(detail.fiche.typeFiche)) {
+        const ref = fs.doc(fs.collection(db, 'personnages'));
+        await ecrireFiche(ref, { ...data, statut: 'active', pnj: categorieDeFiche(detail.fiche), proprietaire: '', proprietaireNom: '', commentaireConteur: '', creeLe: fs.serverTimestamp() }, detail, { creation: true });
+        proteger(false);
+        avisApresNavigation = 'Fiche de type « ' + detail.fiche.typeFiche + ' » : elle appartient au rôle conteur (onglet « PNJ et antagonistes »). Choisissez-lui un interprète si besoin.';
+        location.hash = 'fiche-' + ref.id;
         return;
       }
       if (nouvelle) {
@@ -646,6 +714,38 @@ function afficherEditeur(existante, preRemplie, avis) {
         return;
       } else {
         const ref = fs.doc(db, 'personnages', d.id);
+        // Fiche d'un joueur passée en type « Antagoniste » (ou autre) : elle passe au rôle conteur.
+        const versConteurs = conteur && !!d.proprietaire && !estTypeJoueur(detail.fiche.typeFiche);
+        if (versConteurs) {
+          if (!(await reglesRecentes())) throw new Error('Pour passer cette fiche aux conteurs, republiez d\'abord les règles Firestore (firebase/firestore.rules).');
+          if (!confirmer('« ' + data.nom + ' » est de type « ' + detail.fiche.typeFiche + ' » : la fiche passe au rôle conteur (onglet « PNJ et antagonistes »). '
+            + 'Elle n\'appartiendra plus à ' + (d.proprietaireNom || 'son joueur') + ', qui en devient l\'interprète (vous pourrez en changer). Continuer ?')) {
+            message(msg, 'Enregistrement annulé.', 'info'); reactiver(); return;
+          }
+          // Prévenir le joueur avant le transfert (les règles vérifient qu'il est encore le propriétaire).
+          if (d.proprietaire !== uid) {
+            try {
+              await fs.addDoc(fs.collection(db, 'notifications'), {
+                type: 'fiche', destinataire: d.proprietaire, auteur: uid, auteurNom: session.profil.nom,
+                personnage: d.id, personnageNom: d.nom || data.nom, statut: 'antagoniste',
+                message: compresser(((commentaire.value.trim() ? commentaire.value.trim() + '\n\n' : '')
+                  + 'Ce personnage devient un antagoniste : il appartient désormais aux conteurs, et vous en êtes l\'interprète.').slice(0, 2000)),
+                creeLe: fs.serverTimestamp()
+              });
+            } catch (e) { console.warn('Notification non envoyée', e); }
+          }
+          await ecrireFiche(ref, {
+            ...data, statut: statut === 'archivee' ? 'archivee' : 'active', pnj: categorieDeFiche(detail.fiche),
+            proprietaire: '', proprietaireNom: '', interprete: d.proprietaire, interpreteNom: String(d.proprietaireNom || '').slice(0, 80), commentaireConteur: ''
+          }, detail, { ancienFormat: d.ancienFormat });
+          // Répertoire : le personnage reste joué par son interprète (l'ancien joueur).
+          await majRepertoire({ id: d.id, nom: data.nom, proprietaire: '', interprete: d.proprietaire, statut: statut === 'archivee' ? 'archivee' : 'active' }, undefined);
+          avert = await transmettreMysteres(d.id, detail.fiche);
+          proteger(false);
+          await route();
+          message(document.querySelector('#cam-fiches .cam-msg') || msg, 'Fiche passée aux conteurs ; ' + (d.proprietaireNom || 'le joueur') + ' en est l\'interprète.' + avert, avert ? 'err' : 'ok');
+          return;
+        }
         if (conteur) {
           const changement = d.statut !== statut;
           const extra = { commentaireConteur: compresser(commentaire.value) };
@@ -681,7 +781,7 @@ function afficherEditeur(existante, preRemplie, avis) {
     } catch (e) {
       console.error(e);
       message(msg, messageErreur(e), 'err');
-      actions.querySelectorAll('button').forEach((b) => { b.disabled = false; });
+      reactiver();
     }
   }
 
@@ -767,7 +867,7 @@ function afficherEditeur(existante, preRemplie, avis) {
           lot.delete(refDetail(d.id));
           if (!estPnj) { lot.delete(refValide(d.id)); lot.delete(refMysteres(d.id)); }
           await lot.commit();
-          if (!estPnj && estIncarnable(d)) await majRepertoire({ ...d, statut: 'archivee' }, undefined);
+          if (estIncarnable(d) && joueurDe(d)) await majRepertoire({ ...d, statut: 'archivee' }, undefined);
           proteger(false); retourListe();
         } catch (e) { message(msg, messageErreur(e), 'err'); }
       }, 'danger'));
@@ -775,19 +875,38 @@ function afficherEditeur(existante, preRemplie, avis) {
   }
 
   // --- Mise en page ---
-  const statutTag = estPnj
-    ? h('span', { class: 'cam-tag ' + (d.statut === 'archivee' ? 'archivee' : 'conteur') }, nouvelle ? 'Nouveau PNJ' : 'PNJ · ' + (STATUTS_PNJ[d.statut] || d.statut))
+  const statutTag = estPnj || jInterprete
+    ? h('span', { class: 'cam-tag ' + (d.statut === 'archivee' ? 'archivee' : 'conteur') }, nouvelle ? 'Nouveau PNJ' : (estTypeJoueur(d.typeFiche) ? 'PNJ' : d.typeFiche) + ' · ' + (STATUTS_PNJ[d.statut] || d.statut))
     : h('span', { class: 'cam-tag ' + (d.statut || 'brouillon') }, nouvelle ? 'Nouvelle fiche' : (STATUTS_FICHE[d.statut] || d.statut));
   // PNJ : catégorie modifiable dans l'en-tête
   const choixCategorie = estPnj ? options(h('select', {
     'aria-label': 'Catégorie du PNJ',
     onchange: (e) => { categoriePnj = e.target.value; if (!modifie) { modifie = true; proteger(true); } }
   }), Object.entries(CATEGORIES_PNJ), categoriePnj) : null;
+  // Interprète (PNJ / antagoniste) : un compte de l'annuaire, modifiable par les conteurs.
+  const choixInterprete = estPnj ? h('select', { 'aria-label': 'Interprète', class: 'cam-interprete' }) : null;
+  if (choixInterprete) {
+    let comptes = {};
+    const remplir = () => {
+      const liste = Object.entries(comptes).map(([id, c]) => [id, (c.nom || '?') + (c.role && c.role !== 'joueur' ? ' (' + c.role + ')' : '')])
+        .sort((a, b) => a[1].localeCompare(b[1], 'fr'));
+      if (interprete.uid && !comptes[interprete.uid]) liste.unshift([interprete.uid, (interprete.nom || '?') + (Object.keys(comptes).length ? ' (compte introuvable)' : '')]);
+      options(choixInterprete, liste, interprete.uid, 'Aucun interprète');
+    };
+    remplir();
+    annuaire().then((a) => { comptes = a.comptes || {}; remplir(); }).catch((e) => console.warn('Annuaire illisible', e));
+    choixInterprete.addEventListener('change', () => {
+      const id = choixInterprete.value;
+      interprete = { uid: id, nom: id ? ((comptes[id] && comptes[id].nom) || interprete.nom || '') : '' };
+      if (!modifie) { modifie = true; proteger(true); }
+    });
+  }
   racine.replaceChildren(
     h('p', {}, h('a', { href: '#', onclick: (e) => { e.preventDefault(); if (!modifie || confirmer('Quitter sans enregistrer les modifications ?')) { proteger(false); if (estPnj) location.hash = 'pnj'; else retourListe(); } } }, estPnj ? '← Retour aux PNJ' : '← Retour aux fiches')),
     h('div', { class: 'cam-msg global' }),
     avis ? h('div', { class: 'cam-encart' }, avis) : '',
-    !modifiable ? h('div', { class: 'cam-encart' }, 'Cette fiche est « ' + (STATUTS_FICHE[d.statut] || d.statut) + ' » : seuls les conteurs peuvent la modifier. Utilisez « Demander une modification » si besoin.') : '',
+    jInterprete ? h('div', { class: 'cam-encart' }, 'Vous interprétez ce personnage. Il appartient aux conteurs, qui le gèrent : sa fiche est en lecture seule.')
+      : !modifiable ? h('div', { class: 'cam-encart' }, 'Cette fiche est « ' + (STATUTS_FICHE[d.statut] || d.statut) + ' » : seuls les conteurs peuvent la modifier. Utilisez « Demander une modification » si besoin.') : '',
     estPnj && nouvelle ? h('div', { class: 'cam-encart' }, 'Nouveau PNJ (' + (CATEGORIES_PNJ[categoriePnj] || categoriePnj) + ') : la fiche est pré-remplie, complétez-la puis « Créer le PNJ ». Les attributs Physique et Mental donnent son initiative au combat, sa Célérité ses actions supplémentaires.') : '',
     d.statut === 'refusee' && d.commentaireConteur && !conteur ? h('div', { class: 'cam-encart alerte' }, 'À corriger : ', d.commentaireConteur) : '',
     h('div', { class: 'cam-bloc fiche-entete' },
@@ -802,6 +921,9 @@ function afficherEditeur(existante, preRemplie, avis) {
           h('h2', {}, titre, ' ', statutTag),
           resumeEntete,
           estPnj ? h('div', { class: 'cam-ligne-pnj' }, h('label', {}, 'Catégorie du PNJ'), choixCategorie) : '',
+          estPnj ? h('div', { class: 'cam-ligne-pnj' }, h('label', {}, 'Interprète'), choixInterprete,
+            h('small', { class: 'sous-titre' }, 'Le joueur qui le joue : il voit la fiche (et ses mystères), sans la modifier.')) : '',
+          jInterprete ? h('p', { class: 'sous-titre' }, 'Interprète : vous') : '',
           conteur && !proprio && !estPnj ? h('p', { class: 'sous-titre' }, 'Joueur : ' + (d.proprietaireNom || '?')) : '',
           d.validePar && d.valideLe ? h('p', { class: 'sous-titre' }, 'Validée le ' + dateFr(d.valideLe)) : '',
           h('p', { class: 'sous-titre' }, 'Cliquez sur « ⓘ » pour lire la description d\'un élément dans les règles MET.')))),

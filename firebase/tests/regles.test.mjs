@@ -1041,6 +1041,50 @@ describe('PNJ des conteurs', () => {
     await assertFails(getDocs(query(collection(db('alice'), 'personnages'), where('proprietaire', '==', ''))));
     await assertSucceeds(getDoc(doc(db('conteur2'), 'personnages', 'pnj5')));
   });
+  test('une fiche d\'antagoniste passe au rôle conteur ; son interprète la lit sans la modifier', async () => {
+    const versConteurs = { proprietaire: '', proprietaireNom: '', pnj: 'vampire', typeFiche: 'Antagoniste', interprete: 'alice', interpreteNom: 'Alice', majLe: serverTimestamp() };
+    await assertFails(updateDoc(doc(db('alice'), 'personnages', 'pA2'), versConteurs));
+    await assertSucceeds(updateDoc(doc(db('conteur'), 'personnages', 'pA'), versConteurs));
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'personnages', 'pA', 'detail', 'fiche'), { fiche: octets(100), contenuJson: '{}', majLe: passe }));
+    await assertSucceeds(getDoc(doc(db('alice'), 'personnages', 'pA')));
+    await assertSucceeds(getDoc(doc(db('alice'), 'personnages', 'pA', 'detail', 'fiche')));
+    await assertSucceeds(getDocs(query(collection(db('alice'), 'personnages'), where('interprete', '==', 'alice'))));
+    await assertFails(getDoc(doc(db('bob'), 'personnages', 'pA')));
+    await assertFails(updateDoc(doc(db('alice'), 'personnages', 'pA'), { nom: 'Amarok', majLe: serverTimestamp() }));
+    // tout conteur (nouvelle équipe comprise) gère la fiche et change d'interprète
+    await assertSucceeds(updateDoc(doc(db('conteur2'), 'personnages', 'pA'), { interprete: 'bob', interpreteNom: 'Bob', majLe: serverTimestamp() }));
+    await assertFails(getDoc(doc(db('alice'), 'personnages', 'pA')));
+    // jamais rendue à un autre compte par un conteur, pas d'interprète sur une fiche de joueur
+    await assertFails(updateDoc(doc(db('conteur'), 'personnages', 'pA'), { proprietaire: 'bob', majLe: serverTimestamp() }));
+    await assertFails(updateDoc(doc(db('conteur'), 'personnages', 'pB'), { interprete: 'alice', interpreteNom: 'Alice', majLe: serverTimestamp() }));
+  });
+  test('l\'interprète incarne l\'antagoniste dans les outils ; un nouvel interprète reprend tableau et carte', async () => {
+    // Amarok (pA) passe au rôle conteur, joué par Bob
+    await env.withSecurityRulesDisabled((ctx) => updateDoc(doc(ctx.firestore(), 'personnages', 'pA'),
+      { proprietaire: '', proprietaireNom: '', pnj: 'vampire', typeFiche: 'Antagoniste', interprete: 'bob', interpreteNom: 'Bob' }));
+    // Répertoire : associé au compte de l'interprète
+    await assertSucceeds(setDoc(doc(db('conteur'), 'repertoire', 'pA'), { nom: 'Amarok', proprietaire: 'bob' }));
+    await assertFails(setDoc(doc(db('conteur'), 'repertoire', 'pA'), { nom: 'Amarok', proprietaire: 'alice' }));
+    // Tableau d'enquête du personnage : Bob le lit et le reprend ; Alice ne peut plus l'écrire
+    await assertSucceeds(getDoc(doc(db('bob'), 'tableaux', 'pA')));
+    const repris = { proprietaire: 'bob', acces: ['bob'], droits: {}, invites: {}, version: 2, contenuJson: '{"boards":[1]}',
+      majLe: serverTimestamp(), majPar: 'bob', majPerso: 'pA', majParNom: 'Amarok' };
+    await assertFails(updateDoc(doc(db('alice'), 'tableaux', 'pA'), { ...repris, proprietaire: 'alice', acces: ['alice'], majPar: 'alice' }));
+    await assertSucceeds(updateDoc(doc(db('bob'), 'tableaux', 'pA'), repris));
+    // Carte, influences, challenges, tickets au nom du personnage
+    await assertSucceeds(setDoc(doc(db('bob'), 'cartes', 'pA'), { proprietaire: 'bob', personnage: 'pA', nom: 'Amarok', donnees: octets(100), majLe: serverTimestamp() }));
+    await assertSucceeds(getDoc(doc(db('bob'), 'cartes', 'pA')));
+    await assertSucceeds(setDoc(doc(db('bob'), 'influences', 'nb'), action('bob', 'pA', 'Amarok')));
+    await assertFails(setDoc(doc(db('alice'), 'influences', 'na'), action('alice', 'pA', 'Amarok')));
+    await assertSucceeds(setDoc(doc(db('conteur'), 'defis', 'db'), { conteur: 'conteur', conteurNom: 'Conteur', destinataire: 'bob', personnage: 'pA', personnageNom: 'Amarok',
+      titre: 'Filature', message: '', statut: 'en_attente', resultats: [], challenges: [{ libelle: 'Discrétion', manches: 1, puits: false, bombe: false, main: [] }], creeLe: serverTimestamp() }));
+    await assertSucceeds(setDoc(doc(db('bob'), 'tickets', 'tb'), { ...ticket('bob', 'pA', 'Amarok') }));
+    await assertFails(setDoc(doc(db('alice'), 'tickets', 'ta'), { ...ticket('alice', 'pA', 'Amarok') }));
+  });
+  test('le joueur est prévenu du passage aux conteurs (avant le transfert)', async () => {
+    await assertSucceeds(setDoc(doc(db('conteur'), 'notifications', 'na'), { type: 'fiche', destinataire: 'alice', auteur: 'conteur', auteurNom: 'Conteur',
+      personnage: 'pA', personnageNom: 'Amarok', statut: 'antagoniste', message: 'Antagoniste', creeLe: serverTimestamp() }));
+  });
   test('un conteur modifie et archive un PNJ ; le propriétaire reste vide', async () => {
     await setDoc(doc(db('conteur'), 'personnages', 'pnj6'), pnj());
     await assertSucceeds(updateDoc(doc(db('conteur2'), 'personnages', 'pnj6'), { statut: 'archivee', pnj: 'vampire', majLe: serverTimestamp() }));

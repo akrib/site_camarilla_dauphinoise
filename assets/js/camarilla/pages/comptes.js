@@ -46,7 +46,7 @@ pageProtegee(racine, 'conteur', async ({ user, profil }) => {
         h('thead', {}, h('tr', {}, ['Nom', 'Email', 'Rôle', 'Statut', 'Inscription', ''].map((t) => h('th', {}, t)))),
         corpsTous))),
     admin ? panneauReferentiel(user) : '',
-    admin ? panneauMaintenance() : '',
+    admin ? panneauMaintenance(user, profil) : '',
     msg);
   racine.append(bloc);
   const ouvrirOnglet = onglets(bloc);
@@ -158,7 +158,7 @@ pageProtegee(racine, 'conteur', async ({ user, profil }) => {
 // ---------------------------------------------------------------------
 // Maintenance (admin) : espace utilisé par les images, nettoyage
 // ---------------------------------------------------------------------
-function panneauMaintenance() {
+function panneauMaintenance(user, profil) {
   const sortie = h('div', { class: 'cam-msg' });
   const bouton = h('button', { type: 'button', class: 'secondaire' }, 'Analyser les images');
   const nettoyer = h('button', { type: 'button', class: 'danger', disabled: true }, 'Supprimer les images inutilisées');
@@ -280,6 +280,49 @@ function panneauMaintenance() {
     finally { transmettre.disabled = false; }
   });
 
+  // --- Fiches d'antagonistes encore rattachées à un compte : au rôle conteur ---
+  // Une fiche d'un autre type que « Joueur » appartient au rôle conteur
+  // (proprietaire vide, onglet « PNJ et antagonistes ») ; son ancien
+  // propriétaire en devient l'interprète. Utile avant un changement d'équipe
+  // de conteurs (antagonistes rangés sous le compte d'un conteur).
+  const sortieAnta = h('div', { class: 'cam-msg' });
+  const anta = h('button', { type: 'button', class: 'secondaire' }, 'Passer les antagonistes au rôle conteur');
+  anta.addEventListener('click', async () => {
+    anta.disabled = true;
+    try {
+      const snap = await fs.getDocs(fs.collection(db, 'personnages'));
+      const liste = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+        .filter((x) => x.proprietaire && String(x.typeFiche || '').trim() && x.typeFiche !== 'Joueur');
+      if (!liste.length) { message(sortieAnta, 'Aucune fiche d\'antagoniste rattachée à un compte : rien à faire.', 'ok'); return; }
+      if (!confirmer(liste.length + ' fiche(s) d\'antagoniste à passer au rôle conteur, leur propriétaire actuel en devenant l\'interprète :\n'
+        + liste.map((x) => '• ' + x.nom + ' (' + x.typeFiche + ', ' + (x.proprietaireNom || '?') + ')').join('\n') + '\n\nContinuer ?')) { message(sortieAnta, ''); return; }
+      const categorie = (x) => (/^vampire$/i.test(x.race || '') ? (/sabbat/i.test(x.secte || '') ? 'sabbat' : 'vampire')
+        : /^humain$/i.test(x.race || '') ? (x.age === 'Goule' ? 'goule' : 'humain') : 'autre');
+      let n = 0;
+      for (const x of liste) {
+        if (x.proprietaire !== user.uid) {
+          try {
+            await fs.addDoc(fs.collection(db, 'notifications'), {
+              type: 'fiche', destinataire: x.proprietaire, auteur: user.uid, auteurNom: profil.nom, personnage: x.id, personnageNom: x.nom,
+              statut: 'antagoniste', message: 'Ce personnage est un antagoniste : il appartient désormais aux conteurs, et vous en êtes l\'interprète.',
+              creeLe: fs.serverTimestamp()
+            });
+          } catch (e) { console.warn('Notification non envoyée', e); }
+        }
+        await fs.updateDoc(fs.doc(db, 'personnages', x.id), {
+          proprietaire: '', proprietaireNom: '', pnj: x.pnj || categorie(x), statut: x.statut === 'archivee' ? 'archivee' : 'active',
+          interprete: x.proprietaire, interpreteNom: String(x.proprietaireNom || '').slice(0, 80), majLe: fs.serverTimestamp()
+        });
+        // Répertoire : le personnage reste joué par son ancien propriétaire, devenu interprète.
+        if (['validee', 'active'].includes(x.statut)) await fs.setDoc(fs.doc(db, 'repertoire', x.id), { nom: x.nom, proprietaire: x.proprietaire }).catch((e) => console.warn(e));
+        else await fs.deleteDoc(fs.doc(db, 'repertoire', x.id)).catch(() => {});
+        message(sortieAnta, 'Fiches… ' + (++n) + ' / ' + liste.length, 'info');
+      }
+      message(sortieAnta, n + ' fiche(s) passée(s) au rôle conteur (onglet « PNJ et antagonistes » des fiches).', 'ok');
+    } catch (e) { message(sortieAnta, messageErreur(e), 'err'); }
+    finally { anta.disabled = false; }
+  });
+
   // --- Sauvegarde complète en JSON ---
   const sortieExp = h('div', { class: 'cam-msg' });
   const avecImages = h('input', { type: 'checkbox' });
@@ -372,6 +415,9 @@ function panneauMaintenance() {
     h('h3', {}, 'Fiches validées : mystères et version de référence'),
     h('p', { class: 'sous-titre' }, 'À la validation d\'une fiche, le site transmet au joueur les textes des mystères que connaît son personnage et garde la version validée (pour le récapitulatif des modifications suivantes). Ce bouton le fait d\'un coup pour les fiches déjà validées ou en jeu — après l\'import d\'un référentiel avec les mystères, par exemple. Deux à trois lectures et écritures par fiche.'),
     h('div', { class: 'cam-actions' }, transmettre), sortieVal,
+    h('h3', {}, 'PNJ et antagonistes : propriété du rôle conteur'),
+    h('p', { class: 'sous-titre' }, 'Les PNJ et toutes les fiches d\'un autre type que « Joueur » appartiennent au rôle conteur : quand l\'équipe change, les nouveaux conteurs en récupèrent la gestion. Une fiche passe aux conteurs quand un conteur l\'enregistre avec un type « Antagoniste » ; ce bouton fait le tour des fiches existantes (par exemple des antagonistes créés sous le compte d\'un conteur). L\'ancien propriétaire devient l\'interprète.'),
+    h('div', { class: 'cam-actions' }, anta), sortieAnta,
     h('h3', {}, 'Images'),
     h('p', { class: 'sous-titre' }, 'Les images restent stockées même quand le tableau, la fiche ou le message qui les utilisait est supprimé. Cet outil mesure l\'espace utilisé (1 Go gratuit) et supprime celles qui ne servent plus.'),
     h('div', { class: 'cam-actions' }, bouton, nettoyer), sortie,

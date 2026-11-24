@@ -209,8 +209,11 @@ function blocCourant(racine) {
   return n && n !== racine ? n : null;
 }
 
-/** Barre G / I / Intertitre / Citation / Liste / Ornement, affichée au-dessus de la zone active. */
-export function barreFormat() {
+/**
+ * Barre G / I / Intertitre / Citation / Liste / Ornement, affichée au-dessus de la zone active,
+ * et, pour le texte d'un article, l'alignement (aligner(zone, 'gauche' | 'justifie' | 'droite')).
+ */
+export function barreFormat({ aligner = null } = {}) {
   let zoneActive = null;
   const cmd = (fn) => (e) => {
     e.preventDefault();   // garder le curseur et la sélection dans la zone
@@ -234,6 +237,16 @@ export function barreFormat() {
     bouton('« Citation »', 'Citation', basculerBloc('blockquote'), true),
     bouton('• Liste', 'Liste à puces', () => document.execCommand('insertUnorderedList'), true),
     bouton('❦', 'Ornement (séparation)', () => document.execCommand('insertHTML', false, '<p class="gz-orne">❦</p><p><br></p>'), true));
+  // Alignement du texte de l'article (gauche, justifié, droite)
+  const ALIGNS = [['gauche', 'Aligner à gauche', '⫷'], ['justifie', 'Justifier', '☰'], ['droite', 'Aligner à droite', '⫸']];
+  const boutonsAlign = aligner ? ALIGNS.map(([v, titre, icone]) => {
+    const b = bouton(icone, titre, (z) => { aligner(z, v); majAlign(z); }, true);
+    b.classList.add('gze-aligne'); b.dataset.align = v; b.setAttribute('aria-label', titre);
+    return b;
+  }) : [];
+  const alignDe = (z) => (z.classList.contains('gz-al-gauche') ? 'gauche' : z.classList.contains('gz-al-droite') ? 'droite' : 'justifie');
+  const majAlign = (z) => boutonsAlign.forEach((b) => b.classList.toggle('actif', b.dataset.align === alignDe(z)));
+  if (boutonsAlign.length) barre.append(h('span', { class: 'gze-sep gze-aligne', 'aria-hidden': 'true' }), ...boutonsAlign);
   return {
     el: barre,
     /** Affiche la barre pour la zone z (texte ou chapeau), placée au-dessus d'elle. */
@@ -241,6 +254,7 @@ export function barreFormat() {
       zoneActive = z;
       const def = CHAMPS[z.dataset.champ] || {};
       barre.classList.toggle('gze-format-court', def.type !== 'texte');
+      if (def.type === 'texte') majAlign(z);
       barre.hidden = false;
       const conteneur = barre.offsetParent || document.body;
       const rc = conteneur.getBoundingClientRect(), rz = z.getBoundingClientRect();

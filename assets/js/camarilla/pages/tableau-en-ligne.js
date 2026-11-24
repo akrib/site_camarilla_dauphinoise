@@ -426,6 +426,16 @@ async function sauvegarderMien(partage = null, msg = null) {
       courant = { id: perso.id, titre, proprietaire: uid(), personnage: perso.id, proprietaireNom: perso.nom, acces: p.acces, droits: p.droits, invites: p.invites, version: 1 };
     } else {
       const champs = { ...signature(), proprietaireNom: perso.nom };
+      // Personnage repris par un autre compte (nouvel interprète d'un antagoniste) :
+      // le tableau du personnage passe à ce compte, l'ancien perd son accès.
+      if (existant.proprietaire && existant.proprietaire !== uid()) {
+        const ancien = existant.proprietaire;
+        champs.proprietaire = uid();
+        champs.acces = [uid(), ...(existant.acces || []).filter((a) => a !== ancien && a !== uid())];
+        const droits = { ...(existant.droits || {}) };
+        delete droits[ancien]; delete droits[uid()];
+        champs.droits = droits;
+      }
       if (json !== null) champs.contenuJson = await compresserJson(json);
       if (partage) Object.assign(champs, partage);
       const r = await ecrireVersion(perso.id, champs, existant.version);
