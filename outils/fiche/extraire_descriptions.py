@@ -5,8 +5,10 @@ Usage :
     python3 outils/fiche/extraire_descriptions.py regles.pdf
 
 Lit   : assets/js/camarilla/fiche/referentiel.js, outils/fiche/sortie/textes_excel.json (facultatif :
-        sans la fiche Excel, les archétypes sont lus dans le PDF et les faiblesses de clan
-        restent dans le texte de chaque clan)
+        sans la fiche Excel, les archétypes et les faiblesses de clan sont lus dans le PDF)
+Catégorie « mysteres » : connaissances communes et secrètes de chaque niveau des spécialités
+        Mystères (clés « Anarch / 1 »…). Secrets de jeu : la page Comptes > Référentiel les range
+        à part, lisibles des seuls conteurs, et chaque personnage ne reçoit que ses niveaux.
 Écrit : outils/fiche/sortie/descriptions.json   (PRIVÉ : document confidentiel de la Fédération,
         à importer dans Firestore depuis la page Comptes > Référentiel, jamais commité)
         outils/fiche/sortie/couverture.txt       (éléments sans description)
@@ -232,6 +234,116 @@ def archetypes_du_pdf(ix, noms):
     return res
 
 
+# ----------------------------------------------------------------------------
+# Faiblesses de clan : paragraphe « Faiblesse de Clan : … » du clan (ou de ses
+# conseils d'interprétation, bloc suivant dans le PDF).
+# ----------------------------------------------------------------------------
+FAIBLESSE = re.compile(r'(?m)^(Faiblesses?(?:\s+(?:de|du)\s+(?:[Cc]lan|[Ll]ignée))?|Faiblesse alternative)\s*:\s*')
+FIN_FAIBLESSE = re.compile(r'(?:\n|(?<=[.!?»]))\s*(?:Livret de [Cc]lan|Lignées?\b|Conseils d|Avantages\s*:|Disciplines de [Cc]lan|Atouts? de [Cc]lan)')
+PARENT_CLAN = {'Gangrel Urbain': 'Gangrel'}
+
+
+def faiblesses_des_clans(ix, ents, clans):
+    debuts = []
+    for nom in clans:
+        x = ix._chercher(nom, P['clans'], ALIAS.get(nom, []), True, False)
+        if x:
+            debuts.append((ents.index(x), nom))
+    debuts.sort()
+    res = {}
+    for k, (i, nom) in enumerate(debuts):
+        suivant = next((j for j, _ in debuts[k + 1:] if j > i), i + 6)
+        for e in ents[i:suivant]:
+            m = FAIBLESSE.search(e['texte'])
+            if not m:
+                continue
+            suite = e['texte'][m.start():]
+            f = FIN_FAIBLESSE.search(suite)
+            res[nom] = {'titre': m.group(1), 'page': e['page'], 'texte': (suite[:f.start()] if f else suite).strip()}
+            break
+    # « Identique à celle des X » / « En plus de la faiblesse de X » : on ajoute celle du clan parent.
+    for nom, v in list(res.items()):
+        parent = nom.split(' - ')[0]
+        parent = PARENT_CLAN.get(parent, parent)
+        if parent != nom and parent in res and re.search(r'Identique|En plus de la faiblesse', v['texte'], re.I):
+            texte_parent = FAIBLESSE.sub('', res[parent]['texte'], count=1)
+            v['texte'] += '\n\nFaiblesse du clan ' + parent + ' : ' + texte_parent
+    return res
+
+
+# ----------------------------------------------------------------------------
+# Spécialités de la compétence Mystères : connaissances communes et secrètes
+# de chaque niveau (chapitre « Les spécialisations de la compétence Mystère »).
+# Textes secrets en jeu : importés dans une collection lisible des seuls
+# conteurs, puis transmis à chaque personnage pour les niveaux qu'il connaît.
+# ----------------------------------------------------------------------------
+TITRE_MYSTERE = re.compile(r'^Spécialité\s+(?:Mystère\s+)?(?:du\s+|de\s+la\s+|des\s+|de\s+l[\'’]\s*)?(.+?)\s*$')
+NIVEAU_MYSTERE = re.compile(r'^Niveau\s*(\d)\s*:?\s*(.*)$')
+PARTIE_MYSTERE = re.compile(r'^(?:Connaissances?\s+)?(Communes?|Secr[eè]tes?)\s*:?\s*(.*)$', re.I)
+BIOGRAPHIES = re.compile(r'^Biographies accessibles au niveau\s*(\d)', re.I)
+# Titres du PDF -> noms de la liste « Spécialités Mystères » de la fiche
+FACTIONS_PDF = {
+    'Caitiffs/Panders': 'Caitiff/Panders', 'Démon': 'Démon et Infernalisme',
+    'Fantôme et Outremonde': 'Fantôme Spectre et Outremonde', 'Lasombra': 'Lassombra', 'Loups-garous': 'Lupin',
+    'Noddisme': 'Livre de Nod', 'Réseau Lunatique Malkavien': 'RLM', 'Salubrien': 'Salubri',
+}
+AUCUNE = re.compile(r'^\s*(?:Aucune?|Néant|Pas de connaissance secrète|-)?\s*\.?\s*$', re.I)
+
+
+def mysteres(pdf, factions):
+    brut, spec, niv, partie = {}, None, None, None
+    dans = False
+    for page, ls in blocs(pdf):
+        t = ls[0].strip()
+        corps = '\n'.join(ls[1:])
+        m = TITRE_MYSTERE.match(t)
+        if m and re.match(r'^Spécialité\s+(Mystère|Assamite)', t):
+            dans, spec, niv, partie = True, m.group(1), None, None
+            brut[spec] = {}
+            continue
+        if not dans:
+            continue
+        if t.startswith('Serviteurs (Sabbat)'):
+            break
+        m = NIVEAU_MYSTERE.match(t)
+        if m:
+            niv, partie = int(m.group(1)), None
+            n = brut[spec].setdefault(niv, {'p': page, 'communes': '', 'secretes': '', 'notes': ''})
+            if (m.group(2) + corps).strip():
+                n['notes'] += (m.group(2) + '\n' + corps).strip() + '\n'
+            continue
+        m = PARTIE_MYSTERE.match(t)
+        if m and niv:
+            partie = 'communes' if m.group(1).lower().startswith('commun') else 'secretes'
+            brut[spec][niv][partie] += (m.group(2) + '\n' + corps).strip() + '\n'
+            continue
+        m = BIOGRAPHIES.match(t)
+        if m:
+            n = brut[spec].setdefault(int(m.group(1)), {'p': page, 'communes': '', 'secretes': '', 'notes': ''})
+            n['notes'] += t + '\n' + corps + '\n'
+            continue
+        if niv:   # sous-titre interne (annexes, notes HJ…) : rattaché à la partie en cours
+            brut[spec][niv][partie or 'notes'] += t + '\n' + corps + '\n'
+    res, inconnues = {}, []
+    for spec, niveaux in brut.items():
+        nom = FACTIONS_PDF.get(spec, spec)
+        if nom not in factions:
+            inconnues.append(spec)
+        for n, v in sorted(niveaux.items()):
+            c, x, notes = (paragraphes(v[k]) for k in ('communes', 'secretes', 'notes'))
+            c, x = ('' if AUCUNE.match(c) else c), ('' if AUCUNE.match(x) else x)
+            morceaux = [notes] if notes else []
+            if c:
+                morceaux.append('Connaissances communes :\n' + c)
+            if x:
+                morceaux.append('Connaissances secrètes :\n' + x)
+            if not morceaux:
+                continue
+            res[f'{nom} / {n}'] = {'t': '\n\n'.join(morceaux), 'c': c, 'x': x, 'n': notes, 'p': v['p'],
+                                   'titre': f'Spécialité Mystère {spec} — niveau {n}'}
+    return res, inconnues
+
+
 def construire(pdf):
     ref_js = (RACINE / 'assets/js/camarilla/fiche/referentiel.js').read_text(encoding='utf-8')
     REF = json.loads(ref_js[ref_js.index('{'):ref_js.rindex('}') + 1])
@@ -239,7 +351,7 @@ def construire(pdf):
     if chemin_excel.exists():
         excel = json.loads(chemin_excel.read_text(encoding='utf-8'))
     else:
-        print('(textes_excel.json absent : archétypes lus dans le PDF, faiblesses de clan dans le texte des clans)')
+        print('(textes_excel.json absent : archétypes et faiblesses de clan lus dans le PDF)')
         excel = {'clans': {}, 'archetypes': {}, 'qualites': {}}
     ents = entrees(pdf)
     ix = Index(ents)
@@ -259,14 +371,26 @@ def construire(pdf):
                 or ix.titre_interne(nom, plages, a)
             poser(cat, nom, x)
 
-    # Clans : texte du PDF + faiblesse de la fiche Excel
+    # Clans : texte du PDF ; faiblesse de la fiche Excel, sinon du PDF
+    faiblesses_pdf = faiblesses_des_clans(ix, ents, [c['nom'] for c in REF['clans']])
     for c in REF['clans']:
         x = ix.chercher(c['nom'], P['clans'], ALIAS.get(c['nom'], []))
         poser('clans', c['nom'], x)
         f = excel['clans'].get(c['nom'], {}).get('t')
         if f:
             D.setdefault('faiblesses', {})[c['nom']] = {'t': f, 's': 'Fiche MET 8.0.2'}
+        else:
+            poser('faiblesses', c['nom'], faiblesses_pdf.get(c['nom']))
     simple('sectes', ['Camarilla', 'Anarchs', 'Sabbat', 'Aubains'], P['clans'])
+
+    # Spécialités Mystères, niveau par niveau (connaissances communes et secrètes)
+    textes, inconnues = mysteres(pdf, REF['factionsMystere'])
+    if textes:
+        D['mysteres'] = {k: {**v, 's': 'Règles MET'} for k, v in textes.items()}
+    if inconnues:
+        manquants.setdefault('mysteres', []).extend('chapitre « ' + s + ' » : spécialité absente de la fiche' for s in inconnues)
+    faites = {k.split(' / ')[0] for k in textes}
+    manquants.setdefault('mysteres', []).extend(f + ' (pas de chapitre dans les règles)' for f in REF['factionsMystere'] if f not in faites)
 
     # Archétypes, qualités d'équipement : textes de la fiche Excel (complétés par le PDF)
     for nom, v in excel['archetypes'].items():

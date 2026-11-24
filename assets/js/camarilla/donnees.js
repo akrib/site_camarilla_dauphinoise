@@ -52,16 +52,49 @@ export const ACTIONS_PEGRE_GLOB = [
   { nom: 'Une offre que vous ne pouvez refuser (Pègre 9)', niveau: 5, desc: 'Effet significatif et à long terme (légalité, scandales, émeutes...).' },
   { nom: 'Influence Régionale (Pègre 10)', niveau: 5, desc: 'Étend les actions globales à une région entière.' }
 ];
-export const CATEGORIES_AIP = ['AIP', 'AIP (Troupeau)', 'AIP (Informatique)', 'AIP (Artisanat)', 'AIP (Science)', 'Dépense d\'XP'];
-export const AIP_ACTIONS = {
-  'AIP': ['Enquête', 'Patrouille', 'Mentorat (Apprendre)', 'Au delà de vos moyens', 'Spéciale', 'Chasse'],
-  'AIP (Troupeau)': ['Se nourrir'],
-  'AIP (Informatique)': ['AIP classique', 'Observer une AIP', 'Annuler une AIP'],
-  'AIP (Artisanat)': ['Artisanat', 'Représentation'],
-  'AIP (Science)': ['Science'],
-  'Dépense d\'XP': ['Dépense XP']
+// ---------------------------------------------------------------------
+// Actions inter-partie (AIP), d'après le chapitre « Actions Inter-Partie »
+// des règles MET : 3 AIP entre deux parties (+1 Informatique, +1 par
+// domaine de Sciences, voir fiche/aip.js). La catégorie d'une action AIP
+// est la réserve utilisée ; les anciennes catégories restent reconnues.
+// ---------------------------------------------------------------------
+export const RESERVES_AIP = {
+  'AIP': 'AIP de base',
+  'AIP (Informatique)': 'AIP Informatique',
+  'AIP (Science)': 'AIP Science',
+  'AIP (Troupeau)': 'Troupeau (se nourrir sans AIP)'
 };
-export const CATEGORIES_RAISON_SOCIALE = [CAT_GOTHA, CAT_PEGRE, ...CATEGORIES_AIP];
+export const CATEGORIES_AIP = ['AIP', 'AIP (Troupeau)', 'AIP (Informatique)', 'AIP (Artisanat)', 'AIP (Science)', 'Dépense d\'XP'];
+/** Réserve d'AIP d'une action (les anciennes catégories comptent dans la réserve de base). */
+export const reserveAip = (categorie) => (RESERVES_AIP[categorie] ? categorie : 'AIP');
+const COURANTES = ['AIP', 'AIP (Informatique)'];
+export const ACTIONS_AIP = [
+  { nom: 'Enquête', reserves: [...COURANTES, 'AIP (Science)'], cible: 'Piste, ennemi, événement, savoir recherché…',
+    desc: 'Suivre une piste, se renseigner sur un ennemi, un événement étrange ou un savoir caché, à l\'aide de vos historiques ou capacités. Le conteur peut demander un challenge.' },
+  { nom: 'Patrouiller', reserves: COURANTES, lieu: true,
+    desc: 'Surveiller votre territoire : chaque AIP dépensée rend plus coûteux, pour un intrus, de s\'y nourrir sans se faire prendre. Indiquez le territoire.' },
+  { nom: 'Se nourrir', reserves: [...COURANTES, 'AIP (Troupeau)'], lieu: true, nourriture: true,
+    desc: 'Chasser entre deux parties : 1 AIP (davantage si le conteur l\'exige, +1 pour un Ventrue). Faute de quoi, le personnage commence la partie à demi-réserve de sang (arrondi au supérieur). Le Troupeau réduit ce coût de son niveau.' },
+  { nom: 'Artisanat : créer ou réparer', reserves: COURANTES, cible: 'Objet',
+    desc: 'Créer, construire ou réparer un objet avec votre compétence Artisanat (1 AIP par objet ; œuvre d\'art ou chef-d\'œuvre selon votre niveau et un challenge).' },
+  { nom: 'Artisanat : produire et vendre', reserves: COURANTES, points: 2,
+    desc: '2 AIP (créer puis vendre) : Ressources +1 pendant un mois, jusqu\'à 5, même sans l\'historique.' },
+  { nom: 'Représentation', reserves: COURANTES, points: 2,
+    desc: '2 AIP (promouvoir puis jouer le spectacle) : Renommée +1 pendant un mois, jusqu\'à 5, même sans l\'historique.' },
+  { nom: 'Au-delà de vos moyens', reserves: COURANTES, cible: 'Objet recherché',
+    desc: 'Obtenir un objet coûteux sans les Ressources nécessaires : payer d\'avance, rendre des services ou gagner l\'argent.' },
+  { nom: 'Apprentissage (mentorat, étude)', reserves: [...COURANTES, 'AIP (Science)'], cible: 'Mentor et ce qui est appris',
+    desc: 'Étudier auprès d\'un mentor : discipline hors clan, spécialité Mystères (1 AIP par spécialité), voie, rituel… Indiquez le mentor.' },
+  { nom: 'Recherche scientifique', reserves: [...COURANTES, 'AIP (Science)'], cible: 'Sujet de la recherche',
+    desc: 'Travail en rapport avec un de vos domaines d\'étude (Sciences).' },
+  { nom: 'Observer une AIP', reserves: ['AIP (Informatique)'], cible: 'Personnage observé',
+    desc: 'Informatique : observer une action inter-partie d\'un autre personnage (il doit se trouver dans la même cité).' },
+  { nom: 'Annuler une AIP', reserves: ['AIP (Informatique)'], cible: 'Personnage visé',
+    desc: 'Informatique : annuler une action inter-partie d\'un autre personnage (il garde toujours au moins 1 AIP).' },
+  { nom: 'Autre', reserves: [...COURANTES, 'AIP (Science)'], cible: 'Sujet',
+    desc: 'Toute autre activité entre deux parties : décrivez-la en une phrase.' }
+];
+export const POINTS_AIP = [1, 2, 3, 4, 5, 6];
 
 export const TYPES_ACTION = { globale: 'Globale', ciblee: 'Ciblée', soutien: 'Soutien', aip: 'AIP' };
 

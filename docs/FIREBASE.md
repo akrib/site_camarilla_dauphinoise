@@ -133,12 +133,26 @@ le commitez jamais, ne le déposez pas sur GitHub. Puis, connecté en administra
 Réimportez quand les règles changent.
 
 Le premier script n'est pas indispensable pour les descriptions : sans la fiche Excel
-(`sortie/textes_excel.json` absent), les archétypes sont lus dans le PDF, et la faiblesse
-de chaque clan reste dans le texte du clan. Avec le PDF du 18/10/2026 : 1 195
-descriptions ; manquent seulement les éléments de la fiche absents des règles (atouts
-« Morale Flexible », « Prodige Machiavélique » — retiré des règles —, « Réputation »,
-handicap « Chemise Empaillé », rituel « Sentinelle Numérique », technique « Piège de
-Force ») et l'archétype « Autre (Préciser) ».
+(`sortie/textes_excel.json` absent), les archétypes et la faiblesse de chaque clan sont
+lus dans le PDF. Avec le PDF du 18/10/2026 : 1 367 descriptions, dont les 37 faiblesses de
+clan et 135 niveaux de spécialités Mystères ; manquent seulement les éléments de la fiche
+absents des règles (atouts « Morale Flexible », « Prodige Machiavélique » — retiré des
+règles —, « Réputation », handicap « Chemise Empaillé », rituel « Sentinelle Numérique »,
+technique « Piège de Force »), l'archétype « Autre (Préciser) » et les spécialités Mystères
+sans chapitre (Cappadocien, Ravnos, Séthite, Fae, Inconnu, Inquisition, Tal'Mahe'Ra, Umbra).
+
+**Faiblesse de clan** : un référentiel importé avant la catégorie « faiblesses » marche
+encore (la faiblesse est lue dans le texte du clan), sauf pour le Toréador dont le texte
+n'y figurait pas : réimportez un `descriptions.json` récent.
+
+**Mystères** (catégorie `mysteres` du fichier) : les connaissances communes et secrètes
+de chaque niveau des spécialités Mystères sont des secrets de jeu. L'import les range à
+part, dans la collection `mysteres` (un document par spécialité + `index`), que **seuls les
+conteurs** peuvent lire. Le joueur ne reçoit que les niveaux de son personnage : quand un
+conteur valide une fiche ou la met en jeu, le site copie les textes des niveaux connus dans
+`personnages/{id}/detail/mysteres` (lisible du joueur, écrit par les conteurs seulement).
+Après le premier import des mystères, **Comptes > Maintenance > Transmettre les mystères
+aux fiches validées** fait cette copie pour toutes les fiches déjà validées ou en jeu.
 
 Le premier script régénère aussi `assets/js/camarilla/fiche/referentiel.js` (listes et
 coûts : noms des clans, disciplines, atouts…, sans texte de règles ni valeur de
@@ -225,6 +239,24 @@ l'indique et le bouton « Commencer » reste grisé.
   ou la mettre en jeu.
 - Une fois validée, seul un conteur peut la modifier. Le joueur dispose d'un bouton
   « Demander une modification », qui crée un ticket.
+- **Récapitulatif avant validation** : à chaque validation (ou mise en jeu), le site garde
+  la version validée (`personnages/{id}/detail/valide`, écrite par les conteurs). Quand le
+  joueur modifie ensuite sa fiche (repassée en brouillon), un encadré « Modifications depuis
+  la dernière validation » liste ce qui a changé, rubrique par rubrique (compétences,
+  disciplines, atouts, historiques, mystères…), et les PX dépensés entre les deux versions
+  (total et détail par poste). Il est ouvert d'office pour le conteur quand la fiche est
+  soumise, et se met à jour pendant les modifications. Pour une fiche validée avant cette
+  fonction, la version de référence est créée quand le conteur la repasse en brouillon, ou
+  d'un coup par **Comptes > Maintenance > Transmettre les mystères aux fiches validées**.
+- **Journal des consultations** (conteurs et administrateurs) : en bas de la page des
+  fiches, une fenêtre de quelques lignes (avec ascenseur et filtre) liste qui a ouvert
+  quelle fiche de joueur, et quand. Seuls sont gardés le nom du compte, l'heure et le nom de
+  la fiche (`journal_fiches/{idFiche}`, les 25 dernières consultations de chaque fiche) ; la
+  phrase est recomposée à l'affichage. Les PNJ et ses propres fiches ne sont pas notés, ni
+  la même fiche rouverte par la même personne dans les 10 minutes. Les règles Firestore
+  n'autorisent qu'un ajout en fin de liste, au nom de son auteur et à l'heure du serveur
+  (± 5 min) : personne ne peut effacer ou réécrire les lignes des autres (un administrateur
+  peut supprimer le journal d'une fiche depuis la console).
 - Les influences ne sont accessibles qu'avec un personnage **en jeu** : la page
   Influences agit pour le **personnage incarné** (comme la carte, le panneau et le
   tableau d'enquête) ; un bouton permet d'en changer.
@@ -270,6 +302,35 @@ par la page. Document : `calendrier/parties`
 (`parties : { 'AAAA-MM': { date, limite, titre, ouverture, fermeture, sansPartie } }`,
 `anticipation` ; pour un mois sans partie, `date` = date limite).
 
+### Influences : raisons sociales et actions inter-partie (AIP)
+
+- **Raison sociale** : c'est une des **spécialisations d'influence de la fiche** (Gotha ou
+  Pègre, par ex. « Banques (Finance) »), choisie dans une liste pour chaque action globale,
+  ciblée ou de soutien, selon la catégorie de l'action. Le type de spécialisation (liste des
+  15) est déduit de la parenthèse quand il y en a une. L'ancien registre des raisons
+  sociales saisi à part n'est plus utilisé : l'onglet a disparu côté joueur ; côté
+  conteur, l'onglet « Raisons sociales » liste les spécialisations des fiches en jeu, avec
+  l'ancien registre consultable (et un bouton pour le vider). Les règles Firestore
+  n'acceptent plus de nouvelle entrée dans `raisons_sociales`.
+- **AIP**, d'après le chapitre « Actions Inter-Partie » des règles : 3 AIP entre deux
+  parties, non reportables ; +1 avec la compétence Informatique (utilisable aussi pour
+  **observer** ou **annuler** l'AIP d'un autre personnage) ; Sciences : +1 pour le premier
+  domaine, +1 par domaine supplémentaire à 3 ou plus, réservées aux tâches de ces domaines.
+  Le formulaire demande la **réserve** utilisée (base, Informatique, Science avec le
+  domaine, Troupeau), l'**action** (Enquête, Patrouiller, Se nourrir, Artisanat, Représentation,
+  Au-delà de vos moyens, Apprentissage, Recherche scientifique, Observer / Annuler une AIP,
+  Autre — avec un rappel de ce qu'elle permet), le nombre d'AIP, une cible ou un sujet
+  facultatif et un descriptif d'une phrase ; plus de raison sociale. La date, la ville, le
+  **territoire** et le **lieu sur la carte** restent (patrouille, chasse…), comme le
+  pense-bête de la gazette côté conteur.
+- **Se nourrir** coûte 1 AIP (+1 pour la faiblesse Ventrue), réduit du niveau de
+  Troupeau ; faute de quoi, le personnage commence la partie à demi-réserve de sang.
+  Le formulaire propose le bon nombre et affiche les AIP restantes de chaque réserve pour
+  la partie visée ; un dépassement demande confirmation (le conteur tranche).
+- Côté conteur, la colonne **AIP** de l'onglet Personnages affiche « utilisées /
+  disponibles » (détail au survol) et 🩸 quand le personnage s'est nourri ; le « Récap du
+  mois » du joueur fait de même.
+
 ### Tickets
 
 Page **Tickets** (`/membres/tickets/`, tuile de l'espace membres) : nouvelle demande aux
@@ -282,7 +343,7 @@ un ticket.
 ### Textes longs compressés (Unishox2)
 
 Les textes longs sont compressés avant d'être enregistrés : descriptif et réponse des
-actions d'influence, description des raisons sociales, description et réponse des
+actions d'influence, description de l'ancien registre des raisons sociales, description et réponse des
 tickets, message du conteur sur une fiche, messages des notifications et des challenges
 demandés. Un texte de plus de 160 caractères est stocké en **octets** (Unishox2, environ
 35 à 60 % de la taille d'origine pour du français) si la compression fait gagner au moins
@@ -329,7 +390,21 @@ dérivées (sang, volonté, éthique, langues, scores de combat…).
   changement de focus, 4e ligne de Représentation, 4e pouvoir d'ancien, compétences
   libres.
 - Les champs Gotha, Pègre, génération et PX de la fiche sont recopiés dans le document
-  pour la page Influences.
+  pour la page Influences, ainsi que les actions inter-partie qu'elle donne (champ `aip` :
+  base 3, +1 Informatique, Sciences, Troupeau, coût pour se nourrir).
+- **Onglet Mystères** : la compétence Mystères et ses spécialités (les trois premières,
+  offertes, suivent la secte, le clan et la race), puis les **connaissances** de chaque
+  niveau connu (communes et secrètes). Un conteur voit tous les textes ; le joueur ceux
+  que les conteurs lui ont transmis à la validation (un niveau pas encore validé est
+  annoncé « accessible quand un conteur aura validé ce niveau »). L'ancienne carte
+  Mystères de l'onglet Compétences est remplacée par **Spécialités de compétences** :
+  une liste « ＋ ligne » (compétence + spécialité : Érudition / histoire de l'art,
+  Conduite / moto…), sans coût en PX.
+- **Aperçu avant impression** (bouton de la barre d'actions, et onglet Résumé) : toute
+  la fiche mise en page pour une feuille A4 (identité, faiblesse, atouts et handicaps,
+  attributs, compétences, mystères, disciplines et pouvoirs, techniques, rituels,
+  historiques, serviteurs, équipement, mentorats, expérience, combat), textes des
+  mystères en option. « Imprimer » n'imprime que la page (ou l'enregistre en PDF).
 - **Sur ordinateur**, la page des fiches prend toute la largeur de l'écran (jusqu'à
   1 800 px) : les grilles de la fiche affichent plus de colonnes.
 
@@ -712,8 +787,8 @@ gratuite, sauvegardez depuis le site :
 - **Comptes > Maintenance > Exporter toute la base (JSON)** (admin) : toutes les données,
   fiches complètes et textes en clair, images en option. Le fichier contient les emails
   des membres : gardez-le en lieu sûr ;
-- **Influences — conteur > Exports CSV** (actions avec partie et lieu, raisons sociales,
-  personnages en jeu) et **Tickets > Exporter en CSV** ;
+- **Influences — conteur > Exports CSV** (actions avec partie et lieu, raisons sociales
+  tirées des fiches, personnages en jeu) et **Tickets > Exporter en CSV** ;
 - **Fiches > Exporter en JSON** pour chaque fiche importante.
 
 ---
@@ -767,7 +842,12 @@ Puis ouvrez <http://localhost:4000/connexion/?emulateurs=1>. Le paramètre
 | `assets/js/camarilla/fiche/modele.js` | structure d'une fiche, import d'un classeur Excel |
 | `assets/js/camarilla/fiche/calculs.js` | calculs de l'onglet « Calculs » (PX, sang, volonté…) |
 | `assets/js/camarilla/fiche/editeur.js` | éditeur (ordinateur et mobile) et résumé imprimable |
-| `assets/js/camarilla/fiche/descriptions.js` | chargement des textes de règles depuis Firestore |
+| `assets/js/camarilla/fiche/descriptions.js` | chargement des textes de règles depuis Firestore, faiblesse de clan |
+| `assets/js/camarilla/fiche/mysteres.js`, `mysteres-base.js` | spécialités Mystères : niveaux connus, textes (conteurs), transmission au joueur |
+| `assets/js/camarilla/fiche/differences.js` | récapitulatif des modifications depuis la dernière validation |
+| `assets/js/camarilla/fiche/apercu.js` | aperçu avant impression de toute la fiche |
+| `assets/js/camarilla/fiche/journal.js` | journal des consultations de fiches (conteurs, administrateurs) |
+| `assets/js/camarilla/fiche/aip.js` | actions inter-partie qu'apporte une fiche (Informatique, Sciences, Troupeau) |
 | `assets/css/membres.css`, `assets/css/fiche.css`, `assets/css/panneau.css` | styles de l'espace membres, de la fiche et du panneau d'affichage |
 | `firebase/firestore.rules` | règles de sécurité (à publier dans la console) |
 | `firebase/firestore.indexes.json` | exemptions d'index (gros champs) |

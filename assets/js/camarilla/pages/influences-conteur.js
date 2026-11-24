@@ -5,7 +5,8 @@ import {
   h, db, fs, pageProtegee, barreMembre, message, messageErreur, dateFr, millis, onglets, options,
   telecharger, versCsv, confirmer
 } from '../core.js';
-import { ZONES, TYPES_ACTION, CATEGORIES_AIP, classeCat, libelleZone } from '../donnees.js';
+import { ZONES, TYPES_ACTION, CATEGORIES_AIP, CAT_GOTHA, CAT_PEGRE, reserveAip, classeCat, libelleZone } from '../donnees.js';
+import { totalAip } from '../fiche/aip.js';
 import { compresser, donneesDoc } from '../compression.js';
 import {
   chargerCalendrier, calculerCalendrier, moisParDefaut, partie, libellePartie, resumeEtat, etat, LIBELLES_ETAT, MAX_PARTIES,
@@ -62,17 +63,17 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
       const [a, p, r, sg] = await Promise.all([
         fs.getDocs(fs.query(fs.collection(db, 'influences'), fs.where('mois', '==', mois.value))),
         tout || !persos.length ? fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('statut', '==', 'active'))) : null,
-        tout || !raisons ? fs.getDocs(fs.collection(db, 'raisons_sociales')) : null,
+        tout || !raisons ? fs.getDocs(fs.collection(db, 'raisons_sociales')).catch(() => null) : null,
         lirePenseBete(mois.value).catch((e) => { console.warn('Pense-bête de la gazette illisible', e); return {}; })
       ]);
       sujetsGazette = sg;
       actions = a.docs.map(donneesDoc).sort((x, y) => millis(y.creeLe) - millis(x.creeLe));
       if (p) persos = p.docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => !x.pnj).sort((x, y) => (x.nom || '').localeCompare(y.nom || ''));   // pas les PNJ
-      if (r) raisons = r.docs.map(donneesDoc).sort((x, y) => (x.personnageNom || '').localeCompare(y.personnageNom || '') || (x.nom || '').localeCompare(y.nom || ''));
+      if (r || !raisons) raisons = r ? r.docs.map(donneesDoc).sort((x, y) => (x.personnageNom || '').localeCompare(y.personnageNom || '') || (x.nom || '').localeCompare(y.nom || '')) : [];
       const enAttente = actions.filter((x) => x.statut === 'attente').length;
       message(msg, actions.length + ' action(s) en ' + mois.value + ', dont ' + enAttente + ' sans réponse.', 'ok');
       dessinerPersonnages(); dessinerActions(); dessinerTerritoires(); dessinerExports();
-      if (r) dessinerRaisons();
+      dessinerRaisons();
     } catch (e) { message(msg, messageErreur(e), 'err'); }
   }
   mois.addEventListener('change', () => { majInfoPartie(); charger(false); });
@@ -206,6 +207,20 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
     dessinerLignes();
   }
 
+  // AIP d'un personnage pour la partie : utilisées / disponibles (d'après sa fiche, champ aip)
+  function celluleAip(p, siennes) {
+    const aips = siennes.filter((a) => a.type === 'aip' || CATEGORIES_AIP.includes(a.categorie));
+    const pris = (res) => aips.filter((a) => reserveAip(a.categorie) === res).reduce((t, a) => t + (a.pointsAction || 0), 0);
+    const utilisees = pris('AIP') + pris('AIP (Informatique)') + pris('AIP (Science)');
+    const nourri = aips.some((a) => a.nomAction === 'Se nourrir');
+    if (!p.aip) return h('td', { title: 'Budget inconnu : fiche enregistrée avant le calcul des AIP' }, utilisees + ' AIP' + (nourri ? ' 🩸' : ''));
+    const max = totalAip(p.aip);
+    const detail = 'Base ' + pris('AIP') + '/' + p.aip.base + (p.aip.informatique ? ' · Informatique ' + pris('AIP (Informatique)') + '/' + p.aip.informatique : '')
+      + (p.aip.sciences ? ' · Science ' + pris('AIP (Science)') + '/' + p.aip.sciences : '') + (p.aip.troupeau ? ' · Troupeau ' + pris('AIP (Troupeau)') + '/' + p.aip.troupeau : '')
+      + (nourri ? ' · s\'est nourri' : ' · ne s\'est pas nourri (demi-réserve de sang)');
+    return h('td', { title: detail }, h('span', { class: utilisees > max ? 'cam-tag refusee' : '' }, utilisees + ' / ' + max), nourri ? ' 🩸' : '');
+  }
+
   // --- Personnages en jeu : qui a agi ce mois-ci ---
   function dessinerPersonnages() {
     const corps = persos.map((p) => {
@@ -219,12 +234,12 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
         h('td', {}, String(siennes.length)),
         h('td', {}, pts('Influence Gotha') + ' / ' + p.niveauGotha),
         h('td', {}, pts('Influence Pègre') + ' / ' + p.niveauPegre),
-        h('td', {}, String(siennes.filter((a) => CATEGORIES_AIP.includes(a.categorie)).length)));
+        celluleAip(p, siennes));
     });
     panneaux.personnages.replaceChildren(h('div', { class: 'cam-bloc' },
       h('h2', {}, 'Personnages en jeu — ' + mois.value),
       h('div', { class: 'cam-table-defil' }, h('table', { class: 'cam-table' },
-        h('thead', {}, h('tr', {}, ['', 'Personnage', 'Joueur', 'Actions', 'Gotha (pts/niv.)', 'Pègre (pts/niv.)', 'AIP'].map((x) => h('th', {}, x)))),
+        h('thead', {}, h('tr', {}, ['', 'Personnage', 'Joueur', 'Actions', 'Gotha (pts/niv.)', 'Pègre (pts/niv.)', 'AIP (utilisées/dispo.)'].map((x) => h('th', {}, x)))),
         h('tbody', {}, corps.length ? corps : h('tr', {}, h('td', { colspan: 7 }, 'Aucun personnage en jeu.')))))));
   }
 
@@ -280,7 +295,7 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
         h('span', { class: 'cam-tag ' + a.statut }, a.statut === 'traitee' ? 'Traitée' : 'Sans réponse'), tagGazette,
         (a.date ? dateFr(a.date) : '') + ' · ' + (a.ville || '') + ' · territoire ' + (libelleZone(zoneDe(a)) || '?'),
         a.lieu ? [' · ', h('a', { href: '/utils/carte?mois=' + encodeURIComponent(a.mois) + '&action=' + encodeURIComponent(a.id) }, '📍 carte')] : ''),
-      h('strong', {}, a.personnageNom), ' — ', a.nomAction, ' — ', a.pointsAction + ' pt(s)',
+      h('strong', {}, a.personnageNom), ' — ', a.nomAction, ' — ', a.pointsAction + (a.type === 'aip' ? (a.categorie === 'AIP (Troupeau)' ? ' pt(s) de Troupeau' : ' AIP') : ' pt(s)'),
       a.niveau ? ' — niveau ' + a.niveau : '', a.specialisation ? ' — ' + a.specialisation : '',
       h('div', {},
         a.raisonSociale ? [h('strong', {}, 'Raison sociale : '), a.raisonSociale, h('br')] : '',
@@ -342,22 +357,47 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
           sans ? h('tr', {}, h('td', {}, h('em', {}, 'Sans territoire')), h('td', {}, String(sans)), h('td', {})) : ''))));
   }
 
-  // --- Raisons sociales ---
+  // --- Raisons sociales : les spécialisations d'influence des fiches en jeu ---
+  // (l'ancien registre saisi à part reste consultable, et peut être vidé)
+  const raisonsDesFiches = () => persos.flatMap((p) => [
+    ...(p.specsGotha || []).map((r) => ({ personnageNom: p.nom, proprietaireNom: p.proprietaireNom || '', categorie: CAT_GOTHA, nom: r, niveau: p.niveauGotha })),
+    ...(p.specsPegre || []).map((r) => ({ personnageNom: p.nom, proprietaireNom: p.proprietaireNom || '', categorie: CAT_PEGRE, nom: r, niveau: p.niveauPegre }))]);
   function dessinerRaisons() {
-    const recherche = h('input', { type: 'search', placeholder: 'Nom, personnage, ville…' });
+    const recherche = h('input', { type: 'search', placeholder: 'Raison sociale, personnage, joueur…' });
     const corps = h('tbody');
+    const toutes = raisonsDesFiches();
     const dessiner = () => {
       const q = recherche.value.trim().toLowerCase();
-      const liste = raisons.filter((r) => !q || [r.nom, r.personnageNom, r.ville, r.description].some((v) => (v || '').toLowerCase().includes(q)));
-      corps.replaceChildren(...liste.map((r) => h('tr', {},
-        h('td', {}, r.nom), h('td', {}, r.personnageNom), h('td', {}, r.ville), h('td', {}, r.zone),
-        h('td', {}, h('span', { class: 'cam-tag ' + classeCat(r.categorie) }, r.categorie)), h('td', { class: 'texte' }, r.description || ''))));
+      const liste = toutes.filter((r) => !q || [r.nom, r.personnageNom, r.proprietaireNom].some((v) => (v || '').toLowerCase().includes(q)));
+      corps.replaceChildren(...(liste.length ? liste.map((r) => h('tr', {},
+        h('td', {}, r.nom), h('td', {}, r.personnageNom), h('td', {}, r.proprietaireNom),
+        h('td', {}, h('span', { class: 'cam-tag ' + classeCat(r.categorie) }, r.categorie + ' ' + r.niveau))))
+        : [h('tr', {}, h('td', { colspan: 4 }, toutes.length ? 'Aucune raison sociale ne correspond.' : 'Aucune spécialisation d\'influence sur les fiches en jeu.'))]));
     };
     recherche.addEventListener('input', dessiner);
-    panneaux.raisons.replaceChildren(h('div', { class: 'cam-bloc' },
-      h('h2', {}, 'Registre des raisons sociales'), recherche,
+    const ancien = (raisons || []).length ? h('details', { class: 'cam-bloc' },
+      h('summary', {}, 'Ancien registre saisi à part (' + raisons.length + ' entrée' + (raisons.length > 1 ? 's' : '') + ')'),
+      h('p', { class: 'sous-titre' }, 'Le registre des raisons sociales n\'est plus utilisé : les joueurs choisissent désormais une spécialisation de leur fiche. Reportez au besoin ces entrées dans les fiches, puis videz le registre.'),
       h('div', { class: 'cam-table-defil' }, h('table', { class: 'cam-table' },
-        h('thead', {}, h('tr', {}, ['Nom', 'Personnage', 'Ville', 'Territoire', 'Catégorie', 'Description'].map((x) => h('th', {}, x)))), corps))));
+        h('thead', {}, h('tr', {}, ['Nom', 'Personnage', 'Ville', 'Territoire', 'Catégorie', 'Description'].map((x) => h('th', {}, x)))),
+        h('tbody', {}, raisons.map((r) => h('tr', {}, h('td', {}, r.nom), h('td', {}, r.personnageNom), h('td', {}, r.ville), h('td', {}, r.zone),
+          h('td', {}, r.categorie), h('td', { class: 'texte' }, r.description || '')))))),
+      h('button', {
+        type: 'button', class: 'petit danger', onclick: async (e) => {
+          if (!confirmer('Supprimer définitivement les ' + raisons.length + ' entrées de l\'ancien registre des raisons sociales ?')) return;
+          e.target.disabled = true;
+          try {
+            for (const r of raisons) await fs.deleteDoc(fs.doc(db, 'raisons_sociales', r.id));
+            raisons = []; dessinerRaisons(); dessinerExports();
+          } catch (x) { message(msg, messageErreur(x), 'err'); e.target.disabled = false; }
+        }
+      }, 'Vider l\'ancien registre')) : '';
+    panneaux.raisons.replaceChildren(h('div', { class: 'cam-bloc' },
+      h('h2', {}, 'Raisons sociales des personnages en jeu'),
+      h('p', { class: 'sous-titre' }, 'Ce sont les spécialisations d\'influence (Gotha, Pègre) des fiches : chaque action d\'influence en précise une.'),
+      recherche,
+      h('div', { class: 'cam-table-defil' }, h('table', { class: 'cam-table' },
+        h('thead', {}, h('tr', {}, ['Raison sociale', 'Personnage', 'Joueur', 'Catégorie'].map((x) => h('th', {}, x)))), corps))), ancien);
     dessiner();
   }
 
@@ -378,16 +418,17 @@ pageProtegee(racine, 'conteur', async ({ user }) => {
           { titre: 'Partie', valeur: (a) => { const p = partie(calendrier, a.mois); return p ? libellePartie(p) : a.mois; } },
           { titre: 'Latitude', valeur: (a) => (a.lieu ? a.lieu.lat : '') }, { titre: 'Longitude', valeur: (a) => (a.lieu ? a.lieu.lng : '') }
         ]), 'actions-' + mois.value + '.csv', 'text/csv;charset=utf-8')),
-        btn('Raisons sociales', () => telecharger(versCsv(raisons || [], [
-          { titre: 'Nom', cle: 'nom' }, { titre: 'Personnage', cle: 'personnageNom' }, { titre: 'Ville', cle: 'ville' },
-          { titre: 'Territoire', cle: 'zone' }, { titre: 'Catégorie', cle: 'categorie' }, { titre: 'Description', cle: 'description' }
+        btn('Raisons sociales', () => telecharger(versCsv(raisonsDesFiches(), [
+          { titre: 'Raison sociale', cle: 'nom' }, { titre: 'Personnage', cle: 'personnageNom' }, { titre: 'Joueur', cle: 'proprietaireNom' },
+          { titre: 'Catégorie', cle: 'categorie' }, { titre: 'Niveau', cle: 'niveau' }
         ]), 'raisons-sociales.csv', 'text/csv;charset=utf-8')),
         btn('Personnages en jeu', () => telecharger(versCsv(persos, [
           { titre: 'Personnage', cle: 'nom' }, { titre: 'Joueur', cle: 'proprietaireNom' }, { titre: 'Clan', cle: 'clan' },
           { titre: 'Secte', cle: 'secte' }, { titre: 'Âge', cle: 'age' }, { titre: 'Génération', cle: 'generation' },
           { titre: 'PX acquis', valeur: (p) => (p.xp ? p.xp.acquise : '') }, { titre: 'PX restants', valeur: (p) => (p.xp ? p.xp.restante : '') },
           { titre: 'Gotha', cle: 'niveauGotha' }, { titre: 'Spé. Gotha', valeur: (p) => (p.specsGotha || []).join(', ') },
-          { titre: 'Pègre', cle: 'niveauPegre' }, { titre: 'Spé. Pègre', valeur: (p) => (p.specsPegre || []).join(', ') }
+          { titre: 'Pègre', cle: 'niveauPegre' }, { titre: 'Spé. Pègre', valeur: (p) => (p.specsPegre || []).join(', ') },
+          { titre: 'AIP par partie', valeur: (p) => (p.aip ? totalAip(p.aip) : '') }, { titre: 'Troupeau', valeur: (p) => (p.aip ? p.aip.troupeau : '') }
         ]), 'personnages-en-jeu.csv', 'text/csv;charset=utf-8')))));
   }
 

@@ -70,6 +70,30 @@ export async function chercherDescription(cat, nom) {
   return null;
 }
 
+/**
+ * Faiblesse d'un clan : catégorie « faiblesses » du référentiel, sinon le
+ * paragraphe « Faiblesse de Clan : … » du texte du clan (référentiels importés
+ * avant que la catégorie existe).
+ * Renvoie { etat: 'ok', texte } | { etat: 'absent' } (rien d'importé) | { etat: 'introuvable' }.
+ */
+export async function faiblesseDeClan(clan) {
+  const index = await chargerIndex();
+  if (!index) return { etat: 'absent' };
+  const e = await chercherDescription('faiblesses', clan);
+  if (e && e.t) return { etat: 'ok', texte: e.t };
+  const c = await chercherDescription('clans', clan);
+  const texte = extraireFaiblesse(c && c.t);
+  return texte ? { etat: 'ok', texte } : { etat: 'introuvable' };
+}
+export function extraireFaiblesse(texte) {
+  const t = String(texte || '');
+  const m = /(?:^|\n)\s*(Faiblesses?(?:\s+(?:de|du)\s+(?:clan|lignée))?|Faiblesse alternative)\s*:/i.exec(t);
+  if (!m) return '';
+  const suite = t.slice(m.index).trim();
+  const fin = /\s*Livret de clan|\n\n|\n(?=(?:Lignées?|Conseils d|Avantages)\b)/i.exec(suite.slice(m[0].length));
+  return (fin ? suite.slice(0, m[0].length + fin.index) : suite).trim();
+}
+
 // ------------------------------------------------------------- panneau
 let panneau = null;
 function fermer() {

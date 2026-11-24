@@ -72,7 +72,7 @@ service cloud.firestore {
     // (VERSION_REGLES) à chaque modification de ce fichier.
     // ------------------------------------------------------------------
     match /regles/{version} {
-      allow get: if actif() && version == '2026-11-23';
+      allow get: if actif() && version == '2026-11-24';
     }
 
     // ------------------------------------------------------------------
@@ -191,6 +191,13 @@ service cloud.firestore {
         return x is map && x.keys().hasOnly(['acquise', 'depensee', 'restante'])
           && x.get('acquise', 0) is number && x.get('depensee', 0) is number && x.get('restante', 0) is number;
       }
+      // Actions inter-partie que donne la fiche (base, Informatique, Sciences, Troupeau, coût pour se nourrir)
+      function petitEntier(v) { return v is int && v >= 0 && v <= 20; }
+      function aipValide(a) {
+        return a is map && a.keys().hasOnly(['base', 'informatique', 'sciences', 'troupeau', 'nourriture'])
+          && petitEntier(a.get('base', 0)) && petitEntier(a.get('informatique', 0)) && petitEntier(a.get('sciences', 0))
+          && petitEntier(a.get('troupeau', 0)) && petitEntier(a.get('nourriture', 0));
+      }
       function ficheValide(d) {
         return d.schema == 2
           && texteNonVide(d.nom, 80)
@@ -201,6 +208,7 @@ service cloud.firestore {
           && d.specsGotha is list && d.specsGotha.size() <= 10
           && d.specsPegre is list && d.specsPegre.size() <= 10
           && xpValide(d.xp)
+          && (!('aip' in d) || aipValide(d.aip))
           && (!('fiche' in d) || (d.fiche is map && d.fiche.keys().size() <= 120
               && d.fiche.get('nom', '') == d.nom && d.fiche.get('clan', '') == d.clan && d.fiche.get('secte', '') == d.secte))
           && refImage(d.portrait)
@@ -212,12 +220,12 @@ service cloud.firestore {
       }
       function champsFiche() {
         return ['schema', 'proprietaire', 'proprietaireNom', 'nom', 'clan', 'secte', 'race', 'age', 'typeFiche',
-                'generation', 'niveauGotha', 'specsGotha', 'niveauPegre', 'specsPegre', 'xp', 'fiche', 'portrait',
+                'generation', 'niveauGotha', 'specsGotha', 'niveauPegre', 'specsPegre', 'xp', 'aip', 'fiche', 'portrait',
                 'contenuJson', 'statut', 'commentaireConteur', 'creeLe', 'majLe', 'validePar', 'valideLe', 'pnj'];
       }
       function champsJoueur() {
         return ['schema', 'proprietaireNom', 'nom', 'clan', 'secte', 'race', 'age', 'typeFiche', 'generation',
-                'niveauGotha', 'specsGotha', 'niveauPegre', 'specsPegre', 'xp', 'fiche', 'portrait',
+                'niveauGotha', 'specsGotha', 'niveauPegre', 'specsPegre', 'xp', 'aip', 'fiche', 'portrait',
                 'contenuJson', 'statut', 'majLe'];
       }
 
@@ -248,6 +256,12 @@ service cloud.firestore {
       // Détail : fiche MET complète + données complémentaires (deflate).
       // Écrit seulement avec le document de la fiche (même lot : majLe du
       // document = heure de l'écriture), donc aux mêmes conditions que lui.
+      //   detail/fiche     la fiche (joueur ou conteur, comme ci-dessus) ;
+      //   detail/valide    version de la dernière validation, gardée par un
+      //                    conteur (récapitulatif des modifications suivantes) ;
+      //   detail/mysteres  textes des niveaux de Mystères que connaît le
+      //                    personnage, transmis par un conteur à la validation.
+      // Le joueur lit les trois ; seuls les conteurs écrivent les deux derniers.
       match /detail/{partie} {
         function fichePers() { return get(chemin('personnages', id)).data; }
         function fichePersApres() { return getAfter(chemin('personnages', id)).data; }
@@ -260,6 +274,17 @@ service cloud.firestore {
           && existsAfter(chemin('personnages', id))
           && fichePersApres().majLe == request.time
           && (conteur() || (fichePersApres().proprietaire == uid() && fichePersApres().statut in ['brouillon', 'soumise']));
+        allow create, update: if conteur() && partie == 'valide'
+          && exists(chemin('personnages', id))
+          && cles(['fiche', 'nom', 'xp', 'valideLe', 'validePar', 'valideParNom'], ['fiche', 'nom', 'xp', 'valideLe', 'validePar'])
+          && texteLong(nouveau().fiche, 900000) && texte(nouveau().nom, 80)
+          && nouveau().xp is map && nouveau().xp.keys().hasOnly(['acquise', 'depensee', 'restante'])
+          && nouveau().valideLe is timestamp && texte(nouveau().validePar, 128) && texte(nouveau().get('valideParNom', ''), 80);
+        allow create, update: if conteur() && partie == 'mysteres'
+          && exists(chemin('personnages', id))
+          && cles(['textes', 'niveaux', 'majLe'], ['textes', 'niveaux', 'majLe'])
+          && texteLong(nouveau().textes, 900000) && nouveau().niveaux is map && nouveau().niveaux.size() <= 40
+          && nouveau().majLe == request.time;
         allow delete: if conteur()
           || (actif() && fichePers().proprietaire == uid() && fichePers().statut in ['brouillon', 'refusee']);
       }
@@ -281,6 +306,57 @@ service cloud.firestore {
             && texte(nouveau().version, 200) && nouveau().categories is map && nouveau().importePar == uid())
           || (id != 'index' && cles(['categorie', 'partie', 'entrees'], ['categorie', 'partie', 'entrees'])
             && texteNonVide(nouveau().categorie, 60) && nouveau().partie is int && nouveau().entrees is map)
+        );
+      allow delete: if admin();
+    }
+
+    // ------------------------------------------------------------------
+    // Spécialités Mystères : connaissances communes et secrètes de chaque
+    // niveau (secrets de jeu tirés des règles). Lisibles des seuls conteurs ;
+    // chaque joueur reçoit les niveaux de son personnage dans
+    // personnages/{id}/detail/mysteres. Importées par un administrateur avec
+    // le référentiel : « index » + un document par spécialité.
+    // ------------------------------------------------------------------
+    match /mysteres/{id} {
+      allow read: if conteur();
+      allow create, update: if admin()
+        && (
+          (id == 'index' && cles(['version', 'factions', 'importeLe', 'importePar'], ['version', 'factions', 'importeLe', 'importePar'])
+            && texte(nouveau().version, 200) && nouveau().factions is map && nouveau().importePar == uid())
+          || (id != 'index' && cles(['faction', 'niveaux'], ['faction', 'niveaux'])
+            && texteNonVide(nouveau().faction, 60) && nouveau().niveaux is map)
+        );
+      allow delete: if admin();
+    }
+
+    // ------------------------------------------------------------------
+    // Journal des consultations de fiches (conteurs et administrateurs)
+    // journal_fiches/{idFiche} : { nom, acces: [{ n: nom du compte, t: heure en ms }] }
+    // Les 25 dernières consultations par fiche. Seul un ajout en fin de liste
+    // est permis, au nom de son auteur et à l'heure actuelle (± 5 min) : on
+    // ne réécrit ni n'efface les consultations des autres (sauf un admin, qui
+    // peut supprimer le journal d'une fiche).
+    // ------------------------------------------------------------------
+    match /journal_fiches/{id} {
+      function accesValide(e) {
+        return e is map && e.keys().hasOnly(['n', 't']) && e.n == moi().nom
+          && e.t is int && e.t > request.time.toMillis() - 300000 && e.t < request.time.toMillis() + 300000;
+      }
+      function journalValide(d) {
+        return cles(['nom', 'acces'], ['nom', 'acces']) && texte(d.nom, 80)
+          && d.acces is list && d.acces.size() >= 1 && d.acces.size() <= 25
+          && accesValide(d.acces[d.acces.size() - 1]);
+      }
+      allow read: if conteur();
+      allow create: if conteur() && journalValide(nouveau()) && nouveau().acces.size() == 1
+        && exists(chemin('personnages', id));
+      allow update: if conteur() && journalValide(nouveau())
+        && ancien().acces is list
+        && (
+          (nouveau().acces.size() == ancien().acces.size() + 1
+            && nouveau().acces[0:ancien().acces.size()] == ancien().acces)
+          || (ancien().acces.size() == 25 && nouveau().acces.size() == 25
+            && nouveau().acces[0:24] == ancien().acces[1:25])
         );
       allow delete: if admin();
     }
@@ -645,25 +721,11 @@ service cloud.firestore {
         || conteur();
     }
 
-    // Registre des raisons sociales de chaque personnage.
+    // Ancien registre des raisons sociales : remplacé par les spécialisations
+    // d'influence de la fiche (une raison sociale = une spécialisation Gotha
+    // ou Pègre). Plus d'écriture ; lecture et suppression pour le vider.
     match /raisons_sociales/{id} {
-      function raisonValide(d) {
-        return texteNonVide(d.nom, 150) && texte(d.ville, 60) && texte(d.zone, 20)
-          && texte(d.categorie, 60) && texteLong(d.description, 3000);
-      }
       allow read: if (actif() && ancien().proprietaire == uid()) || conteur();
-      allow create: if actif()
-        && cles(['proprietaire', 'personnageId', 'personnageNom', 'nom', 'ville', 'zone', 'categorie', 'description', 'creeLe', 'majLe'],
-                ['proprietaire', 'personnageId', 'personnageNom', 'nom', 'ville', 'zone', 'categorie', 'description', 'creeLe'])
-        && nouveau().proprietaire == uid()
-        && persoEnJeuDuJoueur(nouveau().personnageId)
-        && nouveau().personnageNom == perso(nouveau().personnageId).nom
-        && raisonValide(nouveau())
-        && nouveau().creeLe == request.time;
-      allow update: if actif() && raisonValide(nouveau()) && (
-        (ancien().proprietaire == uid() && seulement(['nom', 'ville', 'zone', 'categorie', 'description', 'majLe']))
-        || (conteur() && inchanges(['proprietaire', 'personnageId', 'creeLe']))
-      );
       allow delete: if (actif() && ancien().proprietaire == uid()) || conteur();
     }
 

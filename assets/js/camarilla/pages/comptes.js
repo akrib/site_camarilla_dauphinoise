@@ -6,6 +6,9 @@ import {
 } from '../core.js';
 import { collecterRefs } from '../images.js';
 import { estCompresse, decompresserJson, compresserJson } from '../compression.js';
+import { slugMystere, accorderMysteres, indexMysteres } from '../fiche/mysteres.js';
+import { normaliser } from '../fiche/modele.js';
+import { calculer } from '../fiche/calculs.js';
 
 // Données d'un document avec ses textes et JSON compressés remis en clair.
 async function enClair(d) {
@@ -236,12 +239,53 @@ function panneauMaintenance() {
     finally { migrer.disabled = false; }
   });
 
+  // --- Fiches validées : textes des mystères et version de référence ---
+  // Pour les fiches validées ou en jeu avant ces fonctions : transmet au joueur
+  // les textes des mystères que connaît son personnage, et garde la version
+  // actuelle comme version validée (récapitulatif des prochaines modifications).
+  const sortieVal = h('div', { class: 'cam-msg' });
+  const transmettre = h('button', { type: 'button', class: 'secondaire' }, 'Transmettre les mystères aux fiches validées');
+  transmettre.addEventListener('click', async () => {
+    transmettre.disabled = true;
+    try {
+      const avecTextes = !!(await indexMysteres().catch(() => null));
+      const persos = await fs.getDocs(fs.query(fs.collection(db, 'personnages'), fs.where('statut', 'in', ['validee', 'active'])));
+      const liste = persos.docs.filter((d) => !d.data().pnj);
+      let n = 0, refs = 0;
+      for (const d of liste) {
+        const x = d.data();
+        let fiche = x.fiche || null;
+        if (!fiche) {
+          const det = await fs.getDoc(refDetail(d.id));
+          if (det.exists()) fiche = typeof det.data().fiche === 'object' && !estCompresse(det.data().fiche) ? det.data().fiche : JSON.parse((await decompresserJson(det.data().fiche)) || 'null');
+        }
+        if (!fiche) continue;
+        fiche = normaliser(fiche);
+        if (avecTextes) await accorderMysteres(d.id, fiche);
+        const refValide = fs.doc(db, 'personnages', d.id, 'detail', 'valide');
+        if (!(await fs.getDoc(refValide)).exists()) {
+          const xp = calculer(fiche).xp;
+          await fs.setDoc(refValide, {
+            fiche: await compresserJson(JSON.stringify(fiche)), nom: String(fiche.nom || x.nom || '').slice(0, 80),
+            xp: { acquise: xp.acquise, depensee: xp.depensee, restante: xp.restante },
+            valideLe: x.valideLe || fs.serverTimestamp(), validePar: x.validePar || '', valideParNom: '',
+          });
+          refs++;
+        }
+        message(sortieVal, 'Fiches… ' + (++n) + ' / ' + liste.length, 'info');
+      }
+      message(sortieVal, n + ' fiche(s) traitée(s)' + (avecTextes ? ', mystères transmis' : ' (textes des mystères non importés : rien à transmettre)')
+        + ', ' + refs + ' version(s) de référence créée(s).', 'ok');
+    } catch (e) { message(sortieVal, messageErreur(e), 'err'); }
+    finally { transmettre.disabled = false; }
+  });
+
   // --- Sauvegarde complète en JSON ---
   const sortieExp = h('div', { class: 'cam-msg' });
   const avecImages = h('input', { type: 'checkbox' });
   const exporter = h('button', { type: 'button', class: 'secondaire' }, 'Exporter toute la base (JSON)');
   const COLLECTIONS = ['utilisateurs', 'annuaire', 'repertoire', 'personnages', 'tableaux', 'panneau', 'notifications', 'defis',
-    'calendrier', 'influences', 'raisons_sociales', 'tickets', 'cartes', 'territoires', 'images_index'];
+    'calendrier', 'influences', 'raisons_sociales', 'tickets', 'cartes', 'territoires', 'images_index', 'journal_fiches'];
   const versJson = (v) => {
     if (v && typeof v.toDate === 'function') return v.toDate().toISOString();
     if (Array.isArray(v)) return v.map(versJson);
@@ -284,10 +328,11 @@ function panneauMaintenance() {
   const verifierRegles = h('button', { type: 'button', class: 'secondaire' }, 'Vérifier les règles');
   const LECTURES = [
     ['utilisateurs', 'Comptes'], ['annuaire', 'Annuaire'], ['repertoire', 'Répertoire des personnages'],
-    ['personnages', 'Fiches de personnage'], ['referentiel', 'Référentiel des règles'], ['images_index', 'Images'],
+    ['personnages', 'Fiches de personnage'], ['referentiel', 'Référentiel des règles'], ['mysteres', 'Textes des mystères'],
+    ['journal_fiches', 'Journal des consultations de fiches'], ['images_index', 'Images'],
     ['tableaux', 'Tableaux d\'enquête'], ['panneau', 'Panneau d\'affichage'], ['notifications', 'Notifications'],
     ['defis', 'Challenges'], ['cartes', 'Cartes des personnages'], ['territoires', 'Territoires'],
-    ['calendrier', 'Calendrier des parties'], ['influences', 'Influences'], ['raisons_sociales', 'Raisons sociales'],
+    ['calendrier', 'Calendrier des parties'], ['influences', 'Influences'], ['raisons_sociales', 'Ancien registre des raisons sociales'],
     ['tickets', 'Tickets'], ['classement', 'Classement « Trouve le Sabbat »'], ['gazettes', 'Gazette'],
     ['gazette_pensebete', 'Pense-bête de la gazette']
   ];
@@ -324,6 +369,9 @@ function panneauMaintenance() {
     h('h3', {}, 'Fiches : nouveau format'),
     h('p', { class: 'sous-titre' }, 'Les fiches sont maintenant en deux parties : un petit document pour les listes, et le détail (fiche complète, données complémentaires) compressé à part. Les anciennes fiches passent au nouveau format à leur prochain enregistrement ; ce bouton les migre toutes d\'un coup.'),
     h('div', { class: 'cam-actions' }, migrer), sortieMig,
+    h('h3', {}, 'Fiches validées : mystères et version de référence'),
+    h('p', { class: 'sous-titre' }, 'À la validation d\'une fiche, le site transmet au joueur les textes des mystères que connaît son personnage et garde la version validée (pour le récapitulatif des modifications suivantes). Ce bouton le fait d\'un coup pour les fiches déjà validées ou en jeu — après l\'import d\'un référentiel avec les mystères, par exemple. Deux à trois lectures et écritures par fiche.'),
+    h('div', { class: 'cam-actions' }, transmettre), sortieVal,
     h('h3', {}, 'Images'),
     h('p', { class: 'sous-titre' }, 'Les images restent stockées même quand le tableau, la fiche ou le message qui les utilisait est supprimé. Cet outil mesure l\'espace utilisé (1 Go gratuit) et supprime celles qui ne servent plus.'),
     h('div', { class: 'cam-actions' }, bouton, nettoyer), sortie,
@@ -337,6 +385,10 @@ function panneauMaintenance() {
 // outils/fiche/extraire_descriptions.py à partir du PDF des règles.
 // Il n'est jamais publié dans le dépôt : il va dans Firestore, lisible
 // par les seuls membres actifs.
+// La catégorie « mysteres » (connaissances de chaque niveau des spécialités
+// Mystères : secrets de jeu) va à part, dans la collection « mysteres »
+// lisible des seuls conteurs ; chaque joueur reçoit les niveaux de son
+// personnage à la validation de sa fiche.
 // ---------------------------------------------------------------------
 function panneauReferentiel(user) {
   const LIMITE_DOC = 700000;
@@ -348,15 +400,38 @@ function panneauReferentiel(user) {
 
   async function afficherEtat() {
     try {
-      const s = await fs.getDoc(fs.doc(db, 'referentiel', 'index'));
+      const [s, m] = await Promise.all([fs.getDoc(fs.doc(db, 'referentiel', 'index')), fs.getDoc(fs.doc(db, 'mysteres', 'index')).catch(() => null)]);
       if (!s.exists()) { etat.replaceChildren(h('div', { class: 'cam-encart alerte' }, 'Aucun référentiel importé : les « ⓘ » des fiches n\'affichent rien pour l\'instant.')); return; }
       const d = s.data();
       const cats = Object.entries(d.categories || {}).sort();
+      const myst = m && m.exists() ? Object.values(m.data().factions || {}) : [];
       etat.replaceChildren(h('div', { class: 'cam-encart' },
         h('strong', {}, d.version || 'Référentiel'), ' — importé le ', dateFr(d.importeLe, true), '. ',
         cats.reduce((n, [, c]) => n + (c.nb || 0), 0) + ' descriptions en ' + cats.length + ' catégories.',
-        h('div', { class: 'sous-titre', style: 'margin:.4rem 0 0' }, cats.map(([k, c]) => k + ' (' + c.nb + ')').join(' · '))));
+        h('div', { class: 'sous-titre', style: 'margin:.4rem 0 0' }, cats.map(([k, c]) => k + ' (' + c.nb + ')').join(' · ')),
+        h('div', { style: 'margin:.4rem 0 0' }, myst.length
+          ? 'Mystères : ' + myst.length + ' spécialités, ' + myst.reduce((n, f) => n + (f.niveaux || []).length, 0) + ' niveaux (lisibles des seuls conteurs ; chaque joueur reçoit ses niveaux à la validation de sa fiche).'
+          : h('span', { class: 'cam-tag refusee' }, 'Textes des mystères absents : réimportez un descriptions.json produit par la dernière version de l\'outil.'))));
     } catch (e) { etat.replaceChildren(h('div', { class: 'cam-msg err' }, messageErreur(e))); }
+  }
+  async function idsMysteres() {
+    const snap = await fs.getDocs(fs.collection(db, 'mysteres'));
+    return snap.docs.map((d) => d.id);
+  }
+  /** Textes des mystères : un document par spécialité { faction, niveaux: { '1': { c, x, n, t, p } } }. */
+  function documentsMysteres(entrees) {
+    const parFaction = new Map();
+    for (const [cle, v] of Object.entries(entrees || {})) {
+      const m = /^(.+?)\s*\/\s*(\d)$/.exec(cle);
+      if (!m || !v || typeof v !== 'object') continue;
+      const faction = m[1].trim().slice(0, 60);
+      if (!parFaction.has(faction)) parFaction.set(faction, { faction, niveaux: {} });
+      const t = (x) => (typeof x === 'string' ? x : '');
+      const n = { c: t(v.c), x: t(v.x), n: t(v.n), p: Number.isFinite(v.p) ? v.p : null };
+      if (!n.c && !n.x && !n.n) n.t = t(v.t);
+      parFaction.get(faction).niveaux[m[2]] = n;
+    }
+    return [...parFaction.values()].map((d) => ({ id: slugMystere(d.faction), data: d }));
   }
 
   async function idsExistants() {
@@ -373,8 +448,9 @@ function panneauReferentiel(user) {
       if (!brut || typeof brut.categories !== 'object') throw new Error('Fichier inattendu : choisissez le descriptions.json produit par outils/fiche/extraire_descriptions.py.');
       const docs = [];
       const index = {};
+      const mysteres = documentsMysteres(brut.categories.mysteres);
       for (const [cat, entrees] of Object.entries(brut.categories)) {
-        if (!/^[A-Za-z0-9]{1,60}$/.test(cat) || cat === 'index' || !entrees || typeof entrees !== 'object') continue;
+        if (!/^[A-Za-z0-9]{1,60}$/.test(cat) || cat === 'index' || cat === 'mysteres' || !entrees || typeof entrees !== 'object') continue;
         const parties = [{}];
         let taille = 0;
         for (const [cle, v] of Object.entries(entrees)) {
@@ -394,7 +470,8 @@ function panneauReferentiel(user) {
         index[cat] = { parts: parties.length, nb };
       }
       if (!docs.length) throw new Error('Aucune description dans ce fichier.');
-      if (!confirmer('Importer ' + Object.values(index).reduce((n, c) => n + c.nb, 0) + ' descriptions (' + docs.length + ' documents) ? Le référentiel actuel sera remplacé.')) { message(sortie, ''); return; }
+      if (!confirmer('Importer ' + Object.values(index).reduce((n, c) => n + c.nb, 0) + ' descriptions (' + docs.length + ' documents)'
+        + (mysteres.length ? ' et les textes de ' + mysteres.length + ' spécialités Mystères' : '') + ' ? Le référentiel actuel sera remplacé.')) { message(sortie, ''); return; }
       const anciens = await idsExistants();
       for (let i = 0; i < docs.length; i++) {
         message(sortie, 'Envoi ' + (i + 1) + ' / ' + docs.length + ' (' + docs[i].id + ')…', 'info');
@@ -406,7 +483,29 @@ function panneauReferentiel(user) {
         version: String(brut.version || f.name).slice(0, 200), avertissement: String(brut.avertissement || '').slice(0, 500),
         categories: index, importeLe: fs.serverTimestamp(), importePar: user.uid,
       });
-      message(sortie, 'Référentiel importé.', 'ok');
+      // Mystères : collection réservée aux conteurs
+      let avisMysteres = '';
+      if (mysteres.length) {
+        try {
+          const anciensM = await idsMysteres().catch(() => []);
+          for (let i = 0; i < mysteres.length; i++) {
+            message(sortie, 'Mystères ' + (i + 1) + ' / ' + mysteres.length + ' (' + mysteres[i].data.faction + ')…', 'info');
+            await fs.setDoc(fs.doc(db, 'mysteres', mysteres[i].id), mysteres[i].data);
+          }
+          const garderM = new Set(mysteres.map((d) => d.id).concat('index'));
+          for (const id of anciensM.filter((x) => !garderM.has(x))) await fs.deleteDoc(fs.doc(db, 'mysteres', id));
+          await fs.setDoc(fs.doc(db, 'mysteres', 'index'), {
+            version: String(brut.version || f.name).slice(0, 200),
+            factions: Object.fromEntries(mysteres.map((d) => [d.id, { nom: d.data.faction, niveaux: Object.keys(d.data.niveaux).map(Number).sort() }])),
+            importeLe: fs.serverTimestamp(), importePar: user.uid,
+          });
+          avisMysteres = ' Textes des mystères importés : pensez à « Transmettre les mystères » (Maintenance) pour les fiches déjà validées.';
+        } catch (e) {
+          console.error(e);
+          avisMysteres = ' Mais les textes des mystères n\'ont pas pu être importés (' + messageErreur(e) + ') : republiez les règles Firestore puis réimportez.';
+        }
+      }
+      message(sortie, 'Référentiel importé.' + avisMysteres, avisMysteres.startsWith(' Mais') ? 'err' : 'ok');
       afficherEtat();
     } catch (e) { console.error(e); message(sortie, messageErreur(e), 'err'); }
   });
@@ -417,7 +516,8 @@ function panneauReferentiel(user) {
       const ids = await idsExistants();
       for (const id of ids.filter((x) => x !== 'index')) await fs.deleteDoc(fs.doc(db, 'referentiel', id));
       if (ids.includes('index')) await fs.deleteDoc(fs.doc(db, 'referentiel', 'index'));
-      message(sortie, 'Référentiel supprimé.', 'ok');
+      for (const id of await idsMysteres().catch(() => [])) await fs.deleteDoc(fs.doc(db, 'mysteres', id));
+      message(sortie, 'Référentiel supprimé (textes des mystères compris).', 'ok');
       afficherEtat();
     } catch (e) { message(sortie, messageErreur(e), 'err'); }
   });
@@ -426,7 +526,8 @@ function panneauReferentiel(user) {
   return h('div', { dataset: { panneau: 'referentiel' } },
     h('p', { class: 'sous-titre' }, 'Les descriptions affichées par les « ⓘ » des fiches de personnage viennent des règles MET de la Fédération (document confidentiel). '
       + 'Elles ne sont pas dans le code du site : générez descriptions.json sur votre ordinateur avec outils/fiche/extraire_descriptions.py, puis importez-le ici. '
-      + 'Seuls les membres actifs peuvent les lire.'),
+      + 'Seuls les membres actifs peuvent les lire. Les textes des mystères (secrets de jeu) ne sont lisibles que des conteurs : '
+      + 'chaque joueur reçoit les niveaux de son personnage quand sa fiche est validée.'),
     etat,
     h('div', { class: 'cam-actions' }, importer, supprimer, fichier), sortie);
 }

@@ -1,9 +1,13 @@
 // Page /membres/fiches/ : fiches de personnage MET (plusieurs par joueur),
 // circuit de validation par les conteurs, et PNJ des conteurs (fiches sans
 // joueur, champ pnj = catégorie : onglet « PNJ »).
+// À la validation, un conteur enregistre aussi la version de référence de la
+// fiche (detail/valide : récapitulatif des modifications suivantes) et les
+// textes des mystères qu'elle connaît (detail/mysteres). Les consultations de
+// fiches par les conteurs et administrateurs sont notées dans journal_fiches.
 import {
   h, db, fs, pageProtegee, barreMembre, estConteur, message, messageErreur, dateFr, millis,
-  onglets, confirmer, options, telecharger
+  onglets, confirmer, options, telecharger, reglesAJour
 } from '../core.js';
 import {
   compresserFichier, enregistrerImage, baliseImage, externaliser, internaliser, collecterRefs
@@ -14,6 +18,11 @@ import { majRepertoire, estIncarnable } from '../incarnation.js';
 import { compresser, donneesDoc, compresserJson, decompresserJson, estCompresse } from '../compression.js';
 import { creerEditeur } from '../fiche/editeur.js';
 import { ficheVide as ficheMetVide, normaliser } from '../fiche/modele.js';
+import { sourceConteur, sourceJoueur, donneesMysteres, refMysteres } from '../fiche/mysteres.js';
+import { recapitulatif } from '../fiche/differences.js';
+import { budgetAip } from '../fiche/aip.js';
+import { ouvrirApercu } from '../fiche/apercu.js';
+import { noterAcces, panneauJournal } from '../fiche/journal.js';
 import { lireFicheExcel } from '../fiche/import-excel.js';
 
 const racine = document.getElementById('cam-fiches');
@@ -69,8 +78,10 @@ async function route() {
       if (!snap.exists()) { racine.replaceChildren(h('div', { class: 'cam-encart erreur' }, 'Fiche introuvable.')); return; }
       const avis = avisApresNavigation; avisApresNavigation = null;
       const d = await chargerDetail(donneesDoc(snap));
+      if (!d.pnj) d.valide = await chargerValide(d.id);
       if (perimee()) return;
       afficherEditeur(d, null, avis);
+      noterAcces(session, d).catch((e) => console.warn('Journal des consultations non mis à jour', e));
     } else if (hash === 'nouvelle') {
       afficherEditeur(null);
     } else if (hash === 'nouveau-pnj' && conteur) {
@@ -184,7 +195,7 @@ function afficherListes(ongletInitial) {
       h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Statut'), filtreStatut), h('div', {}, h('label', {}, 'Recherche'), recherche)),
       zoneToutes),
     panneauPnj());
-  racine.replaceChildren(bloc);
+  racine.replaceChildren(bloc, panneauJournal());
   onglets(bloc, (nom) => { history.replaceState(null, '', nom === 'mes' ? location.pathname : '#' + nom); })(ongletInitial);
 }
 
@@ -297,6 +308,26 @@ async function chargerDetail(d) {
   return { ...d, fiche, contenuJson: (await decompresserJson(x.contenuJson)) || '{}' };
 }
 
+// Version de référence (dernière validation par un conteur) : sert au
+// récapitulatif des modifications. Absente pour une fiche jamais validée
+// (ou validée avant que le site ne la garde).
+const refValide = (id) => fs.doc(db, 'personnages', id, 'detail', 'valide');
+async function chargerValide(id) {
+  try {
+    const s = await fs.getDoc(refValide(id));
+    if (!s.exists()) return null;
+    const x = s.data();
+    return { ...x, fiche: JSON.parse((await decompresserJson(x.fiche)) || 'null') };
+  } catch (e) { console.warn('Version validée illisible', e); return null; }
+}
+async function donneesValide(fiche, xp, uid, nomConteur) {
+  return {
+    fiche: await compresserJson(JSON.stringify(fiche)), nom: String(fiche.nom || '').slice(0, 80),
+    xp: { acquise: xp.acquise || 0, depensee: xp.depensee || 0, restante: xp.restante || 0 },
+    valideLe: fs.serverTimestamp(), validePar: uid, valideParNom: String(nomConteur || '').slice(0, 80),
+  };
+}
+
 /** Écrit le document léger et le détail dans un même lot. */
 async function ecrireFiche(ref, leger, detail, { creation = false, ancienFormat = false } = {}) {
   const lot = fs.writeBatch(db);
@@ -346,6 +377,7 @@ function champsDerives(f, R) {
     niveauGotha: borne(f.historiques.gotha.niveau), specsGotha: specs(f.historiques.gotha.specialisations),
     niveauPegre: borne(f.historiques.pegre.niveau), specsPegre: specs(f.historiques.pegre.specialisations),
     xp: { acquise: R.xp.acquise, depensee: R.xp.depensee, restante: R.xp.restante },
+    aip: budgetAip(f),
   };
 }
 
@@ -378,6 +410,9 @@ function retourListe() {
   if (location.hash) location.hash = ''; else route();
 }
 
+let promesseRegles = null;
+const reglesRecentes = () => (promesseRegles = promesseRegles || reglesAJour().catch(() => false));
+
 let gardeSortie = null;
 function proteger(actif) {
   if (gardeSortie) window.removeEventListener('beforeunload', gardeSortie);
@@ -407,10 +442,61 @@ function afficherEditeur(existante, preRemplie, avis) {
   // --- Fiche MET ---
   const resumeEntete = h('p', { class: 'sous-titre fiche-resume-entete' });
   const titre = h('span', {});
+  // Textes des mystères : tous les niveaux pour un conteur, ceux transmis à la validation pour le joueur.
+  const sourceMyst = conteur ? sourceConteur() : sourceJoueur(nouvelle ? null : d.id);
   const editeur = creerEditeur({
-    fiche: ficheDuDocument(d), modifiable,
-    surModification: () => { if (!modifie) { modifie = true; proteger(true); } majEntete(); },
+    fiche: ficheDuDocument(d), modifiable, mysteres: sourceMyst, apercu: () => apercu(),
+    surModification: () => { if (!modifie) { modifie = true; proteger(true); } majEntete(); majRecap(); },
   });
+  function apercu() {
+    try {
+      ouvrirApercu(editeur.lireFiche(), {
+        portrait: portraitRef ? baliseImage(portraitRef, { alt: 'Portrait' }) : null,
+        joueur: estPnj ? '' : (d.proprietaireNom || (nouvelle ? session.profil.nom : '')),
+        statut: estPnj ? 'PNJ' + (CATEGORIES_PNJ[categoriePnj] ? ' (' + CATEGORIES_PNJ[categoriePnj] + ')' : '') : (nouvelle ? 'Nouvelle fiche' : STATUTS_FICHE[d.statut] || d.statut),
+        mysteres: sourceMyst,
+      });
+    } catch (e) { console.error(e); message(msg, 'Aperçu impossible : ' + messageErreur(e), 'err'); }
+  }
+
+  // --- Récapitulatif des modifications depuis la dernière validation (conteurs, et joueur pendant ses modifications)
+  const zoneRecap = h('div', { class: 'fiche-recap-zone' });
+  let minuteurRecap = null;
+  function majRecap() { clearTimeout(minuteurRecap); minuteurRecap = setTimeout(dessinerRecap, 400); }
+  function dessinerRecap() {
+    try { zoneRecap.replaceChildren(blocRecap()); } catch (e) { console.error('Récapitulatif impossible', e); zoneRecap.replaceChildren(); }
+  }
+  function blocRecap() {
+    if (estPnj || nouvelle || !(conteur || proprio)) return '';
+    const signe = (n) => (n > 0 ? '+' + n : String(n));
+    if (!d.valide || !d.valide.fiche) {
+      if (!conteur || d.statut !== 'soumise') return '';
+      const x = editeur.calcul().xp;
+      return h('div', { class: 'cam-encart fiche-recap' },
+        h('strong', {}, 'Pas de version validée de référence'), ' : première validation de cette fiche, ou fiche validée avant que le site ne garde cette version. ',
+        'PX acquis ', h('b', {}, x.acquise), ', dépensés ', h('b', {}, x.depensee), ', restants ', h('b', {}, x.restante), '.');
+    }
+    const r = recapitulatif(d.valide.fiche, editeur.lireFiche());
+    const xa = r.xp.avant, xb = r.xp.apres;
+    const dxp = xb.depensee - xa.depensee;
+    const rien = !r.changements.length && !r.xp.lignes.length;
+    if (rien && !(conteur && d.statut === 'soumise')) return '';
+    const parRubrique = new Map();
+    r.changements.forEach((c) => { if (!parRubrique.has(c.rubrique)) parRubrique.set(c.rubrique, []); parRubrique.get(c.rubrique).push(c.texte); });
+    const quand = d.valide.valideLe ? dateFr(d.valide.valideLe) : '';
+    return h('details', { class: 'cam-bloc fiche-recap', open: conteur && d.statut === 'soumise' },
+      h('summary', {}, h('strong', {}, 'Modifications depuis la dernière validation'),
+        ' ', h('span', { class: 'cam-tag ' + (rien ? 'validee' : 'soumise') }, rien ? 'aucune' : r.changements.length + ' modification' + (r.changements.length > 1 ? 's' : '')),
+        dxp ? h('span', { class: 'cam-tag ' + (dxp > 0 ? 'refusee' : 'validee') }, signe(dxp) + ' PX dépensés') : ''),
+      h('p', { class: 'sous-titre' }, 'Comparaison avec la version validée' + (quand ? ' le ' + quand : '') + (d.valide.valideParNom ? ' par ' + d.valide.valideParNom : '') + '. Mis à jour pendant les modifications.'),
+      h('p', { class: 'fiche-recap-xp' },
+        'PX dépensés ', h('b', {}, xa.depensee), ' → ', h('b', {}, xb.depensee), dxp ? ' (' + signe(dxp) + ')' : '',
+        ' · acquis ', h('b', {}, xa.acquise), ' → ', h('b', {}, xb.acquise),
+        ' · restants ', h('b', {}, xa.restante), ' → ', h('b', {}, xb.restante)),
+      r.xp.lignes.length ? h('ul', { class: 'fiche-recap-xp-detail' }, r.xp.lignes.map(([l, a, b]) => h('li', {}, l + ' : ' + a + ' → ' + b + ' PX (' + signe(b - a) + ')'))) : '',
+      rien ? h('p', {}, 'Aucune modification depuis la dernière validation.')
+        : h('div', { class: 'fiche-recap-liste' }, [...parRubrique].map(([rub, l]) => h('div', {}, h('h4', {}, rub), h('ul', {}, l.map((t) => h('li', { class: t.includes(': + ') || t.startsWith('+ ') ? 'plus' : t.includes(': − ') || t.startsWith('− ') ? 'moins' : '' }, t)))))));
+  }
   function majEntete() {
     const f = editeur.lireFiche();
     titre.textContent = f.nom || (nouvelle ? 'Nouvelle fiche' : 'Fiche sans nom');
@@ -486,6 +572,8 @@ function afficherEditeur(existante, preRemplie, avis) {
     if (contenuJson.length > LIMITE_JSON) throw new Error('Données complémentaires trop volumineuses (' + Math.round(contenuJson.length / 1024) + ' Ko, maximum ' + Math.round(LIMITE_JSON / 1024) + ' Ko).');
     if (portraitRef.startsWith('data:')) portraitRef = await enregistrerImage(portraitRef);
     const data = { ...champsDerives(f, R), portrait: portraitRef, statut, majLe: fs.serverTimestamp() };
+    // Champ récent : écrit seulement si les règles Firestore publiées le connaissent.
+    if (!(await reglesRecentes())) delete data.aip;
     if (estPnj) data.pnj = categoriePnj;
     const detail = { fiche: f, contenuJson };
     const taille = new Blob([JSON.stringify(detail)]).size;
@@ -493,9 +581,35 @@ function afficherEditeur(existante, preRemplie, avis) {
     return { data, detail };
   }
 
+  // Après l'enregistrement par un conteur : à la validation (ou mise en jeu),
+  // version de référence + textes des mystères connus ; quand une fiche validée
+  // repasse en modification, on garde la version validée si elle manquait.
+  // Écrit à part : un échec (règles Firestore pas à jour) n'empêche pas la validation.
+  async function enregistrerReference(id, statut, fiche, xp) {
+    const valider = ['validee', 'active'].includes(statut);
+    const retour = !valider && ['validee', 'active'].includes(d.statut) && !d.valide;
+    if (!valider && !retour) return '';
+    try {
+      const lot = fs.writeBatch(db);
+      if (valider) {
+        lot.set(refValide(id), await donneesValide(fiche, xp, uid, session.profil.nom));
+        const m = await donneesMysteres(fiche).catch((e) => { console.warn('Mystères non transmis', e); return null; });
+        if (m) lot.set(refMysteres(id), m);
+      } else {
+        lot.set(refValide(id), { ...(await donneesValide(ficheDuDocument(d), d.xp || {}, d.validePar || uid, '')), ...(d.valideLe ? { valideLe: d.valideLe } : {}) });
+      }
+      await lot.commit();
+      return '';
+    } catch (e) {
+      console.warn('Version de référence non enregistrée', e);
+      return ' (Attention : version de référence et mystères non enregistrés — ' + messageErreur(e) + '. Republiez les règles Firestore.)';
+    }
+  }
+
   async function enregistrer(statut, texteOk) {
     message(msg, 'Enregistrement…', 'info');
     actions.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+    let avert = '';
     try {
       const { data, detail } = await construire(statut);
       if (estPnj) {
@@ -537,6 +651,7 @@ function afficherEditeur(existante, preRemplie, avis) {
           }
           if (proprio) extra.proprietaireNom = session.profil.nom;
           await ecrireFiche(ref, { ...data, ...extra }, detail, { ancienFormat: d.ancienFormat });
+          avert = await enregistrerReference(d.id, statut, detail.fiche, data.xp);
           // Répertoire des personnages validés (partage des tableaux d'enquête).
           if (estIncarnable(d) || estIncarnable({ statut })) {
             await majRepertoire({ id: d.id, nom: data.nom, proprietaire: d.proprietaire, statut }, estIncarnable(d) ? undefined : null);
@@ -557,7 +672,7 @@ function afficherEditeur(existante, preRemplie, avis) {
         proteger(false);
         await route();
       }
-      message(document.querySelector('#cam-fiches .cam-msg.global') || msg, texteOk || 'Fiche enregistrée.', 'ok');
+      message(document.querySelector('#cam-fiches .cam-msg.global') || msg, (texteOk || 'Fiche enregistrée.') + avert, avert ? 'err' : 'ok');
     } catch (e) {
       console.error(e);
       message(msg, messageErreur(e), 'err');
@@ -599,6 +714,7 @@ function afficherEditeur(existante, preRemplie, avis) {
         bouton('Retirer la soumission', () => enregistrer('brouillon', 'Soumission retirée.'), 'secondaire'));
     }
   }
+  actions.append(bouton('🖨 Aperçu avant impression', apercu, 'secondaire'));
   if (!nouvelle) {
     // Conteur : ajouter ce personnage au combat en cours (gardé dans ce navigateur).
     if (conteur && d.statut !== 'archivee') {
@@ -644,6 +760,7 @@ function afficherEditeur(existante, preRemplie, avis) {
           const lot = fs.writeBatch(db);
           lot.delete(fs.doc(db, 'personnages', d.id));
           lot.delete(refDetail(d.id));
+          if (!estPnj) { lot.delete(refValide(d.id)); lot.delete(refMysteres(d.id)); }
           await lot.commit();
           if (!estPnj && estIncarnable(d)) await majRepertoire({ ...d, statut: 'archivee' }, undefined);
           proteger(false); retourListe();
@@ -683,6 +800,7 @@ function afficherEditeur(existante, preRemplie, avis) {
           conteur && !proprio && !estPnj ? h('p', { class: 'sous-titre' }, 'Joueur : ' + (d.proprietaireNom || '?')) : '',
           d.validePar && d.valideLe ? h('p', { class: 'sous-titre' }, 'Validée le ' + dateFr(d.valideLe)) : '',
           h('p', { class: 'sous-titre' }, 'Cliquez sur « ⓘ » pour lire la description d\'un élément dans les règles MET.')))),
+    zoneRecap,
     editeur.el,
     h('details', { class: 'cam-bloc' },
       h('summary', {}, h('strong', {}, 'Données complémentaires (JSON)')),
@@ -695,6 +813,7 @@ function afficherEditeur(existante, preRemplie, avis) {
       conteur ? h('p', { class: 'sous-titre' }, 'Envoyé dans les notifications du joueur avec le résultat (validation, mise en jeu, renvoi, archivage). Il est effacé de la fiche une fois celle-ci validée.') : '',
       commentaire),
     h('div', { class: 'fiche-actions' }, actions, msg));
+  dessinerRecap();
 }
 
 // Demande de modification d'une fiche validée : crée un ticket pour les conteurs.

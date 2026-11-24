@@ -9,15 +9,16 @@
 // =====================================================================
 import { h } from '../core.js';
 import { REF } from './referentiel.js';
-import { normaliser, nombre } from './modele.js';
+import { normaliser, nombre, TAILLES } from './modele.js';
 import {
   calculer, ECARTS, atoutsDisponibles, handicapsDisponibles, libelleAtout, libelleRituel, disciplinesDeClan,
   disciplineRef, rituelDe, cle, clanDe,
 } from './calculs.js';
-import { boutonInfo, chercherDescription } from './descriptions.js';
+import { boutonInfo, faiblesseDeClan } from './descriptions.js';
+import { mysteresConnus, nomSpecialite } from './mysteres-base.js';
 
 const GROUPES = [
-  ['personnage', 'Personnage'], ['historiques', 'Historiques'], ['serviteurs', 'Serviteurs'],
+  ['personnage', 'Personnage'], ['mysteres', 'Mystères'], ['historiques', 'Historiques'], ['serviteurs', 'Serviteurs'],
   ['equipement', 'Équipement'], ['mentorats', 'Mentorats'], ['resume', 'Résumé imprimable'],
 ];
 const MOBILE = window.matchMedia('(max-width: 760px)');
@@ -26,7 +27,12 @@ const rempli = (v) => String(v ?? '').trim() !== '';
 const sansCout = (lib) => String(lib || '').replace(/\s*\((?:cout|niveau)\s*\d+\)\s*$/i, '').trim();
 const signe = (n) => (n > 0 ? '+' + n : String(n));
 
-export function creerEditeur({ fiche, modifiable = true, surModification } = {}) {
+/**
+ * mysteres : source des textes des spécialités Mystères ({ mode, lire(faction) },
+ * voir mysteres.js) ; sans source, la section n'affiche que les niveaux.
+ * apercu : fonction appelée par le bouton « Aperçu avant impression » du résumé.
+ */
+export function creerEditeur({ fiche, modifiable = true, surModification, mysteres = null, apercu = null } = {}) {
   const F = normaliser(fiche);
   let R = calculer(F);
   const dis = !modifiable;
@@ -159,6 +165,7 @@ export function creerEditeur({ fiche, modifiable = true, surModification } = {})
     { id: 'competences', titre: 'Compétences', groupe: 'personnage', rendre: rendreCompetences },
     { id: 'disciplines', titre: 'Disciplines', groupe: 'personnage', rendre: rendreDisciplines },
     { id: 'techniques', titre: 'Techniques et rituels', groupe: 'personnage', rendre: rendreTechniques },
+    { id: 'mysteres', titre: 'Mystères', groupe: 'mysteres', rendre: rendreMysteres },
     { id: 'historiques', titre: 'Historiques', groupe: 'historiques', rendre: rendreHistoriques },
     { id: 'serviteurs', titre: 'Serviteurs', groupe: 'serviteurs', rendre: rendreServiteurs },
     { id: 'equipement', titre: 'Équipement', groupe: 'equipement', rendre: rendreEquipement },
@@ -185,8 +192,10 @@ export function creerEditeur({ fiche, modifiable = true, surModification } = {})
       if (!F.clan) { faiblesse.textContent = 'Choisissez un clan.'; return; }
       faiblesse.textContent = '…';
       try {
-        const e = await chercherDescription('faiblesses', F.clan);
-        faiblesse.textContent = e ? e.t : 'Texte non disponible (référentiel non importé).';
+        const r = await faiblesseDeClan(F.clan);
+        faiblesse.textContent = r.etat === 'ok' ? r.texte
+          : r.etat === 'absent' ? 'Texte non disponible : le référentiel des règles n\'a pas été importé (Comptes > Référentiel).'
+            : 'Faiblesse introuvable dans le référentiel importé : réimportez un descriptions.json à jour (Comptes > Référentiel).';
       } catch (err) { faiblesse.textContent = 'Texte réservé aux membres : non disponible.'; }
     };
     chargerFaiblesse();
@@ -194,11 +203,11 @@ export function creerEditeur({ fiche, modifiable = true, surModification } = {})
       h('div', { class: 'fiche-grille' },
         champ('Nom', texte('nom', { maxlength: 80 }), { cls: 'large' }),
         champ('Type de fiche', liste('typeFiche', REF.typesFiche, { apres: () => rafraichir('atouts') }), { info: info('Antagoniste', [{ cat: 'notions', nom: 'Antagoniste' }]) }),
-        champ('Secte', liste('secte', REF.sectes, { apres: () => rafraichir('atouts') }), { info: infoListe('sectes', 'secte') }),
-        champ('Race', liste('race', REF.races)),
+        champ('Secte', liste('secte', REF.sectes, { apres: () => rafraichir('atouts', 'mysteres') }), { info: infoListe('sectes', 'secte') }),
+        champ('Race', liste('race', REF.races, { apres: () => rafraichir('mysteres') })),
         champ('Âge', liste('age', REF.ages)),
-        champ('Clan', liste('clan', REF.clans.map((c) => c.nom), { apres: () => rafraichir('identite', 'atouts', 'competences', 'disciplines') }),
-          { info: boutonInfo(() => F.clan, () => [{ cat: 'clans', nom: F.clan }, { cat: 'faiblesses', nom: F.clan, titre: 'Faiblesse de clan (fiche Excel)' }]), cls: 'large' })),
+        champ('Clan', liste('clan', REF.clans.map((c) => c.nom), { apres: () => rafraichir('identite', 'atouts', 'competences', 'disciplines', 'mysteres') }),
+          { info: boutonInfo(() => F.clan, () => [{ cat: 'clans', nom: F.clan }, { cat: 'faiblesses', nom: F.clan, titre: 'Faiblesse de clan' }]), cls: 'large' })),
       h('div', { class: 'fiche-champ pleine' }, h('label', {}, 'Faiblesse de clan'), faiblesse),
       h('div', { class: 'fiche-grille' },
         champ('Nom véritable', texte('nomVeritable')), champ('Naissance', dateChamp('naissance')), champ('Lieu de naissance', texte('lieuNaissance')),
@@ -330,7 +339,6 @@ export function creerEditeur({ fiche, modifiable = true, surModification } = {})
     const caitiff = clanDe(F) && /^ca[iï]tiff/i.test(clanDe(F).nom);
     const cardinales = REF.disciplinesCardinales;
     const troisieme = R.particularites.atouts.vestiges ? REF.disciplinesExotiques : cardinales;
-    const autoMystere = (i) => [F.secte, F.clan, F.race][i] || ['Secte', 'Clan', 'Race'][i];
     return [
       h('div', { class: 'fiche-colonnes trois' },
         h('div', { class: 'fiche-carte' },
@@ -347,12 +355,11 @@ export function creerEditeur({ fiche, modifiable = true, surModification } = {})
             champ("Bénédiction de l'Artiste (1re ligne)", liste('beneficeRepresentation', ['Oui', 'Non'], { vide: 'Béné. Arti ?', attrs: { class: 'court' } })))),
         h('div', {},
           h('div', { class: 'fiche-carte' },
-            h('h4', {}, 'Mystères', info('Mystères', [{ cat: 'competences', nom: 'Mystères' }])),
-            champ('Niveau', niveau('mysteres.niveau')),
-            h('label', {}, 'Spécialités'),
-            lignes(25, (i) => i < 3 || rempli(F.mysteres.specialites[i].nom), (i) => h('div', { class: 'fiche-ligne' },
-              i < 3 ? h('span', { class: 'nom auto' }, calc(() => autoMystere(i))) : liste(`mysteres.specialites.${i}.nom`, REF.factionsMystere),
-              niveau(`mysteres.specialites.${i}.niveau`)), { videsVisibles: 1 })),
+            h('h4', {}, 'Spécialités de compétences'),
+            h('p', { class: 'sous-titre' }, 'Champ d\'étude ou spécialité d\'une compétence : Érudition (histoire de l\'art…), Conduite (moto…), Survie (montagne…). Les Mystères ont leur propre onglet.'),
+            lignes(TAILLES.specialitesCompetences, (i) => rempli(F.specialitesCompetences[i].competence) || rempli(F.specialitesCompetences[i].nom), (i) => h('div', { class: 'fiche-ligne fiche-spe-comp' },
+              liste(`specialitesCompetences.${i}.competence`, REF.competences, { vide: 'Compétence ?', attrs: { 'aria-label': 'Compétence' } }),
+              texte(`specialitesCompetences.${i}.nom`, { placeholder: 'Spécialité', 'aria-label': 'Spécialité', maxlength: 80 })))),
           h('div', { class: 'fiche-carte' },
             h('h4', {}, 'Linguistique', info('Linguistique', [{ cat: 'competences', nom: 'Linguistique' }])),
             h('div', { class: 'fiche-grille serree' },
@@ -409,6 +416,72 @@ export function creerEditeur({ fiche, modifiable = true, surModification } = {})
         lignes(50, (i) => rempli(F.rituels[i]), (i) => h('div', { class: 'fiche-ligne' },
           liste(`rituels.${i}`, rituels), calc(() => { const r = rituelDe(F.rituels[i]); return r ? 'niv. ' + r.niveau : ''; }, 'fiche-calc mini'),
           infoListe('rituels', `rituels.${i}`)))));
+  }
+
+  // ===================================================== MYSTÈRES
+  // Compétence Mystères et ses spécialités (les trois premières sont offertes :
+  // secte, clan, race), puis les connaissances de chaque niveau connu.
+  function rendreMysteres() {
+    const auto = (i) => nomSpecialite(F, i) || ['Secte', 'Clan', 'Race'][i];
+    const carte = h('div', { class: 'fiche-carte' },
+      h('h4', {}, 'Compétence Mystères', info('Mystères', [{ cat: 'competences', nom: 'Mystères' }])),
+      champ('Niveau', niveau('mysteres.niveau')),
+      h('label', {}, 'Spécialités'),
+      lignes(TAILLES.specialitesMystere, (i) => i < 3 || rempli(F.mysteres.specialites[i].nom), (i) => h('div', { class: 'fiche-ligne' },
+        i < 3 ? h('span', { class: 'nom auto', title: 'Spécialité offerte (' + ['secte', 'clan', 'race'][i] + ')' }, auto(i))
+          : liste(`mysteres.specialites.${i}.nom`, REF.factionsMystere, { apres: () => rafraichir('mysteres') }),
+        niveau(`mysteres.specialites.${i}.niveau`, 6, { apres: () => rafraichir('mysteres') })), { videsVisibles: 1 }));
+    const aide = h('div', { class: 'fiche-carte fiche-myst-aide' },
+      h('h4', {}, 'Apprendre un mystère'),
+      h('p', {}, 'Les trois premières spécialités sont offertes (secte, clan et race), au niveau 2. Ouvrir ou monter une autre spécialité demande un mentor qui la maîtrise au niveau visé (1 AIP de l\'élève par spécialité, voir l\'onglet Mentorats) et l\'accord des conteurs.'),
+      h('p', {}, mysteres && mysteres.mode === 'joueur'
+        ? 'Quand un conteur valide la fiche, les connaissances (communes et secrètes) des niveaux appris apparaissent ci-dessous.'
+        : 'Les connaissances de chaque niveau s\'affichent ci-dessous ; le joueur les reçoit quand la fiche est validée ou mise en jeu.'));
+    const connus = mysteresConnus(F);
+    const zone = h('div', { class: 'fiche-myst-liste' });
+    if (!connus.length) zone.append(h('p', { class: 'sous-titre' }, 'Aucune spécialité Mystères avec un niveau.'));
+    for (const m of connus) {
+      const corps = h('div', { class: 'fiche-myst-corps' }, h('p', { class: 'sous-titre' }, mysteres ? 'Chargement…' : 'Textes non disponibles ici.'));
+      zone.append(h('details', { class: 'fiche-myst' },
+        h('summary', {}, h('strong', {}, m.faction), ' — niveau ' + m.niveau, m.libelle !== m.faction ? h('small', {}, ' (' + m.libelle + ')') : ''),
+        corps));
+      if (mysteres) remplirMystere(corps, m).catch((e) => { console.warn('Textes des mystères illisibles', e); corps.replaceChildren(h('p', { class: 'cam-msg err' }, 'Textes illisibles (' + (e.code || e.message) + ').')); });
+    }
+    return [
+      h('div', { class: 'fiche-colonnes deux' }, carte, aide),
+      h('h4', {}, 'Connaissances'),
+      h('p', { class: 'fiche-desc-avert' }, 'Secrets de jeu, tirés des règles de la Fédération : ne les partagez qu\'en jeu, et ne les diffusez pas.'),
+      zone,
+    ];
+  }
+  async function remplirMystere(corps, { faction, niveau: max }) {
+    const r = await mysteres.lire(faction);
+    const avis = {
+      absent: 'Les textes des mystères n\'ont pas été importés (Comptes > Référentiel, avec un descriptions.json à jour).',
+      'non-transmis': 'Les connaissances vous sont transmises par un conteur quand il valide la fiche (ou la met en jeu).',
+      'sans-texte': 'Pas de chapitre pour cette spécialité dans les règles : voyez avec les conteurs.',
+    };
+    if (r.etat !== 'ok') { corps.replaceChildren(h('p', { class: 'sous-titre' }, avis[r.etat] || '—')); return; }
+    const blocs = [];
+    for (let k = 1; k <= max; k++) {
+      const t = r.niveaux[k];
+      let contenu;
+      if (t) {
+        contenu = [
+          t.n ? h('div', { class: 'fiche-myst-texte' }, t.n) : '',
+          t.c ? [h('h6', {}, 'Connaissances communes'), h('div', { class: 'fiche-myst-texte' }, t.c)] : '',
+          t.x ? [h('h6', { class: 'secret' }, 'Connaissances secrètes'), h('div', { class: 'fiche-myst-texte' }, t.x)] : '',
+          !t.n && !t.c && !t.x && t.t ? h('div', { class: 'fiche-myst-texte' }, t.t) : '',
+          t.p ? h('p', { class: 'fiche-desc-source' }, 'Règles MET · p. ' + t.p) : '',
+        ];
+      } else if (r.accorde !== undefined && k > r.accorde) {
+        contenu = h('p', { class: 'sous-titre' }, 'Accessible quand un conteur aura validé ce niveau.');
+      } else {
+        contenu = h('p', { class: 'sous-titre' }, 'Pas de texte pour ce niveau dans les règles.');
+      }
+      blocs.push(h('section', { class: 'fiche-myst-niveau' }, h('h5', {}, 'Niveau ' + k), contenu));
+    }
+    corps.replaceChildren(...blocs);
   }
 
   // ===================================================== HISTORIQUES
@@ -542,7 +615,8 @@ export function creerEditeur({ fiche, modifiable = true, surModification } = {})
     vue(() => zoneResume.replaceChildren(...resume()));
     return [
       h('div', { class: 'cam-actions fiche-pas-imprimer' },
-        h('button', { type: 'button', onclick: () => { document.body.classList.add('cam-impression-resume'); window.print(); } }, 'Imprimer le résumé')),
+        h('button', { type: 'button', onclick: () => { document.body.classList.add('cam-impression-resume'); window.print(); } }, 'Imprimer le résumé'),
+        apercu ? h('button', { type: 'button', class: 'secondaire', onclick: () => apercu() }, '🖨 Fiche complète (aperçu avant impression)') : ''),
       zoneResume,
     ];
   }
@@ -588,6 +662,7 @@ export function creerEditeur({ fiche, modifiable = true, surModification } = {})
           h('p', {}, 'Langues (' + R.langues + ') : ' + (F.langues.filter(rempli).join(', ') || '—'))),
         lst('Compétences', comp),
         lst('Sciences · Artisanat · Représentation', [...sous(F.sciences), ...sous(F.artisanat), ...sous(F.representation)]),
+        lst('Spécialités de compétences', F.specialitesCompetences.filter((x) => rempli(x.nom)).map((x) => (x.competence ? x.competence + ' : ' : '') + x.nom)),
         lst('Mystères', myst.map((x) => niv(x.niveau, x.nom))),
         lst('Atouts', F.atouts.filter(rempli)),
         lst('Handicaps', [...F.handicaps, ...F.handicapsSupp].filter(rempli)),

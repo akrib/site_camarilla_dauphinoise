@@ -156,7 +156,7 @@ pageProtegee(racine, 'connecte', async ({ user, profil }) => {
       : 'Le générateur de challenge, et les challenges que les conteurs demandent à ' + perso.nom + '.', n ? String(n) : '');
     const enJeu = perso.statut === 'active';
     const tuileInfluences = tuile('/influences/', 'Influences', enJeu
-      ? 'Actions d\'influence et raisons sociales de ' + perso.nom + '.'
+      ? 'Actions d\'influence et actions inter-partie (AIP) de ' + perso.nom + '.'
       : 'Réservées aux personnages en jeu : ' + perso.nom + ' est en réserve.');
     tuileInfluences.querySelector('strong').append(cInfluences);
     return h('div', { class: 'cam-grille' },

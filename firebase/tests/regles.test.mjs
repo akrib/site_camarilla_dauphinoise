@@ -605,12 +605,94 @@ describe('Influences', () => {
     await assertFails(deleteDoc(doc(db('alice'), 'influences', 'iA')));
     await assertSucceeds(deleteDoc(doc(db('bob'), 'influences', 'iB')));
   });
-  test('raisons sociales : pour son personnage en jeu uniquement', async () => {
+  test('ancien registre des raisons sociales : plus d\'ajout ; lecture et suppression', async () => {
     const rs = (pid, nomP) => ({ proprietaire: 'alice', personnageId: pid, personnageNom: nomP, nom: 'AFP Isère',
       ville: 'Grenoble', zone: '2', categorie: 'Influence Gotha', description: '', creeLe: serverTimestamp() });
-    await assertSucceeds(setDoc(doc(db('alice'), 'raisons_sociales', 'r1'), rs('pA', 'Amarok')));
-    await assertFails(setDoc(doc(db('alice'), 'raisons_sociales', 'r2'), rs('pB', 'Bastien')));
-    await assertFails(getDoc(doc(db('bob'), 'raisons_sociales', 'r1')));
+    await assertFails(setDoc(doc(db('alice'), 'raisons_sociales', 'r1'), rs('pA', 'Amarok')));
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'raisons_sociales', 'r0'), { ...rs('pA', 'Amarok'), creeLe: passe }));
+    await assertSucceeds(getDoc(doc(db('alice'), 'raisons_sociales', 'r0')));
+    await assertFails(getDoc(doc(db('bob'), 'raisons_sociales', 'r0')));
+    await assertFails(updateDoc(doc(db('alice'), 'raisons_sociales', 'r0'), { nom: 'Autre' }));
+    await assertSucceeds(deleteDoc(doc(db('conteur'), 'raisons_sociales', 'r0')));
+  });
+  test('action inter-partie : sans raison sociale', async () => {
+    await assertSucceeds(setDoc(doc(db('alice'), 'influences', 'a1'), action('alice', 'pA', 'Amarok', {
+      type: 'aip', categorie: 'AIP (Informatique)', nomAction: 'Observer une AIP', niveau: 0, specialisation: '', raisonSociale: '',
+      cible: 'Bastien', descriptif: 'Je lis ses courriels.' })));
+    const sans = action('alice', 'pA', 'Amarok', { type: 'aip', categorie: 'AIP', nomAction: 'Se nourrir', niveau: 0, specialisation: '' });
+    delete sans.raisonSociale;
+    await assertSucceeds(setDoc(doc(db('alice'), 'influences', 'a2'), sans));
+  });
+});
+
+// ---------------------------------------------------------------------
+describe('Mystères : textes réservés aux conteurs, transmis par personnage', () => {
+  const niveaux = { '1': { c: 'Commun', x: 'Secret', n: '', p: 948 } };
+  test('textes de toutes les spécialités : conteurs en lecture, administrateur en écriture', async () => {
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'mysteres', 'anarch'), { faction: 'Anarch', niveaux }));
+    await assertFails(getDoc(doc(db('alice'), 'mysteres', 'anarch')));
+    await assertFails(getDocs(collection(db('alice'), 'mysteres')));
+    await assertSucceeds(getDoc(doc(db('conteur'), 'mysteres', 'anarch')));
+    await assertFails(setDoc(doc(db('conteur'), 'mysteres', 'sabbat'), { faction: 'Sabbat', niveaux }));
+    await assertSucceeds(setDoc(doc(db('admin'), 'mysteres', 'sabbat'), { faction: 'Sabbat', niveaux }));
+    await assertSucceeds(setDoc(doc(db('admin'), 'mysteres', 'index'), { version: 'v', factions: { sabbat: { nom: 'Sabbat', niveaux: [1] } }, importeLe: serverTimestamp(), importePar: 'admin' }));
+    await assertFails(setDoc(doc(db('admin'), 'mysteres', 'index'), { version: 'v', factions: {}, importeLe: serverTimestamp(), importePar: 'conteur' }));
+    await assertFails(deleteDoc(doc(db('conteur'), 'mysteres', 'sabbat')));
+    await assertSucceeds(deleteDoc(doc(db('admin'), 'mysteres', 'sabbat')));
+  });
+  test('niveaux d\'un personnage : écrits par un conteur, lus par son joueur seulement', async () => {
+    const m = { textes: octets(200), niveaux: { anarch: 2 }, majLe: serverTimestamp() };
+    await assertFails(setDoc(doc(db('alice'), 'personnages', 'pA', 'detail', 'mysteres'), m));
+    await assertSucceeds(setDoc(doc(db('conteur'), 'personnages', 'pA', 'detail', 'mysteres'), m));
+    await assertFails(setDoc(doc(db('conteur'), 'personnages', 'pA', 'detail', 'mysteres'), { ...m, autre: 1 }));
+    await assertFails(setDoc(doc(db('conteur'), 'personnages', 'inconnu', 'detail', 'mysteres'), m));
+    await assertSucceeds(getDoc(doc(db('alice'), 'personnages', 'pA', 'detail', 'mysteres')));
+    await assertFails(getDoc(doc(db('bob'), 'personnages', 'pA', 'detail', 'mysteres')));
+  });
+  test('version validée : écrite par un conteur, lue par le joueur et les conteurs', async () => {
+    const v = { fiche: octets(300), nom: 'Amarok', xp: { acquise: 50, depensee: 48, restante: 2 }, valideLe: serverTimestamp(), validePar: 'conteur', valideParNom: 'Conteur' };
+    await assertFails(setDoc(doc(db('alice'), 'personnages', 'pA', 'detail', 'valide'), v));
+    await assertSucceeds(setDoc(doc(db('conteur'), 'personnages', 'pA', 'detail', 'valide'), v));
+    await assertSucceeds(setDoc(doc(db('conteur'), 'personnages', 'pAv', 'detail', 'valide'), { ...v, valideLe: passe }));
+    await assertFails(setDoc(doc(db('conteur'), 'personnages', 'pA', 'detail', 'valide'), { ...v, xp: { total: 3 } }));
+    await assertSucceeds(getDoc(doc(db('alice'), 'personnages', 'pA', 'detail', 'valide')));
+    await assertFails(getDoc(doc(db('bob'), 'personnages', 'pA', 'detail', 'valide')));
+    await assertSucceeds(getDoc(doc(db('conteur2'), 'personnages', 'pA', 'detail', 'valide')));
+  });
+  test('suppression d\'un brouillon par son joueur : tout le détail part', async () => {
+    const d = db('alice');
+    const lot = writeBatch(d);
+    lot.delete(doc(d, 'personnages', 'pA2'));
+    lot.delete(doc(d, 'personnages', 'pA2', 'detail', 'fiche'));
+    lot.delete(doc(d, 'personnages', 'pA2', 'detail', 'valide'));
+    lot.delete(doc(d, 'personnages', 'pA2', 'detail', 'mysteres'));
+    await assertSucceeds(lot.commit());
+  });
+});
+
+// ---------------------------------------------------------------------
+describe('Journal des consultations de fiches', () => {
+  const acces = (n, t = Date.now()) => ({ n, t });
+  test('un conteur note sa consultation, à son nom et à l\'heure actuelle', async () => {
+    await assertSucceeds(setDoc(doc(db('conteur'), 'journal_fiches', 'pA'), { nom: 'Amarok', acces: [acces('Conteur')] }));
+    await assertFails(setDoc(doc(db('conteur'), 'journal_fiches', 'pB'), { nom: 'Bastien', acces: [acces('Admin')] }));
+    await assertFails(setDoc(doc(db('conteur'), 'journal_fiches', 'pB'), { nom: 'Bastien', acces: [acces('Conteur', Date.now() - 3600000)] }));
+    await assertFails(setDoc(doc(db('conteur'), 'journal_fiches', 'inconnu'), { nom: 'X', acces: [acces('Conteur')] }));
+    await assertFails(setDoc(doc(db('alice'), 'journal_fiches', 'pB'), { nom: 'Bastien', acces: [acces('Alice')] }));
+    await assertSucceeds(getDoc(doc(db('admin'), 'journal_fiches', 'pA')));
+    await assertFails(getDoc(doc(db('alice'), 'journal_fiches', 'pA')));
+  });
+  test('ajout en fin de liste seulement ; 25 consultations au plus', async () => {
+    const anciens = Array.from({ length: 25 }, (_, i) => acces('Conteur2', 1700000000000 + i));
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'journal_fiches', 'pB'), { nom: 'Bastien', acces: anciens.slice(0, 3) }));
+    await assertSucceeds(setDoc(doc(db('conteur'), 'journal_fiches', 'pB'), { nom: 'Bastien', acces: [...anciens.slice(0, 3), acces('Conteur')] }));
+    await assertFails(setDoc(doc(db('conteur'), 'journal_fiches', 'pB'), { nom: 'Bastien', acces: [acces('Conteur')] }));
+    await assertFails(setDoc(doc(db('conteur'), 'journal_fiches', 'pB'), { nom: 'Bastien', acces: [anciens[1], anciens[2], acces('Conteur'), acces('Conteur')] }));
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'journal_fiches', 'pD'), { nom: 'Damien', acces: anciens }));
+    await assertSucceeds(setDoc(doc(db('admin'), 'journal_fiches', 'pD'), { nom: 'Damien', acces: [...anciens.slice(1), acces('Admin')] }));
+    await assertFails(setDoc(doc(db('admin'), 'journal_fiches', 'pD'), { nom: 'Damien', acces: [...anciens.slice(1, 24), acces('Admin'), acces('Admin')] }));
+    await assertFails(deleteDoc(doc(db('conteur'), 'journal_fiches', 'pD')));
+    await assertSucceeds(deleteDoc(doc(db('admin'), 'journal_fiches', 'pD')));
   });
 });
 
@@ -717,6 +799,15 @@ describe('Textes longs compressés (octets)', () => {
 // ---------------------------------------------------------------------
 // Fiches en deux parties, cartes, territoires, dates de réponse
 // ---------------------------------------------------------------------
+describe('Fiches : actions inter-partie recopiées (champ aip)', () => {
+  test('aip valide accepté, aip incohérent refusé', async () => {
+    const aip = { base: 3, informatique: 1, sciences: 2, troupeau: 1, nourriture: 2 };
+    await assertSucceeds(updateDoc(doc(db('alice'), 'personnages', 'pA2'), { aip, majLe: serverTimestamp() }));
+    await assertFails(updateDoc(doc(db('alice'), 'personnages', 'pA2'), { aip: { ...aip, bonus: 9 }, majLe: serverTimestamp() }));
+    await assertFails(updateDoc(doc(db('alice'), 'personnages', 'pA2'), { aip: { ...aip, base: 99 }, majLe: serverTimestamp() }));
+  });
+});
+
 describe('Fiches : document léger + détail', () => {
   const leger = (uid, extra = {}) => {
     const f = nouvelleFiche(uid, extra);

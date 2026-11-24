@@ -6,11 +6,17 @@
 //   ?mois=AAAA-MM&lieu=lng,lat#actions   nouvelle action, partie et lieu choisis
 //   ?action=ID#resultats   action à mettre en avant (et à modifier si possible)
 // Les tickets ont leur propre page : /membres/tickets/.
+// Raison sociale d'une action Gotha / Pègre : une des spécialisations
+// d'influence de la fiche (plus de registre à part). Les AIP suivent le
+// chapitre « Actions Inter-Partie » des règles : réserve de base (3 par
+// partie), Informatique, Sciences, Troupeau (voir fiche/aip.js).
 import {
   h, db, fs, pageProtegee, barreMembre, estConteur, message, messageErreur, dateFr, millis, onglets, options,
   confirmer, aujourdhui
 } from '../core.js';
-import { compresser, donneesDoc } from '../compression.js';
+import { compresser, donneesDoc, decompresserJson, estCompresse } from '../compression.js';
+import { budgetAip } from '../fiche/aip.js';
+import { normaliser } from '../fiche/modele.js';
 import {
   chargerCalendrier, encartCalendrier, periodesModifiables, modifiable, moisParDefaut, libelleMois, libellePartie,
   partieCourante, resumeEtat, partie
@@ -18,7 +24,7 @@ import {
 import { choisirLieu, texteLieu, chargerTerritoires, zoneDuPoint } from '../carte-base.js';
 import {
   VILLES, OPTIONS_ZONES, POINTS, SPECIALISATIONS, CAT_GOTHA, CAT_PEGRE, ACTIONS_GOTHA_GLOB, ACTIONS_PEGRE_GLOB,
-  CATEGORIES_AIP, AIP_ACTIONS, CATEGORIES_RAISON_SOCIALE, TYPES_ACTION, classeCat, libelleZone
+  CATEGORIES_AIP, RESERVES_AIP, ACTIONS_AIP, POINTS_AIP, reserveAip, TYPES_ACTION, classeCat
 } from '../donnees.js';
 import { personnageIncarne, incarner, blocChoixPersonnage, fenetreChoixPersonnage } from '../incarnation.js';
 import { marquerVu } from '../suivi.js';
@@ -67,7 +73,17 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
   let territoires = [];
   const territoiresPrets = chargerTerritoires().then((t) => { territoires = t; }).catch(() => {});
 
-  let raisons = [];            // raisons sociales du personnage
+  // Fiche complète (lisible du joueur) : budget d'AIP et domaines de Sciences.
+  const fichePrete = (async () => {
+    try {
+      if (perso.fiche) return normaliser(perso.fiche);   // ancien format
+      const s = await fs.getDoc(fs.doc(db, 'personnages', perso.id, 'detail', 'fiche'));
+      if (!s.exists()) return null;
+      const x = s.data();
+      const f = x.fiche && typeof x.fiche === 'object' && !estCompresse(x.fiche) ? x.fiche : JSON.parse((await decompresserJson(x.fiche)) || 'null');
+      return f ? normaliser(f) : null;
+    } catch (e) { console.warn('Fiche illisible', e); return null; }
+  })();
 
   // ===================================================================
   // Structure
@@ -76,10 +92,9 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     fiche: h('div', { dataset: { panneau: 'fiche' } }),
     actions: h('div', { dataset: { panneau: 'actions' } }),
     recap: h('div', { dataset: { panneau: 'recap' } }),
-    resultats: h('div', { dataset: { panneau: 'resultats' } }),
-    raisons: h('div', { dataset: { panneau: 'raisons' } })
+    resultats: h('div', { dataset: { panneau: 'resultats' } })
   };
-  const libelles = { fiche: 'Fiche', actions: 'Actions', recap: 'Récap du mois', resultats: 'Résultats', raisons: 'Raisons sociales' };
+  const libelles = { fiche: 'Fiche', actions: 'Actions', recap: 'Récap du mois', resultats: 'Résultats' };
   const app = h('div', {},
     h('div', { class: 'cam-onglets' }, Object.keys(panneaux).map((k) => h('button', { type: 'button', dataset: { onglet: k } }, libelles[k]))),
     Object.values(panneaux));
@@ -103,27 +118,56 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
       h('h2', {}, p.nom),
       h('div', { class: 'cam-recap' },
         h('div', {}, ligne('Joueur', p.proprietaireNom), ligne('Clan', p.clan), ligne('Secte', p.secte), ligne('Âge', p.age), ligne('Génération', p.generation ? p.generation + 'e' : '')),
-        h('div', {}, h('h3', { class: 'gotha' }, 'Gotha — niveau ' + p.niveauGotha), h('p', {}, (p.specsGotha || []).join(', ') || 'Aucune spécialisation')),
-        h('div', {}, h('h3', { class: 'pegre' }, 'Pègre — niveau ' + p.niveauPegre), h('p', {}, (p.specsPegre || []).join(', ') || 'Aucune spécialisation'))),
-      h('p', { class: 'sous-titre' }, 'Ces valeurs viennent de votre fiche validée. Pour les faire évoluer : ',
+        h('div', {}, h('h3', { class: 'gotha' }, 'Gotha — niveau ' + p.niveauGotha), listeSpecs(p.specsGotha)),
+        h('div', {}, h('h3', { class: 'pegre' }, 'Pègre — niveau ' + p.niveauPegre), listeSpecs(p.specsPegre)),
+        zoneAipFiche),
+      h('p', { class: 'sous-titre' }, 'Les spécialisations d\'influence de la fiche sont vos raisons sociales : choisissez-en une pour chaque action Gotha ou Pègre. ',
+        'Ces valeurs viennent de votre fiche validée. Pour les faire évoluer : ',
         h('a', { href: '/membres/fiches/#fiche-' + p.id }, 'ouvrir la fiche'), ' puis « Demander une modification ».')));
+    fichePrete.then((f) => {
+      const a = f ? budgetAip(f) : p.aip;
+      if (!a) return;
+      const domaines = f ? f.sciences.filter((x) => x.nom && parseInt(x.niveau, 10) > 0).map((x) => x.nom) : [];
+      zoneAipFiche.replaceChildren(h('h3', {}, 'Actions inter-partie'),
+        ligne('Par partie', String(a.base + a.informatique + a.sciences)),
+        ligne('dont Informatique', a.informatique ? '+1' : '—'),
+        ligne('dont Sciences', a.sciences ? '+' + a.sciences + (domaines.length ? ' (' + domaines.join(', ') + ')' : '') : '—'),
+        ligne('Troupeau', a.troupeau ? 'niveau ' + a.troupeau : '—'),
+        ligne('Se nourrir', a.nourriture + ' AIP' + (a.troupeau ? ' (Troupeau : ' + Math.max(0, a.nourriture - a.troupeau) + ')' : '')));
+    });
   }
+  const zoneAipFiche = h('div', {});
+  const listeSpecs = (l) => ((l || []).length ? h('ul', { class: 'cam-raisons' }, l.map((x) => h('li', {}, x))) : h('p', {}, 'Aucune spécialisation'));
 
   // ===================================================================
   // Actions
   // ===================================================================
-  const selRaisons = [];
-  function selectRaison() {
-    const s = h('select', { required: true });
-    selRaisons.push(s);
+  // Raison sociale : une spécialisation d'influence de la fiche, de la catégorie
+  // de l'action (Gotha ou Pègre). categorie : nom de catégorie ou <select>.
+  const specsDe = (cat) => ((cat === CAT_PEGRE ? perso.specsPegre : perso.specsGotha) || []).filter(Boolean);
+  function selectRaison(categorie, initiale = '') {
+    const s = h('select', { class: 'cam-raison' });
+    let touche = false;
+    s.addEventListener('change', () => { touche = true; });
+    const remplir = () => {
+      const l = specsDe(typeof categorie === 'string' ? categorie : categorie.value);
+      const vals = l.map((x) => [x, x]);
+      if (initiale && !l.includes(initiale)) vals.push([initiale, initiale + ' (n\'est plus sur la fiche)']);
+      const choix = touche && vals.some(([v]) => v === s.value) ? s.value : (initiale || l[0] || '');
+      options(s, vals, choix, l.length ? 'Sans spécialisation particulière' : '— Aucune spécialisation de cette catégorie sur la fiche —');
+      s.dispatchEvent(new Event('input'));
+    };
+    if (typeof categorie !== 'string') categorie.addEventListener('change', () => { touche = false; remplir(); });
+    remplir();
     return s;
   }
-  function remplirRaisons() {
-    selRaisons.forEach((s) => {
-      if (raisons.length) options(s, raisons.map((r) => r.nom), s.value);
-      else s.replaceChildren(h('option', { value: '' }, '— Aucune : créez-en une dans l\'onglet Raisons sociales —'));
-    });
-  }
+  // Type de spécialisation (liste des 15) deviné d'après la raison sociale : « Banques (Finance) » -> Finance.
+  const sansAcc = (x) => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const typeDeRaison = (r) => {
+    const t = sansAcc(r);
+    const mot = (x) => new RegExp('(^|[^a-z])' + sansAcc(x).replace(/s$/, '') + 's?([^a-z]|$)').test(t);
+    return SPECIALISATIONS.find((x) => t.includes('(' + sansAcc(x).replace(/s$/, ''))) || SPECIALISATIONS.find(mot) || '';
+  };
 
   // Lieu de l'action sur la carte de Grenoble (facultatif)
   function champLieu(initial) {
@@ -179,7 +223,6 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
   async function envoyerAction(champs, msg, boutonEl, c) {
     const mois = moisDesNouvellesActions(champs);
     if (!mois || !modifiable(cal, mois)) { message(msg, 'Les influences ne sont pas ouvertes pour cette partie.', 'err'); return false; }
-    if (!champs.raisonSociale) { message(msg, 'Choisissez une raison sociale (onglet Raisons sociales pour en créer une).', 'err'); return false; }
     if (!champs.descriptif) { message(msg, 'Le descriptif est obligatoire.', 'err'); return false; }
     boutonEl.disabled = true;
     message(msg, 'Envoi…', 'info');
@@ -203,8 +246,11 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
   function formGlobale() {
     const c = champsCommuns();
     const categorie = options(h('select', {}), [CAT_GOTHA, CAT_PEGRE]);
-    const spec = options(h('select', {}), SPECIALISATIONS);
-    const raison = selectRaison();
+    const spec = options(h('select', {}), SPECIALISATIONS, '', 'Aucune');
+    const raison = selectRaison(categorie);
+    raison.addEventListener('input', () => { const t = typeDeRaison(raison.value); if (t) spec.value = t; });
+    raison.addEventListener('change', () => { const t = typeDeRaison(raison.value); if (t) spec.value = t; });
+    raison.dispatchEvent(new Event('input'));
     const action = h('select', {});
     const desc = h('div', { class: 'sous-titre' });
     const cout = h('div', { class: 'cam-encart' });
@@ -236,8 +282,9 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     const el = h('div', { class: 'cam-bloc', dataset: { panneau: 'globale' } },
       h('h2', {}, 'Nouvelle action globale'), h('p', { class: 'sous-titre' }, 'Coûte 1 Action d\'Influence. Le niveau requis dépend de l\'action choisie.'),
       ligneCommune(c),
-      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Catégorie'), categorie), h('div', {}, h('label', {}, 'Spécialisation'), spec)),
-      h('label', {}, 'Raison sociale *'), raison,
+      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Catégorie'), categorie),
+        h('div', {}, h('label', { title: 'Une des spécialisations d\'influence de votre fiche' }, 'Raison sociale'), raison),
+        h('div', {}, h('label', { title: 'Une action en rapport avec la spécialisation compte un niveau de plus' }, 'Type de spécialisation'), spec)),
       h('label', {}, 'Action'), action, desc, cout,
       h('label', {}, 'Points d\'action'), points,
       h('label', {}, 'Descriptif joueur *'), descriptif, btn, msg);
@@ -248,7 +295,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     const c = champsCommuns();
     const categorie = options(h('select', {}), [CAT_GOTHA, CAT_PEGRE]);
     const action = options(h('select', {}), ['Attaque', 'Défense', 'Obstruction']);
-    const raison = selectRaison();
+    const raison = selectRaison(categorie);
     const catCible = options(h('select', {}), [CAT_GOTHA, CAT_PEGRE]);
     const points = options(h('select', {}), POINTS);
     const cible = h('input', { type: 'text', maxlength: 150, placeholder: 'Nom du personnage ou de l\'influence visée' });
@@ -280,7 +327,7 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
       h('h2', {}, 'Nouvelle action ciblée'), h('p', { class: 'sous-titre' }, 'Attaque, Défense ou Obstruction.'),
       ligneCommune(c),
       h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Catégorie (source)'), categorie), h('div', {}, h('label', {}, 'Action'), action)),
-      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Raison sociale *'), raison), h('div', {}, h('label', {}, 'Catégorie de la cible'), catCible), h('div', {}, h('label', {}, 'Points visés'), points)),
+      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', { title: 'Une des spécialisations d\'influence de votre fiche' }, 'Raison sociale'), raison), h('div', {}, h('label', {}, 'Catégorie de la cible'), catCible), h('div', {}, h('label', {}, 'Points visés'), points)),
       h('label', {}, 'Cible *'), cible, cout,
       h('label', {}, 'Descriptif joueur *'), descriptif, btn, msg);
     return { el, init: maj };
@@ -288,8 +335,8 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
 
   function formSoutien() {
     const c = champsCommuns();
-    const raison = selectRaison();
     const categorie = options(h('select', {}), [CAT_GOTHA, CAT_PEGRE]);
+    const raison = selectRaison(categorie);
     const niveau = options(h('select', {}), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
     const cible = h('input', { type: 'text', maxlength: 150, placeholder: 'Nom du personnage soutenu' });
     const malus = h('input', { type: 'number', min: -3, max: 0, value: 0 });
@@ -315,41 +362,122 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     const el = h('div', { class: 'cam-bloc', dataset: { panneau: 'soutien' } },
       h('h2', {}, 'Nouveau soutien'), h('p', { class: 'sous-titre' }, 'Prêtez vos Actions d\'Influence pour augmenter temporairement le niveau d\'un autre personnage.'),
       ligneCommune(c),
-      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Raison sociale *'), raison), h('div', {}, h('label', {}, 'Catégorie'), categorie), h('div', {}, h('label', {}, 'Niveau de la cible avant ce point'), niveau)),
+      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Catégorie'), categorie), h('div', {}, h('label', { title: 'Une des spécialisations d\'influence de votre fiche' }, 'Raison sociale'), raison), h('div', {}, h('label', {}, 'Niveau de la cible avant ce point'), niveau)),
       h('label', {}, 'Cible (personnage soutenu) *'), cible,
       h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Malus hors-praxis (0 à -3)'), malus)),
       cout, h('label', {}, 'Descriptif joueur *'), descriptif, btn, msg);
     return { el, init: maj };
   }
 
+  // AIP : réserve utilisée (base, Informatique, Science, Troupeau), action des
+  // règles, nombre d'AIP, cible ou sujet facultatif, descriptif d'une phrase.
   function formAip() {
     const c = champsCommuns();
-    const categorie = options(h('select', {}), CATEGORIES_AIP);
-    const points = options(h('select', {}), POINTS);
-    const raison = selectRaison();
+    const reserve = options(h('select', {}), Object.entries(RESERVES_AIP));
+    const domaine = h('select', {});
+    const ligneDomaine = h('div', { style: 'display:none' }, h('label', {}, 'Domaine d\'étude (Sciences)'), domaine);
     const action = h('select', {});
-    const descriptif = h('textarea', { maxlength: 4000 });
+    const desc = h('div', { class: 'sous-titre' });
+    const points = options(h('select', { class: 'cam-points-aip' }), POINTS_AIP);
+    const libPoints = h('label', {}, 'Nombre d\'AIP');
+    const libCible = h('label', {}, 'Cible ou sujet (facultatif)');
+    const cible = h('input', { type: 'text', maxlength: 150 });
+    const budget = h('div', { class: 'cam-encart cam-budget-aip' }, 'Calcul des AIP disponibles…');
+    const descriptif = h('textarea', { maxlength: 4000, placeholder: 'Une phrase suffit (règles) : ce que fait votre personnage, où, avec qui…' });
     const msg = h('div', { class: 'cam-msg' });
-    const maj = () => options(action, AIP_ACTIONS[categorie.value] || []);
-    categorie.addEventListener('change', maj);
+    let fiche = null, aip = null;
+    const actionChoisie = () => ACTIONS_AIP.find((a) => a.nom === action.value) || ACTIONS_AIP[0];
+    const majActions = () => {
+      const avant = action.value;
+      const l = ACTIONS_AIP.filter((a) => a.reserves.includes(reserve.value));
+      options(action, l.map((a) => a.nom), l.some((a) => a.nom === avant) ? avant : l[0].nom);
+      ligneDomaine.style.display = reserve.value === 'AIP (Science)' ? '' : 'none';
+      majAction();
+    };
+    const majAction = () => {
+      const a = actionChoisie();
+      desc.textContent = a.desc;
+      if (a.points) points.value = String(a.points);
+      else if (a.nourriture && aip) points.value = String(reserve.value === 'AIP (Troupeau)' ? Math.min(aip.troupeau || 1, aip.nourriture) : Math.max(1, aip.nourriture - (aip.troupeau || 0)));
+      libPoints.textContent = reserve.value === 'AIP (Troupeau)' ? 'Points de Troupeau utilisés' : 'Nombre d\'AIP';
+      cible.placeholder = a.cible || 'Personnage, piste, objet…';
+      majBudget();
+    };
+    reserve.addEventListener('change', majActions);
+    action.addEventListener('change', majAction);
+    points.addEventListener('change', majBudget);
+
+    // Budget de la partie visée : AIP de la fiche moins celles déjà envoyées.
+    let envoyees = [];
+    async function chargerEnvoyees() {
+      try { envoyees = (await mesActions()).filter((a) => a.type === 'aip'); } catch (e) { envoyees = []; }
+      majBudget();
+    }
+    function utilise(res, mois) {
+      return envoyees.filter((a) => a.mois === mois && reserveAip(a.categorie) === res).reduce((t, a) => t + (a.pointsAction || 0), 0);
+    }
+    function majBudget() {
+      if (!aip) { budget.textContent = 'AIP de la fiche : 3 entre deux parties (Informatique et Sciences en donnent davantage).'; return; }
+      const mois = moisDesNouvellesActions({ date: c.date.value });
+      const p = partie(cal, mois);
+      const domaines = fiche ? fiche.sciences.filter((x) => x.nom && parseInt(x.niveau, 10) > 0).map((x) => x.nom) : [];
+      const pastille = (lib, u, max) => h('span', { class: 'cam-tag ' + (u > max ? 'refusee' : u === max && max ? 'attente' : '') }, lib + ' ' + u + ' / ' + max);
+      budget.replaceChildren(...[
+        h('strong', {}, 'AIP ' + (p ? 'pour ' + libellePartie(p) : mois ? 'de ' + libelleMois(mois).toLowerCase() : '') + ' : '),
+        pastille('base', utilise('AIP', mois), aip.base), ' ',
+        aip.informatique ? [pastille('Informatique', utilise('AIP (Informatique)', mois), aip.informatique), ' '] : '',
+        aip.sciences ? [pastille('Science', utilise('AIP (Science)', mois), aip.sciences), ' '] : '',
+        aip.troupeau ? pastille('Troupeau', utilise('AIP (Troupeau)', mois), aip.troupeau) : '',
+        h('br'),
+        h('small', {}, 'Se nourrir : ' + aip.nourriture + ' AIP' + (aip.nourriture > 1 ? ' (faiblesse Ventrue)' : '')
+          + (aip.troupeau ? ', réduit de ' + aip.troupeau + ' par votre Troupeau' : '')
+          + '. Faute de quoi, vous commencez la partie à demi-réserve de sang (arrondi au supérieur). Les AIP ne se reportent pas d\'une partie à l\'autre.'
+          + (domaines.length ? ' AIP Science réservées à vos domaines : ' + domaines.join(', ') + '.' : ''))].flat().filter(Boolean));
+    }
+    fichePrete.then((f) => {
+      fiche = f;
+      aip = f ? budgetAip(f) : perso.aip || null;
+      const domaines = f ? f.sciences.filter((x) => x.nom && parseInt(x.niveau, 10) > 0).map((x) => x.nom) : [];
+      options(domaine, domaines.length ? domaines : [['', 'Aucun domaine de Sciences sur la fiche']]);
+      majAction();
+    });
+    if (choixPeriode) choixPeriode.addEventListener('change', majBudget);
+    c.date.addEventListener('change', majBudget);
+
     const btn = h('button', { type: 'button' }, 'Envoyer');
     btn.addEventListener('click', async () => {
+      const a = actionChoisie();
+      const n = parseInt(points.value, 10);
+      const res = reserve.value;
+      if (res === 'AIP (Science)' && !domaine.value) { message(msg, 'Les AIP Science demandent un domaine d\'étude (Sciences) sur la fiche.', 'err'); return; }
+      if (aip) {
+        const mois = moisDesNouvellesActions({ date: c.date.value });
+        const max = { 'AIP': aip.base, 'AIP (Informatique)': aip.informatique, 'AIP (Science)': aip.sciences, 'AIP (Troupeau)': aip.troupeau }[res] || 0;
+        if (utilise(res, mois) + n > max && !confirmer('Cette action dépasse votre réserve « ' + RESERVES_AIP[res] + ' » pour cette partie ('
+          + (utilise(res, mois) + n) + ' sur ' + max + '). L\'envoyer quand même (le conteur tranchera) ?')) return;
+      }
       if (await envoyerAction({
-        type: 'aip', date: c.date.value, ville: c.ville.value, zone: c.zone.value, categorie: categorie.value,
-        raisonSociale: raison.value, nomAction: action.value, pointsAction: parseInt(points.value, 10), descriptif: descriptif.value.trim()
-      }, msg, btn, c)) descriptif.value = '';
+        type: 'aip', date: c.date.value, ville: c.ville.value, zone: c.zone.value, categorie: res,
+        nomAction: a.nom, pointsAction: n, specialisation: res === 'AIP (Science)' ? domaine.value : '',
+        cible: cible.value.trim(), descriptif: descriptif.value.trim()
+      }, msg, btn, c)) { descriptif.value = ''; cible.value = ''; chargerEnvoyees(); }
     });
     const el = h('div', { class: 'cam-bloc', dataset: { panneau: 'aip' } },
-      h('h2', {}, 'Nouvelle action AIP'), h('p', { class: 'sous-titre' }, 'Enquête, Patrouille, Mentorat, Chasse, Troupeau, Informatique, Artisanat, Science, Dépense d\'XP…'),
+      h('h2', {}, 'Nouvelle action inter-partie (AIP)'),
+      h('p', { class: 'sous-titre' }, 'Entre deux parties : enquêter, patrouiller, se nourrir, créer, apprendre… Le conteur décide s\'il faut un challenge ou une scène, puis donne le résultat.'),
+      budget,
       ligneCommune(c),
-      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Catégorie'), categorie), h('div', {}, h('label', {}, 'Points d\'action'), points)),
-      h('label', {}, 'Raison sociale *'), raison, h('label', {}, 'Action'), action,
-      h('label', {}, 'Descriptif joueur *'), descriptif, btn, msg);
-    return { el, init: maj };
+      h('div', { class: 'cam-ligne' },
+        h('div', {}, h('label', {}, 'Réserve utilisée'), reserve), ligneDomaine,
+        h('div', {}, h('label', {}, 'Action'), action),
+        h('div', {}, libPoints, points)),
+      desc,
+      libCible, cible,
+      h('label', {}, 'Descriptif *'), descriptif, btn, msg);
+    return { el, init: () => { majActions(); chargerEnvoyees(); } };
   }
 
   function dessinerActions() {
-    selRaisons.length = 0;
     choixPeriode = null;
     let entete = null;
     if (cal.existe) {
@@ -379,7 +507,6 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
       forms.map((f) => f.el));
     panneaux.actions.replaceChildren(...[entete, bloc].filter(Boolean));
     forms.forEach((f) => f.init());
-    remplirRaisons();
     onglets(bloc)('globale');
   }
 
@@ -407,12 +534,21 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
         return { niveau, utilises, restants: niveau - utilises };
       };
       const g = bilan(CAT_GOTHA, perso.niveauGotha), p = bilan(CAT_PEGRE, perso.niveauPegre);
-      const nbAip = actions.filter((a) => CATEGORIES_AIP.includes(a.categorie)).length;
+      const aipEnvoyees = actions.filter((a) => a.type === 'aip' || CATEGORIES_AIP.includes(a.categorie));
+      const f = await fichePrete;
+      const aip = f ? budgetAip(f) : perso.aip || { base: 3, informatique: 0, sciences: 0, troupeau: 0, nourriture: 1 };
+      const pris = (res) => aipEnvoyees.filter((a) => reserveAip(a.categorie) === res).reduce((t, a) => t + (a.pointsAction || 0), 0);
       const ligne = (lib, val) => h('div', { class: 'ligne' }, h('span', {}, lib), h('strong', {}, String(val)));
       const carte = (titre, cls, b) => h('div', { class: 'cam-element' }, h('h3', { class: cls, style: 'margin-top:0' }, titre),
         ligne('Niveau', b.niveau), ligne('Points utilisés', b.utilises), ligne('Points restants', b.restants));
       zoneRecap.replaceChildren(carte('Gotha', 'gotha', g), carte('Pègre', 'pegre', p),
-        h('div', { class: 'cam-element' }, h('h3', { style: 'margin-top:0' }, 'AIP'), ligne('Actions AIP ce mois', nbAip), ligne('Actions envoyées ce mois', actions.length)));
+        h('div', { class: 'cam-element' }, h('h3', { style: 'margin-top:0' }, 'Actions inter-partie'),
+          ligne('AIP de base', pris('AIP') + ' / ' + aip.base),
+          aip.informatique || pris('AIP (Informatique)') ? ligne('AIP Informatique', pris('AIP (Informatique)') + ' / ' + aip.informatique) : '',
+          aip.sciences || pris('AIP (Science)') ? ligne('AIP Science', pris('AIP (Science)') + ' / ' + aip.sciences) : '',
+          aip.troupeau || pris('AIP (Troupeau)') ? ligne('Troupeau', pris('AIP (Troupeau)') + ' / ' + aip.troupeau) : '',
+          ligne('S\'est nourri', aipEnvoyees.some((a) => a.nomAction === 'Se nourrir' || a.nomAction === 'Se nourrir (Troupeau)') ? 'oui' : 'non — demi-réserve de sang'),
+          ligne('Actions envoyées (toutes)', actions.length)));
     } catch (e) { zoneRecap.replaceChildren(h('div', { class: 'cam-msg err' }, messageErreur(e))); }
   }
   moisRecap.addEventListener('change', dessinerRecap);
@@ -442,10 +578,11 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
         h('span', { class: 'cam-tag ' + classeCat(a.categorie) }, a.categorie),
         h('span', { class: 'cam-tag' }, TYPES_ACTION[a.type] || a.type),
         h('span', { class: 'cam-tag', title: p ? libellePartie(p) : '' }, libelleMois(a.mois)),
-        (a.date ? dateFr(a.date) : '') + ' — ' + a.nomAction + ' — ' + a.pointsAction + ' pt(s)'),
+        (a.date ? dateFr(a.date) : '') + ' — ' + a.nomAction + ' — ' + a.pointsAction + (a.type === 'aip' ? (a.categorie === 'AIP (Troupeau)' ? ' pt(s) de Troupeau' : ' AIP') : ' pt(s)')
+          + (a.type === 'aip' && a.specialisation ? ' — ' + a.specialisation : '')),
       h('div', {},
         a.raisonSociale ? [h('strong', {}, 'Raison sociale : '), a.raisonSociale, h('br')] : '',
-        a.cible ? [h('strong', {}, 'Cible : '), a.cible, a.categorieCible ? ' (' + a.categorieCible + ')' : '', h('br')] : '',
+        a.cible ? [h('strong', {}, a.type === 'aip' ? 'Sujet : ' : 'Cible : '), a.cible, a.categorieCible ? ' (' + a.categorieCible + ')' : '', h('br')] : '',
         a.lieu ? [h('strong', {}, 'Lieu : '), h('a', { href: lienCarte(a) }, '📍 voir sur la carte'), h('br')] : '',
         h('span', { class: 'texte' }, a.descriptif)),
       h('div', { class: 'reponse' + (a.reponseConteur ? '' : ' vide') }, a.reponseConteur ? ['Résultat du conteur : ', a.reponseConteur] : 'En attente du résultat du conteur…'),
@@ -473,7 +610,8 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     c.date.value = a.date || '';
     options(c.ville, VILLES, a.ville || '');
     options(c.zone, OPTIONS_ZONES, a.zone || '');
-    const raison = options(h('select', {}), raisons.map((r) => r.nom).concat(raisons.some((r) => r.nom === a.raisonSociale) || !a.raisonSociale ? [] : [a.raisonSociale]), a.raisonSociale);
+    const raison = a.type !== 'aip' ? selectRaison(a.categorie, a.raisonSociale || '') : null;
+    const avecCible = !!a.cible || a.type === 'aip';
     const cible = h('input', { type: 'text', maxlength: 150, value: a.cible || '' });
     const descriptif = h('textarea', { maxlength: 4000 }, a.descriptif || '');
     const ouvertes = periodesModifiables(cal);
@@ -482,13 +620,14 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
     const btn = h('button', { type: 'button', class: 'petit ok' }, 'Enregistrer les modifications');
     btn.addEventListener('click', async () => {
       if (!descriptif.value.trim()) { message(msg, 'Le descriptif est obligatoire.', 'err'); return; }
-      if (a.cible && !cible.value.trim()) { message(msg, 'Indiquez la cible.', 'err'); return; }
+      if (a.cible && a.type !== 'aip' && !cible.value.trim()) { message(msg, 'Indiquez la cible.', 'err'); return; }
       const maj = {
-        date: c.date.value, ville: c.ville.value, zone: c.zone.value, raisonSociale: raison.value,
+        date: c.date.value, ville: c.ville.value, zone: c.zone.value,
         descriptif: compresser(descriptif.value.trim()), majLe: fs.serverTimestamp(),
         lieu: c.lieu.valeur || fs.deleteField()
       };
-      if (a.cible) maj.cible = cible.value.trim();
+      if (raison) maj.raisonSociale = raison.value;
+      if (avecCible) maj.cible = cible.value.trim();
       if (periode) maj.mois = periode.value;
       btn.disabled = true;
       try {
@@ -501,63 +640,16 @@ pageProtegee(racine, 'actif', async ({ user, profil }) => {
       h('h3', {}, 'Modifier l\'action'),
       periode ? [h('label', {}, 'Partie concernée'), periode] : '',
       ligneCommune(c),
-      h('label', {}, 'Raison sociale'), raison,
-      a.cible ? [h('label', {}, 'Cible'), cible] : '',
+      raison ? [h('label', { title: 'Une des spécialisations d\'influence de votre fiche' }, 'Raison sociale'), raison] : '',
+      avecCible ? [h('label', {}, a.type === 'aip' ? 'Cible ou sujet (facultatif)' : 'Cible'), cible] : '',
       h('label', {}, 'Descriptif joueur *'), descriptif,
       h('div', { class: 'cam-actions' }, btn, h('button', { type: 'button', class: 'petit secondaire', onclick: () => zone.replaceChildren() }, 'Annuler')),
       msg));
   }
 
   // ===================================================================
-  // Raisons sociales
-  // ===================================================================
-  async function chargerRaisons() {
-    const s = await fs.getDocs(fs.query(fs.collection(db, 'raisons_sociales'),
-      fs.where('proprietaire', '==', uid), fs.where('personnageId', '==', perso.id)));
-    raisons = s.docs.map(donneesDoc).sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
-  }
-
-  function dessinerRaisons() {
-    const nom = h('input', { type: 'text', maxlength: 150, placeholder: 'Ex : Agence France-Presse Isère' });
-    const ville = options(h('select', {}), VILLES, 'Grenoble');
-    const zone = options(h('select', {}), OPTIONS_ZONES);
-    const categorie = options(h('select', {}), CATEGORIES_RAISON_SOCIALE);
-    const description = h('textarea', { maxlength: 3000, placeholder: 'Contexte, historique, comment le personnage y a accès…' });
-    const msg = h('div', { class: 'cam-msg' });
-    const btn = h('button', { type: 'button' }, 'Ajouter au registre');
-    btn.addEventListener('click', async () => {
-      if (!nom.value.trim()) { message(msg, 'Le nom est obligatoire.', 'err'); return; }
-      try {
-        await fs.addDoc(fs.collection(db, 'raisons_sociales'), {
-          proprietaire: uid, personnageId: perso.id, personnageNom: perso.nom, nom: nom.value.trim(),
-          ville: ville.value, zone: zone.value, categorie: categorie.value, description: compresser(description.value.trim()),
-          creeLe: fs.serverTimestamp()
-        });
-        await chargerRaisons(); dessinerRaisons(); remplirRaisons();
-        message(panneaux.raisons.querySelector('.cam-msg'), 'Raison sociale ajoutée.', 'ok');
-      } catch (e) { message(msg, messageErreur(e), 'err'); }
-    });
-    panneaux.raisons.replaceChildren(h('div', { class: 'cam-bloc' },
-      h('h2', {}, 'Raisons sociales'),
-      h('p', { class: 'sous-titre' }, 'Registre des organismes, entreprises ou PNJ liés à votre personnage, réutilisables dans les formulaires d\'action.'),
-      h('div', { class: 'cam-ligne' }, h('div', {}, h('label', {}, 'Nom *'), nom), h('div', {}, h('label', {}, 'Ville'), ville), h('div', {}, h('label', {}, 'Territoire'), zone), h('div', {}, h('label', {}, 'Catégorie'), categorie)),
-      h('label', {}, 'Description (facultatif)'), description, btn, msg,
-      h('h3', {}, 'Raisons sociales de ' + perso.nom),
-      ...(raisons.length ? raisons.map((r) => h('div', { class: 'cam-element' },
-        h('div', { class: 'meta' }, h('span', { class: 'cam-tag ' + classeCat(r.categorie) }, r.categorie), (r.ville || '') + ' — territoire ' + libelleZone(r.zone)),
-        h('strong', {}, r.nom), r.description ? h('div', { class: 'texte' }, r.description) : '',
-        h('button', {
-          type: 'button', class: 'petit danger', onclick: async () => {
-            if (!confirmer('Supprimer « ' + r.nom + ' » du registre ?')) return;
-            try { await fs.deleteDoc(fs.doc(db, 'raisons_sociales', r.id)); await chargerRaisons(); dessinerRaisons(); remplirRaisons(); } catch (e) { alert(messageErreur(e)); }
-          }
-        }, 'Supprimer'))) : [h('p', { class: 'sous-titre' }, 'Aucune raison sociale pour le moment.')])));
-  }
-
-  // ===================================================================
   // Démarrage
   // ===================================================================
-  await chargerRaisons();
-  dessinerFiche(); dessinerActions(); dessinerRaisons();
+  dessinerFiche(); dessinerActions();
   dessinerRecap(); dessinerResultats();
 });

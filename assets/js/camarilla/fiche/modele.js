@@ -12,7 +12,7 @@ export const TAILLES = {
   specialitesMystere: 25, langues: 15, disciplines: 15, techniques: 20, rituels: 50,
   specialitesInfluence: 10, havres: 3, avantagesHavre: 6, faussesIdentites: 3, contacts: 5, allies: 5,
   rituelsSabbat: 24, emplacements: 10, serviteurs: 6, specialitesServiteur: 10, qualitesServiteur: 10,
-  mentorats: 15, equipement: 12,
+  mentorats: 15, equipement: 12, specialitesCompetences: 20,
 };
 
 const vide = (n, f = () => '') => Array.from({ length: n }, (_, i) => f(i));
@@ -53,6 +53,8 @@ export function ficheVide() {
     artisanat: vide(TAILLES.artisanat, libre), beneficeArtisanat: '',          // E67:E76 / H, G67
     representation: vide(TAILLES.representation, (i) => ({ nom: i === 8 ? 'Chant' : '', niveau: '' })), // E78:E86
     beneficeRepresentation: '',                                                 // G78
+    // Spécialités / champs d'étude des compétences (Érudition, Conduite…) : pas dans l'Excel
+    specialitesCompetences: vide(TAILLES.specialitesCompetences, () => ({ competence: '', nom: '' })),
     // Les 3 premières spécialités sont la secte, le clan et la race (J56:J58, niveau 2 par défaut)
     mysteres: { niveau: '', specialites: vide(TAILLES.specialitesMystere, (i) => ({ nom: '', niveau: i < 3 ? 2 : '' })) }, // L55, J56:J80 / L
     linguistique: '', langues: vide(TAILLES.langues, (i) => (i === 0 ? 'Français' : '')), // L81, O56:O70
