@@ -248,9 +248,10 @@ l'indique et le bouton « Commencer » reste grisé.
   soumise, et se met à jour pendant les modifications. Pour une fiche validée avant cette
   fonction, la version de référence est créée quand le conteur la repasse en brouillon, ou
   d'un coup par **Comptes > Maintenance > Transmettre les mystères aux fiches validées**.
-- **Journal des consultations** (conteurs et administrateurs) : en bas de la page des
-  fiches, une fenêtre de quelques lignes (avec ascenseur et filtre) liste qui a ouvert
-  quelle fiche de joueur, et quand. Seuls sont gardés le nom du compte, l'heure et le nom de
+- **Journal des consultations** : en bas de la page des fiches, une fenêtre de quelques
+  lignes (avec ascenseur et filtre) liste qui, parmi les conteurs et administrateurs, a
+  ouvert quelle fiche de joueur, et quand. Les conteurs et administrateurs voient tout le
+  journal ; chaque joueur voit les consultations de ses propres fiches. Seuls sont gardés le nom du compte, l'heure et le nom de
   la fiche (`journal_fiches/{idFiche}`, les 25 dernières consultations de chaque fiche) ; la
   phrase est recomposée à l'affichage. Les PNJ et ses propres fiches ne sont pas notés, ni
   la même fiche rouverte par la même personne dans les 10 minutes. Les règles Firestore

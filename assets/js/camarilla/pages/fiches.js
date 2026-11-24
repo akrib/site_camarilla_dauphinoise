@@ -166,7 +166,12 @@ function afficherListes(ongletInitial) {
     msgImport,
     h('div', { style: 'margin-top:1rem' }, grille(mesFiches, false, 'Aucune fiche pour l\'instant.')));
 
-  if (!conteur) { racine.replaceChildren(mes); mes.classList.add('actif'); return; }
+  if (!conteur) {
+    // Joueur : consultations de ses fiches par les conteurs et administrateurs
+    racine.replaceChildren(mes, panneauJournal(mesFiches.filter((f) => !f.pnj).map((f) => ({ id: f.id, nom: f.nom }))));
+    mes.classList.add('actif');
+    return;
+  }
 
   const soumises = toutes.filter((f) => f.statut === 'soumise').sort((a, b) => millis(a.majLe) - millis(b.majLe));
   const filtreStatut = options(h('select', {}), Object.entries(STATUTS_FICHE), '', 'Tous les statuts');

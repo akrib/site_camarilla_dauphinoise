@@ -72,7 +72,7 @@ service cloud.firestore {
     // (VERSION_REGLES) à chaque modification de ce fichier.
     // ------------------------------------------------------------------
     match /regles/{version} {
-      allow get: if actif() && version == '2026-11-24';
+      allow get: if actif() && version == '2026-11-24b';
     }
 
     // ------------------------------------------------------------------
@@ -335,7 +335,8 @@ service cloud.firestore {
     // Les 25 dernières consultations par fiche. Seul un ajout en fin de liste
     // est permis, au nom de son auteur et à l'heure actuelle (± 5 min) : on
     // ne réécrit ni n'efface les consultations des autres (sauf un admin, qui
-    // peut supprimer le journal d'une fiche).
+    // peut supprimer le journal d'une fiche). Les conteurs lisent tout ; un
+    // joueur lit le journal de ses propres fiches (document par document).
     // ------------------------------------------------------------------
     match /journal_fiches/{id} {
       function accesValide(e) {
@@ -348,6 +349,7 @@ service cloud.firestore {
           && accesValide(d.acces[d.acces.size() - 1]);
       }
       allow read: if conteur();
+      allow get: if actif() && exists(chemin('personnages', id)) && perso(id).proprietaire == uid();
       allow create: if conteur() && journalValide(nouveau()) && nouveau().acces.size() == 1
         && exists(chemin('personnages', id));
       allow update: if conteur() && journalValide(nouveau())

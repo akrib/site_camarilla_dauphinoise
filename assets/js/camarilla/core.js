@@ -51,7 +51,7 @@ export const estAdmin = (p) => estActif(p) && p.role === 'admin';
 // regles/{VERSION_REGLES} n'est lisible que si les règles publiées dans la
 // console Firebase sont celles de firebase/firestore.rules : à changer ici ET
 // dans firebase/firestore.rules (match /regles/) à chaque modification des règles.
-export const VERSION_REGLES = '2026-11-24';
+export const VERSION_REGLES = '2026-11-24b';
 
 // ---------------------------------------------------------------------
 // Vue de test (administrateurs)

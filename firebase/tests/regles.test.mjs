@@ -680,7 +680,17 @@ describe('Journal des consultations de fiches', () => {
     await assertFails(setDoc(doc(db('conteur'), 'journal_fiches', 'inconnu'), { nom: 'X', acces: [acces('Conteur')] }));
     await assertFails(setDoc(doc(db('alice'), 'journal_fiches', 'pB'), { nom: 'Bastien', acces: [acces('Alice')] }));
     await assertSucceeds(getDoc(doc(db('admin'), 'journal_fiches', 'pA')));
-    await assertFails(getDoc(doc(db('alice'), 'journal_fiches', 'pA')));
+  });
+  test('un joueur lit le journal de ses fiches, pas celui des autres', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'journal_fiches', 'pA'), { nom: 'Amarok', acces: [acces('Conteur', 1700000000000)] });
+      await setDoc(doc(ctx.firestore(), 'journal_fiches', 'pB'), { nom: 'Bastien', acces: [acces('Conteur', 1700000000000)] });
+    });
+    await assertSucceeds(getDoc(doc(db('alice'), 'journal_fiches', 'pA')));
+    await assertFails(getDoc(doc(db('alice'), 'journal_fiches', 'pB')));
+    await assertFails(getDocs(collection(db('alice'), 'journal_fiches')));
+    await assertFails(getDoc(doc(db('eve'), 'journal_fiches', 'pA')));
+    await assertFails(setDoc(doc(db('alice'), 'journal_fiches', 'pA'), { nom: 'Amarok', acces: [acces('Conteur', 1700000000000), acces('Alice')] }));
   });
   test('ajout en fin de liste seulement ; 25 consultations au plus', async () => {
     const anciens = Array.from({ length: 25 }, (_, i) => acces('Conteur2', 1700000000000 + i));

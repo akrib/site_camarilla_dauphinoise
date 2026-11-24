@@ -7,7 +7,9 @@
 // recomposé ici. Seules les fiches des joueurs sont notées (pas les PNJ,
 // ni les fiches du conteur lui-même) ; une même personne qui rouvre la même
 // fiche dans les 10 minutes n'est notée qu'une fois.
-// Lisible des conteurs et administrateurs ; les règles Firestore n'acceptent
+// Les conteurs et administrateurs voient tout le journal ; chaque joueur voit
+// les consultations de ses propres fiches (lues document par document : un
+// joueur ne peut pas lister la collection). Les règles Firestore n'acceptent
 // qu'un ajout en fin de liste, au nom de son auteur et à l'heure actuelle.
 // =====================================================================
 import { h, db, fs, estConteur, messageErreur } from '../core.js';
@@ -33,8 +35,12 @@ export async function noterAcces(session, d) {
 
 const heure = (t) => new Date(t).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-/** Fenêtre du journal (bas de la page des fiches, conteurs et administrateurs). */
-export function panneauJournal() {
+/**
+ * Fenêtre du journal (bas de la page des fiches).
+ * fiches : null pour tout le journal (conteurs), sinon [{ id, nom }] (fiches du joueur).
+ */
+export function panneauJournal(fiches = null) {
+  const joueur = Array.isArray(fiches);
   const liste = h('ol', { class: 'cam-journal-lignes', reversed: true }, h('li', { class: 'sous-titre' }, 'Chargement…'));
   const filtre = h('input', { type: 'search', placeholder: 'Filtrer : compte ou fiche…', 'aria-label': 'Filtrer le journal' });
   const compte = h('span', { class: 'sous-titre' });
@@ -51,12 +57,15 @@ export function panneauJournal() {
   filtre.addEventListener('input', dessiner);
   (async () => {
     try {
-      const snap = await fs.getDocs(fs.collection(db, 'journal_fiches'));
+      const docs = joueur
+        ? (await Promise.all(fiches.map((f) => fs.getDoc(fs.doc(db, 'journal_fiches', f.id))
+          .then((s) => (s.exists() ? { id: s.id, data: s.data(), nom: f.nom } : null))
+          .catch((e) => { console.warn('Journal de la fiche illisible', f.id, e); return null; })))).filter(Boolean)
+        : (await fs.getDocs(fs.collection(db, 'journal_fiches'))).docs.map((d) => ({ id: d.id, data: d.data() }));
       lignes = [];
-      snap.docs.forEach((doc) => {
-        const x = doc.data();
+      docs.forEach(({ id, data: x, nom }) => {
         (Array.isArray(x.acces) ? x.acces : []).forEach((a) => {
-          if (a && a.n && Number.isFinite(a.t)) lignes.push({ id: doc.id, fiche: x.nom || doc.id, n: String(a.n), t: a.t });
+          if (a && a.n && Number.isFinite(a.t)) lignes.push({ id, fiche: nom || x.nom || id, n: String(a.n), t: a.t });
         });
       });
       lignes.sort((a, b) => b.t - a.t);
@@ -68,6 +77,8 @@ export function panneauJournal() {
   return h('section', { class: 'cam-bloc cam-journal', 'aria-label': 'Journal des consultations' },
     h('div', { class: 'cam-journal-tete' },
       h('h3', {}, 'Journal des consultations'), compte, filtre),
-    h('p', { class: 'sous-titre' }, 'Fiches de joueurs ouvertes par les conteurs et les administrateurs (les ' + MAX_ACCES + ' dernières consultations de chaque fiche).'),
+    h('p', { class: 'sous-titre' }, joueur
+      ? 'Qui, parmi les conteurs et les administrateurs, a ouvert vos fiches, et quand (les ' + MAX_ACCES + ' dernières consultations de chaque fiche).'
+      : 'Fiches de joueurs ouvertes par les conteurs et les administrateurs (les ' + MAX_ACCES + ' dernières consultations de chaque fiche).'),
     liste);
 }
