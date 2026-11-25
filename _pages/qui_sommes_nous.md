@@ -28,3 +28,6 @@ Notre association est ouverte (l'unique condition requise est d'être majeur, 18
 De septembre à juin (relâche en juillet et août), nous nous réunissons un samedi tous les deux mois à l'ADAJE de Grenoble de 20h à 3h du matin pour jouer. Il n’est pas obligatoire de venir à toutes les soirées même si c’est recommandé pour ne pas perdre le fil de l’histoire.
 
 Nous organisons occasionnellement pour les membres des évènements (jeux de plateau, resto,...) afin de faire un peu plus connaissance en dehors de l’activité et entretenir la vie associative.
+
+<iframe id="haWidgetVignette" allowtransparency="true" src="https://www.helloasso.com/associations/la-camarilla-dauphinoise/adhesions/cotisation-2026-2027/widget-vignette" style="width: 100%; height: 513px; border: none;"></iframe>
+
